@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "description": "A simple CAP project.",
   "dependencies": {
-    "process" : "file:../../"
+    "@cap-js/process": "file:../../"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2",
-    "tsx": "^4"
+    "tsx": "^4",
+    "@cap-js/cds-types": "^0.15.0",
+    "@types/node": "^24.0.0",
+    "typescript": "^5",
+    "@cap-js/cds-typer": ">=0.1"
   },
   "scripts": {
     "start": "cds-serve",
@@ -27,5 +31,8 @@
         }
       }
     }
+  },
+  "imports": {
+    "#cds-models/*": "./@cds-models/*/index.js"
   }
 }

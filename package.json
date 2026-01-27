@@ -1,5 +1,5 @@
 {
-  "name": "process",
+  "name": "@cap-js/process",
   "version": "1.0.0",
   "description": "",
   "main": "cds-plugin.ts", 
@@ -23,6 +23,9 @@
   "engines": {
     "node": ">=20.0.0"
   },
+  "imports": {
+    "#cds-models/*": "./@cds-models/*/index.js"
+  },
   "workspaces": [
     "tests/bookshop"
   ],
@@ -32,5 +35,12 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "@cap-js/cds-typer": "^0.38.0"
+  },
+  "cds": {
+    "requires": {
+      "BTPProcessService": {
+        "model": "./srv/BTPProcessService"
+      }
+    }
   }
 }

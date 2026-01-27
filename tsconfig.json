@@ -44,8 +44,14 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+    "paths": {
+      "#cds-models/*": [
+        "./@cds-models/*"
+      ]
+    }
   },
   "include": [
-    "cds-plugin.ts"
+    "cds-plugin.ts",
+    "./srv/**/*.ts"
   ]
 }
