@@ -1,0 +1,31 @@
+{
+  "name": "bookshop",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "dependencies": {
+    "process" : "file:../../"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2",
+    "tsx": "^4"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "build": "npm run cds-build && npm run cds-typer",
+    "cds-build": "cds-tsx build",
+    "cds-typer": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models"
+  },
+  "private": true,
+  "cds": {
+    "requires": {
+      "db-ext": {
+        "[development]": {
+          "model": "db/sqlite"
+        },
+        "[production]": {
+          "model": "db/hana"
+        }
+      }
+    }
+  }
+}
