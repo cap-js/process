@@ -2,9 +2,11 @@
   "name": "@cap-js/process",
   "version": "1.0.0",
   "description": "",
-  "main": "cds-plugin.ts", 
+  "main": "cds-plugin.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:integration": "jest tests/integration",
     "build": "npm run gen-workflow && npm run cds-build && npm run cds-typer",
     "gen-workflow": "npx @sap-cloud-sdk/openapi-generator -i specs/workflow.json -o clients --overwrite",
     "cds-build": "cds-tsx build",
@@ -12,7 +14,6 @@
     "watch": "cds-tsx watch",
     "process:import": "cds bind --exec -- cds-tsx import --from process --no-save --as cds"
   },
-
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -30,11 +31,11 @@
     "tests/bookshop"
   ],
   "dependencies": {
+    "@cap-js/cds-typer": "^0.38.0",
     "@sap-cloud-sdk/openapi": "^4.1.2",
     "@types/node": "^25.0.9",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "@cap-js/cds-typer": "^0.38.0"
+    "typescript": "^5.9.3"
   },
   "cds": {
     "requires": {
@@ -55,5 +56,10 @@
         }
       }
     }
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6"
   }
 }

@@ -1,29 +1,32 @@
 const cds = require('@sap/cds');
-// import { start, message, getOutputs, cancel, suspend, resume } from '#cds-models/sap/build/ProcessService'
-// import { randomUUID } from 'node:crypto';
-// import { getHybridDestination } from '../utils/cloud-sdk-utils';
-// import { WorkflowInstancesApi as wfiApi } from '../clients/workflow/workflow-instances-api'
-// import { MessagesApi as msgApi } from '../clients/workflow/messages-api'
+const { getCdsProcessService } = require('../utils/cdk-utils');
+const { WorkflowInstancesApi } = require('../clients/workflow/workflow-instances-api');
+const LOG = cds.log("process");
 
 const BASE_PATH = '/public/workflow/rest'
 
 class ProcessService extends cds.ApplicationService { async init() {
         console.log('Initializing Process Service...')
 
-        // const processAutomationService = await cds.connect.to('process-automation-service') as cds.RemoteService;
+        const processAutomationService = await cds.connect.to('process-automation-service');
 
         this.on('start', async (request: any) => {
-            // const { definitionId, context } = request.data;
 
-            // const destination = await getHybridDestination(processAutomationService, request);
-            // const workflowInstance = await wfiApi.startInstance({
-            //         definitionId: definitionId!,
-            //         context: context ? context as Record<string, any> : undefined
-            //     }).setBasePath(BASE_PATH).execute(destination);
+            const { definitionId, context } = request.data;
+    
+            const processAutomationService = await cds.connect.to('process-automation-service');
+            const dest = await getCdsProcessService(processAutomationService);
+            
+            const workflowInstance = await WorkflowInstancesApi.startInstance({
+                    definitionId: definitionId!,
+                    context: context ? context as Record<string, any> : undefined
+                }).setBasePath(BASE_PATH).execute(dest);
 
-            const workflowInstance = { id: "1234" }; // Placeholder
             const message = `Process with ID ${workflowInstance.id} was successfully started.`;
-            console.log(message);
+            
+
+            LOG.info(message);
+
 
             return {
                 id: workflowInstance.id,

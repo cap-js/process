@@ -26,7 +26,6 @@
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
 
     // Style Options
     // "noImplicitReturns": true,
@@ -39,7 +38,6 @@
     // Recommended Options
     "strict": true,
     "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
@@ -52,6 +50,9 @@
   },
   "include": [
     "cds-plugin.ts",
-    "./srv/**/*.ts"
+    "./lib/**/*.ts",
+    "./srv/**/*.ts",
+    "./utils/**/*.ts",
+    "./clients/**/*.ts",
   ]
 }
