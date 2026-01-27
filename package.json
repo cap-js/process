@@ -38,8 +38,21 @@
   },
   "cds": {
     "requires": {
-      "BTPProcessService": {
-        "model": "./srv/BTPProcessService"
+      "ProcessService": {
+        "[development]": {
+          "kind": "local-process-service"
+        },
+        "[production]": {
+          "kind": "deployed-process-service"
+        }
+      },
+      "kinds": {
+        "local-process-service": {
+          "model": "@cap-js/process/srv/localProcessService"
+        },
+        "deployed-process-service": {
+          "model": "@cap-js/process/srv/BTPProcessService"
+        }
       }
     }
   }
