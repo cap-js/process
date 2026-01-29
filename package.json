@@ -7,8 +7,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:integration": "jest tests/integration",
-    "build": "npm run gen-workflow && npm run cds-build && npm run cds-typer",
-    "gen-workflow": "npx @sap-cloud-sdk/openapi-generator -i specs/workflow.json -o clients --overwrite",
+    "build": "npm run cds-build && npm run cds-typer",
     "cds-build": "cds-tsx build",
     "cds-typer": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models",
     "watch": "cds-tsx watch",
@@ -32,7 +31,9 @@
   ],
   "dependencies": {
     "@cap-js/cds-typer": "^0.38.0",
-    "@sap-cloud-sdk/openapi": "^4.1.2",
+    "@sap-cloud-sdk/connectivity": "^4.1.2",
+    "@sap-cloud-sdk/http-client": "^4.1.2",
+    "@sap-cloud-sdk/resilience": "^4.1.2",
     "@types/node": "^25.0.9",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
@@ -54,6 +55,10 @@
         "deployed-process-service": {
           "model": "@cap-js/process/srv/BTPProcessService"
         }
+      },
+      "Workflow": {
+        "kind": "service",
+        "model": "srv/external/SPA_Workflow_Runtime"
       }
     }
   },

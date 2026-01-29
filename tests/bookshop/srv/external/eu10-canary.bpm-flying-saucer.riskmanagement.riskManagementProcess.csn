@@ -1,0 +1,113 @@
+{
+  "definitions": {
+    "RiskManagementProcessService": {
+      "kind": "service",
+      "@cds.external": true,
+      "@protocol": "none",
+      "@build.process": "eu10-canary.bpm-flying-saucer.riskmanagement.riskManagementProcess"
+    },
+    "RiskManagementProcessService.ProcessInputs": {
+      "kind": "type",
+      "elements": {
+        "title": {
+          "type": "cds.String",
+          "notNull": true
+        },
+        "desciption": {
+          "type": "cds.String"
+        },
+        "probability": {
+          "type": "cds.DecimalFloat"
+        },
+        "severity": {
+          "type": "cds.String"
+        },
+        "impact": {
+          "type": "cds.DecimalFloat"
+        },
+        "category": {
+          "type": "cds.String"
+        },
+        "dueDate": {
+          "type": "cds.Date"
+        },
+        "owner": {
+          "type": "cds.String"
+        }
+      }
+    },
+    "RiskManagementProcessService.ProcessAttributes": {
+      "kind": "type",
+      "elements": {}
+    },
+    "RiskManagementProcessService.ProcessOutputs": {
+      "kind": "type",
+      "elements": {
+        "riskAccepted": {
+          "type": "cds.Boolean"
+        }
+      }
+    },
+    "RiskManagementProcessService.ProcessInstance": {
+      "kind": "type",
+      "elements": {
+        "definitionId": {
+          "type": "cds.String"
+        },
+        "definitionVersion": {
+          "type": "cds.String"
+        },
+        "id": {
+          "type": "cds.String"
+        },
+        "startedAt": {
+          "type": "cds.String"
+        },
+        "startedBy": {
+          "type": "cds.String"
+        }
+      }
+    },
+    "RiskManagementProcessService.start": {
+      "kind": "action",
+      "params": {
+        "inputs": {
+          "type": "RiskManagementProcessService.ProcessInputs",
+          "notNull": true
+        }
+      },
+      "returns": {
+        "type": "RiskManagementProcessService.ProcessInstance"
+      }
+    },
+    "RiskManagementProcessService.getAttributes": {
+      "kind": "function",
+      "params": {
+        "processInstanceId": {
+          "type": "cds.String",
+          "notNull": true
+        }
+      },
+      "returns": {
+        "type": "RiskManagementProcessService.ProcessAttributes"
+      }
+    },
+    "RiskManagementProcessService.getOutputs": {
+      "kind": "function",
+      "params": {
+        "processInstanceId": {
+          "type": "cds.String",
+          "notNull": true
+        }
+      },
+      "returns": {
+        "type": "RiskManagementProcessService.ProcessOutputs"
+      }
+    }
+  },
+  "meta": {
+    "creator": "CDS Compiler v6.6.2",
+    "flavor": "inferred"
+  },
+  "$version": "2.0"
+}

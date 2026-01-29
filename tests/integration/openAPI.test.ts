@@ -1,10 +1,10 @@
 const cds = require('@sap/cds');
-const { getCdsProcessService } = require('../utils/cdk-utils');
-import { WorkflowInstancesApi } from '../../clients/workflow';
+const {getAuth } = require('../../utils/cdk-utils');
 
 
-test('should create query request', () => {
-  const request = WorkflowInstancesApi.queryInstances({
+test('should create query request', async () => {
+    const WorkflowInstancesApi = await cds.connect.to('Workflow');
+    const request = WorkflowInstancesApi.queryInstances({
     status: 'RUNNING'
   });
 
@@ -13,10 +13,10 @@ test('should create query request', () => {
 
 test('should execute query', async () => {
     const BASE_PATH = 'public/workflow/rest'
-   
-    // connect to process-automation-service with 'hybrid' defined int cdsrc-private.json
+    const WorkflowInstancesApi = cds.connect.to('Workflow');
     const processAutomationService = await cds.connect.to('process-automation-service');
-    const dest = await getCdsProcessService(processAutomationService);
+    const dest = await getAuth(processAutomationService);
+    
 
     const result = await WorkflowInstancesApi
         .queryInstances({ status: 'RUNNING' })

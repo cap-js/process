@@ -1,8 +1,10 @@
 const cds = require('@sap/cds');
-const { HttpDestination, serviceToken } = require("@sap-cloud-sdk/connectivity");
-exports.getCdsProcessService = async function(service : typeof cds.RemoteService, request: typeof cds.Request) {
+const { HttpDestination, serviceToken, retrieveJwt } = require("@sap-cloud-sdk/connectivity");
+exports.getAuth = async function(service : typeof cds.RemoteService, request: typeof cds.Request) {
 
-    const authToken = await serviceToken(
+    let authToken = request?.http?.req ? retrieveJwt(request?.http?.req) : null;
+
+    authToken = await serviceToken(
         { 
             name: 'process-automation-service',
             label: 'process-automation-service', 
