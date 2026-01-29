@@ -1,31 +1,49 @@
 const cds = require('@sap/cds');
-const { getCdsProcessService } = require('../utils/cdk-utils');
-const { WorkflowInstancesApi } = require('../clients/workflow/workflow-instances-api');
+const { getAuth } = require('../utils/cdk-utils');
 const LOG = cds.log("process");
 
 const BASE_PATH = '/public/workflow/rest'
 
 class ProcessService extends cds.ApplicationService { async init() {
-        console.log('Initializing Process Service...')
-
-        const processAutomationService = await cds.connect.to('process-automation-service');
+        console.log('Initializing Process Service...');
 
         this.on('start', async (request: any) => {
-
             const { definitionId, context } = request.data;
-    
-            const processAutomationService = await cds.connect.to('process-automation-service');
-            const dest = await getCdsProcessService(processAutomationService);
             
-            const workflowInstance = await WorkflowInstancesApi.startInstance({
-                    definitionId: definitionId!,
-                    context: context ? context as Record<string, any> : undefined
-                }).setBasePath(BASE_PATH).execute(dest);
+            const workflowService = await cds.connect.to('Workflow');
+            const processAutomationService = await cds.connect.to('process-automation-service');
+            const authToken = await getAuth(processAutomationService);
+            
+            const workflowInstance = await workflowService.send({
+                method: 'POST',
+                path: '/v1/workflow-instances',
+                headers: {
+                    'Authorization': authToken
+                },
+                data: {
+                    definitionId: definitionId,
+                    context: context
+                }
+            });
 
             const message = `Process with ID ${workflowInstance.id} was successfully started.`;
             
 
-            LOG.info(message);
+            LOG.debug(message);
+            /*
+            Just to test
+                context =  {
+                    "startingShipment": {
+                        "identifier": "shipment_12345",
+                        "items": [ {
+                        "identifier": "item_1",
+                        "title": "Laptop",
+                        "quantity": 1,
+                        "price": 1200.00
+                        }]
+                    }
+                }
+            */
 
 
             return {

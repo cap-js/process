@@ -1,9 +1,11 @@
 const cds = require('@sap/cds');
-const { HttpDestination, serviceToken, retrieveJwt } = require("@sap-cloud-sdk/connectivity");
-exports.getAuth = async function(service : typeof cds.RemoteService, request: typeof cds.Request) {
+const { serviceToken, retrieveJwt } = require("@sap-cloud-sdk/connectivity");
 
+exports.getAuth = async function(service : typeof cds.RemoteService, request?: typeof cds.Request) {
     let authToken = request?.http?.req ? retrieveJwt(request?.http?.req) : null;
 
+
+    // TODO xsuaa deprecation also support ias/ams Tokens 
     authToken = await serviceToken(
         { 
             name: 'process-automation-service',
@@ -17,19 +19,5 @@ exports.getAuth = async function(service : typeof cds.RemoteService, request: ty
         }
     );
 
-    const dest: typeof HttpDestination = {
-        url: service.destination.endpoints.api,
-        authentication: 'OAuth2ClientCredentials',
-        authTokens: [{
-            type: 'Bearer',
-            value: authToken,
-            error: null,
-            http_header: {
-                'key': 'Authorization',
-                'value': `Bearer ${authToken}`
-            }
-        }]
-    };
-
-    return dest;
+    return `Bearer ${authToken}`;
 }

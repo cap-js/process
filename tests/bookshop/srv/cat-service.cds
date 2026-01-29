@@ -5,7 +5,7 @@ service CatalogService {
   /** For displaying lists of Books */
   @readonly
   @build.process.start: {
-        id: 'eu10-canary.bpm-flying-saucer.riskmanagement.riskManagementProcess',
+        id: 'eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
         on: 'READ'
   }
   entity ListOfBooks as
@@ -16,7 +16,7 @@ service CatalogService {
       case genre.name
         when 'Science Fiction' then true
         else false
-      end            as startCondition: Boolean @build.process.start.if
+      end            as startCondition: Boolean
     }
     excluding {
       descr

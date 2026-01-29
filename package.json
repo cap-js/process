@@ -57,8 +57,13 @@
         }
       },
       "Workflow": {
-        "kind": "service",
-        "model": "srv/external/SPA_Workflow_Runtime"
+        "kind": "rest",
+        "model": "@cap-js/process/srv/external/SPA_Workflow_Runtime",
+        "credentials": {
+          "[hybrid]": {
+            "binding": "process-automation-service"
+          }
+        }
       }
     }
   },

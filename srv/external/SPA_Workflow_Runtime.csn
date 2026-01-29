@@ -2,7 +2,6 @@
  "definitions": {
   "Workflow": {
    "kind": "service",
-   "@protocol": "none",
    "@Capabilities.BatchSupported": false,
    "@Capabilities.KeyAsSegmentSupported": true,
    "@Core.Description": "Workflow",
