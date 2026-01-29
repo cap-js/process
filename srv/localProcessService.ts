@@ -10,6 +10,7 @@ class ProcessService extends cds.ApplicationService { async init() {
             
             LOG.info("===============================");
             LOG.info(`Process start for ${req.data.definitionId} initiated`);
+            LOG.info('Context: ', JSON.stringify(req.data.context, null, 2));
             LOG.info("===============================");
 
             const workflowInstance = { id: crypto.randomUUID() }; // Placeholder

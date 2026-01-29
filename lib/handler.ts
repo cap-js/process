@@ -12,6 +12,20 @@ export type ValidationResult = {
 export type EntityAnnotationCallback = (key: string, value: any) => void;
 export type ElementAnnotationCallback = (key: string, value: any, context: { elementName: string }) => void;
 
+export function coerceToString(value: any, toUpperCase?: boolean) : any | undefined {
+    if (typeof value === 'string') {
+        return toUpperCase ? value.toUpperCase() : value;
+    } else if (typeof value === 'object') {
+        if ('=' in value && value['='] !== undefined) {
+            return toUpperCase ? value['='].toUpperCase() : value['='];
+        } else if (typeof value.toString === 'function') {
+            return toUpperCase ? value.toString().toUpperCase() : value.toString();
+        }
+    }
+    return undefined;
+}
+
+
 export function walkEntityAnnotations(
   entity: typeof cds.entity,
   onEntityAnnotation?: EntityAnnotationCallback,
