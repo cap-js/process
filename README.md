@@ -1,3 +1,32 @@
+# Current annotation implementation:
+## For starting a process:
+* `@build.process.start` -- Start a process (or classic workflow), either after entity creation, update, or before deletion, including all entity elements unless at least one `@build.process.input` is given
+  * `@build.process.start.id` -- definition ID for deployed process
+  * `@build.process.start.on` -- either CREATE/UPDATE/DELETE 
+* `@build.process.input` -- includes this element in the process start assuming name equality
+* `@(build.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
+* `@build.process.start.if` -- Only start a process if this element has a truthy value
+
+### Missing:
+- return any result in srv handler
+- type validation for inputs
+- validation if given definition ID exists as import
+- give entityKey as businessKey to process as input
+- deep read for input structures
+
+## For cancelling a process
+* `@build.process.cancel` -- Cancel any processes bound to the entity (using entityKey as businessKey in SBPA) after update or deletion
+  * `@build.process.cancel.on` -- either UPDATE / DELETE
+  * `@build.process.cancel.cascade` -- either boolean or string 'true' | 'false'
+* `@build.process.cancel.if` -- Only cancel if this element has a truthy value
+
+### Missing:
+- return any result in srv handler
+- build time validation
+
+## Missing annotations:
+- `@build.process.resume/suspend`
+
 # cap-js Repository Template
 
 Default templates for @cap-js open source [CAP Calesi](https://cap.cloud.sap/docs/about/best-practices#the-calesi-pattern) plugins. It includes a sample plugin and the basic setup needed to start with development. All repositories on github.com/cap-js will be created based on this template.

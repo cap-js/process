@@ -53,6 +53,15 @@ class ProcessService extends cds.ApplicationService { async init() {
             }; 
         });
 
+        this.on('cancel', async (request: any) => {
+            return {
+            id: "1234",
+            success: false,
+            message: "Not implemented yet"
+        }; 
+          
+        });
+
         return super.init();
 }}
 

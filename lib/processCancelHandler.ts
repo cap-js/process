@@ -1,80 +1,63 @@
 import { coerceToString, getKeyFieldsForEntity, ValidationResult } from "./handler";
 
 const cds = require('@sap/cds');
-        
-const { SELECT } = cds.ql;        
+const { SELECT } = cds.ql; 
 
-
-enum ProcessStartOn {
-    Create = 'CREATE',
+enum ProcessCancelOn {
     Update = 'UPDATE',
-    Delete = 'DELETE'
+    Delete = 'DELETE',
 }
 
-type ProcessStartInput = {
-    sourceElement: string,
-    targetVariable?: string
-}
-
-type ProcessStartSpec = {
-    id?: string,
-    on?: ProcessStartOn,
-    inputs: ProcessStartInput[],
+type ProcessCancelSpec = {
+    on?: ProcessCancelOn,
+    cascade?: string,
     predicates: string[]
 }
 
-export async function registerProcessStartHandler(spec: ProcessStartSpec, entity: typeof cds.entity, service: typeof cds.ApplicationService) {
+export async function registerProcessCancelHandler(spec: ProcessCancelSpec, entity: typeof cds.entity, service: typeof cds.ApplicationService) {
+    // to register handler, we need business Key = entity keys
 
-    
     const processService = await cds.connect.to('ProcessService');
+    
+    const processCancelHandler = async(row: any, cascade: boolean, request: typeof cds.Request) => { 
 
-    // TODO: Deep structures
-    // TODO: Error handling
-
-
-    const processStartHandler = async (row: any, request: typeof cds.Request) => {
-        
-        /// check start condition
-        let start = true;
+        let cancel = true;
         for (let predicate of spec.predicates) {
-            start = start && row?.[predicate];
+            cancel = cancel && row?.[predicate];
         };
 
-        if (!start) {
-            console.log(`Not starting process for ${entity.name} with ID ${row?.ID} as start condition(s) are not met`);
+        const keyFields = getKeyFieldsForEntity(entity);
+        let businessKey = '';
+        for(const keyField of keyFields) {
+            businessKey += row[keyField];
+         }
+
+        if (!cancel) {
+            console.log(`Not cancelling process for ${entity.name} with business Key ${businessKey} as cancel condition(s) are not met`);
             return;
         }
 
-        if (!spec.inputs.length) {
-            await processService.start(spec.id!, row);
-        } else {
-            const payload: { [key: string]: unknown } = {}
-            for (let input of spec.inputs) {
-                payload[input.targetVariable ?? input.sourceElement] = row?.[input.sourceElement];
-            }
-            await processService.start(spec.id!, payload);
-        }
-    };
+        await processService.cancel(businessKey, cascade);
+    }
 
-    if(spec.on === ProcessStartOn.Create || spec.on === ProcessStartOn.Update) {
+    if(spec.on === ProcessCancelOn.Update) {
         service.after(spec.on!, entity, async (results: any, request: any) => { 
             const row = await fetchMissingColumns(spec, results, request);
-            processStartHandler(row, request); 
+            processCancelHandler(row, spec.cascade! === 'true', request); 
         });
-    } else if(spec.on === ProcessStartOn.Delete) { 
+    } else if(spec.on === ProcessCancelOn.Delete) { 
         service.before(spec.on!, entity, async (request: any) => { 
             const row = await fetchMissingColumns(spec, request.data, request);
-            processStartHandler(row, request);
+            processCancelHandler(row, spec.cascade! === 'true', request);
         });
 
     } 
-
-    
+        
+        
 }
 
-export function validateProcessStartSpecification(spec: ProcessStartSpec, entity: typeof cds.entity) : ValidationResult { 
-    if (!spec.id) return { isValid: false }
-
+export function validateProcessCancelSpecification(spec: ProcessCancelSpec, entity: typeof cds.entity) : ValidationResult { 
+    
     const result: ValidationResult = {
         isValid: true,
         errors: []
@@ -88,7 +71,24 @@ export function validateProcessStartSpecification(spec: ProcessStartSpec, entity
         });
     }
 
-    if (!Object.values(ProcessStartOn).includes(spec.on as ProcessStartOn)) {
+    if(!spec.cascade) {
+        result.isValid = false;
+        result.errors!.push({
+            message: `${entity.name} has no cascade specifier`,
+            code: '200: MISSING_CASCADE_SPECIFIER'
+        });
+    }
+
+    if(spec.cascade && !(spec.cascade === 'true' || spec.cascade === 'false')) {
+        result.isValid = false;
+        result.errors!.push({
+            message: `${spec.cascade} is not a valid 'cascade' specifier and must be either 'true' or 'false'`,
+            code: '201: INVALID_CASCADE_SPECIFIER'
+        });
+     }
+
+
+    if (!Object.values(ProcessCancelOn).includes(spec.on as ProcessCancelOn)) {
         result.isValid = false;
         result.errors!.push({
             message: `${spec.on} is not a valid 'on' specifier and must be either 'CREATE', 'UPDATE', or 'DELETE'`,
@@ -101,29 +101,29 @@ export function validateProcessStartSpecification(spec: ProcessStartSpec, entity
         if (type != 'cds.Boolean') {
             result.isValid = false;
             result.errors!.push({
-                message: `${predicate} is not a valid start predicate and must be of type 'cds.Boolean'`,
+                message: `${predicate} is not a valid cancel predicate and must be of type 'cds.Boolean'`,
                 code: '102: INVALID_PREDICATE'
             });
         }
     }
 
-    // TODO: validate inputs against types
 
     return result;
 }
 
-export function initProcessStartSpecifications(entity: typeof cds.entity): ProcessStartSpec {
+
+export function initProcessCancelSpecifications(entity: typeof cds.entity): ProcessCancelSpec {
     // read annotations and detect start annotation
-    const spec: ProcessStartSpec = { inputs: [], predicates: [] };
+    const spec: ProcessCancelSpec = { predicates: [] };
 
     const entityAnnotations = Object.entries(entity).filter(([key]) => key.startsWith('@build'));
         for(const [key, value] of entityAnnotations) {
             switch (key) {
-                case '@build.process.start.id':
-                    spec.id = coerceToString(value);
-                    break;
-                case '@build.process.start.on':
+                case '@build.process.cancel.on':
                     spec.on = coerceToString(value, true);
+                    break;
+                case '@build.process.cancel.cascade':
+                    spec.cascade = coerceToString(value);
                     break;
             }
         }
@@ -136,13 +136,7 @@ export function initProcessStartSpecifications(entity: typeof cds.entity): Proce
             for (const [key, value] of elementAnnotations) {
                 
                 switch (key) {
-                    case '@build.process.input':
-                        const input: ProcessStartInput = { sourceElement: elementName };
-                        input.targetVariable = coerceToString(value);
-                        spec.inputs.push(input);
-                        break;
-
-                    case '@build.process.start.if':
+                    case '@build.process.cancel.if':
                         spec.predicates.push(elementName);
                         break;
                 }
@@ -151,21 +145,15 @@ export function initProcessStartSpecifications(entity: typeof cds.entity): Proce
         return spec;
 }
 
-// function to fetch missing columns required for starting process
-async function fetchMissingColumns(spec: ProcessStartSpec, results: any, request: any) {
+async function fetchMissingColumns(spec: ProcessCancelSpec, results: any, request: any) {
         
         const tx = cds.transaction(request);
-
-        const missingInputs = spec.inputs.filter(input => 
-            !(input.sourceElement in results) || results[input.sourceElement] === undefined
-        );
         
         const missingPredicates = spec.predicates.filter(predicate => 
             !(predicate in results) || results[predicate] === undefined
         );
         
         const missingColumns = [
-            ...missingInputs.map(input => input.sourceElement),
             ...missingPredicates
         ];
 
@@ -176,6 +164,7 @@ async function fetchMissingColumns(spec: ProcessStartSpec, results: any, request
             obj[keyField] = results[keyField];
             return obj;
         }, {});
+
         
         // fetch missing columns
         let row = results;

@@ -12,6 +12,15 @@ export type ValidationResult = {
 export type EntityAnnotationCallback = (key: string, value: any) => void;
 export type ElementAnnotationCallback = (key: string, value: any, context: { elementName: string }) => void;
 
+export function getKeyFieldsForEntity(entity: typeof cds.entity): string[] {
+    const keys = entity.keys;
+    const result = [];
+    for(const key in keys) {
+        result.push(key);
+    }
+    return result;
+ }
+
 export function coerceToString(value: any, toUpperCase?: boolean) : any | undefined {
     if (typeof value === 'string') {
         return toUpperCase ? value.toUpperCase() : value;

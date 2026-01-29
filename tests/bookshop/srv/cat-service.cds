@@ -59,9 +59,13 @@ service CatalogService {
   action submitOrder(book: Books:ID, quantity: Integer) returns {
     stock : Integer
   };
-    @build.process.start: {
+  @build.process.start: {
         id: 'eu10-canary.bpm-flying-saucer.riskmanagement.customProcess',
-        on: 'UPDATE'
+        on: 'CREATE'
+  }
+  @build.process.cancel: {
+    on: 'DELETE',
+    cascade: 'true'
   }
   entity Shipment as projection on Shipments {
     ID,
@@ -71,7 +75,7 @@ service CatalogService {
     case
       when weight > 100 then true
       else false
-    end as isTooHeavy: Boolean @build.process.start.if
+    end as isTooHeavy: Boolean @build.process.cancel.if
   };
   entity Shipments {
     key ID: String;

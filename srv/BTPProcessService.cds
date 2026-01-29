@@ -9,5 +9,11 @@ service ProcessService {
         success: Boolean;
         message: String;
     };
+    
+    // Cancel a running process
+    action cancel(@mandatory businessKey: String(256), cascade: Boolean)  returns {
+        success: Boolean;
+        message: String;
+    };
 
 }

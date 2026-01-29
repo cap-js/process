@@ -1,0 +1,28 @@
+
+@server = http://localhost:4004
+
+# @name createShipment
+POST {{server}}/odata/v4/catalog/Shipment
+Content-Type: application/json
+
+{
+    "ID": "1234",
+    "address": "Germany",
+    "date": "2026",
+    "weight": 1
+}
+
+###
+
+# @name updateShipment
+PATCH {{server}}/odata/v4/catalog/Shipment('1234')
+Content-Type: application/json
+
+{
+    "weight": 1000
+}
+
+###
+
+# @name deleteShipment
+DELETE {{server}}/odata/v4/catalog/Shipment('1234')
