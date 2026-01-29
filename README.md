@@ -6,12 +6,12 @@
 * `@build.process.input` -- includes this element in the process start assuming name equality
 * `@(build.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
 * `@build.process.start.if` -- Only start a process if this element has a truthy value
+* Important: the process that has been started needs to have an input attribute 'businessKey' of type string that is then assigned to the businessKey in process configuration so that the process can be later CANCELLED/SUSPENDED/RESUMED
 
 ### Missing:
 - return any result in srv handler
 - type validation for inputs
 - validation if given definition ID exists as import
-- give entityKey as businessKey to process as input
 - deep read for input structures
 
 ## For cancelling a process

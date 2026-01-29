@@ -45,14 +45,20 @@ export async function registerProcessStartHandler(spec: ProcessStartSpec, entity
             return;
         }
 
+        const keyFields = getKeyFieldsForEntity(entity);
+        let businessKey = '';
+        for(const keyField of keyFields) {
+            businessKey += row[keyField];
+         }
+
         if (!spec.inputs.length) {
-            await processService.start(spec.id!, row);
+            await processService.start(spec.id!, {...row, 'businessKey': businessKey});
         } else {
             const payload: { [key: string]: unknown } = {}
             for (let input of spec.inputs) {
                 payload[input.targetVariable ?? input.sourceElement] = row?.[input.sourceElement];
             }
-            await processService.start(spec.id!, payload);
+            await processService.start(spec.id!, {...payload, 'businessKey': businessKey});
         }
     };
 
