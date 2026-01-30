@@ -1,16 +1,41 @@
 import cds from '@sap/cds';
 import { initProcessCancelSpecifications, registerProcessCancelHandler, validateProcessCancelSpecification } from './processCancelHandler';
 import { initProcessStartSpecifications, validateProcessStartSpecification, registerProcessStartHandler } from './processStartHandler';
+import { initProcessSuspendSpecifications, registerProcessSuspendHandler, validateProcessSuspendSpecification } from './processSuspendHandler';
+import { getElementAnnotation, getElementAnnotations, getEntityAnnotation } from './handler';
 
 export function handleEntityOperations(service: cds.ApplicationService) {
     console.log(`Handling entity operations for service: ${service.name}`);
     for (const entity of service.entities) {
-        // read annotations and detect start annotation
+
         handleProcessStartHandler(entity, service);
 
         handleProcessCancelHandler(entity, service);
+
+        handleProcessSuspendHandler(entity, service);
     }
 }
+
+function handleProcessSuspendHandler(entity: typeof cds.entity, service: typeof cds.ApplicationService) { 
+
+    const processSuspendSpec = initProcessSuspendSpecifications(entity);
+    if(processSuspendSpec?.on) {
+
+        const validationResult = validateProcessSuspendSpecification(processSuspendSpec, entity);
+
+        if(validationResult.isValid) {
+
+            console.log(`  - Registering process suspend handler for entity: ${entity.name}`);
+            registerProcessSuspendHandler(processSuspendSpec,  entity, service);
+
+        } else {
+
+            for(const error of validationResult.errors || []) {
+                console.log(`  - Error [${error.code}]: ${error.message}`);
+            }
+        }
+     }
+};
 
 function handleProcessCancelHandler(entity: typeof cds.entity, service: typeof cds.ApplicationService) {
 

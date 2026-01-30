@@ -1,22 +1,22 @@
-import { coerceToString, getKeyFieldsForEntity, ValidationResult } from "./handler";
+import { coerceToString, fetchMissingColumns, getElementAnnotations, getEntityAnnotation, getEntityAnnotations, getKeyFieldsForEntity, ValidationResult } from "./handler";
 
 import cds from '@sap/cds';
-        
+
 const { SELECT } = cds.ql;        
 
 
-enum ProcessStartOn {
+ enum ProcessStartOn {
     Create = 'CREATE',
     Update = 'UPDATE',
     Delete = 'DELETE'
 }
 
-type ProcessStartInput = {
+ type ProcessStartInput = {
     sourceElement: string,
     targetVariable?: string
 }
 
-type ProcessStartSpec = {
+ type ProcessStartSpec = {
     id?: string,
     on?: ProcessStartOn,
     inputs: ProcessStartInput[],
@@ -64,12 +64,12 @@ export async function registerProcessStartHandler(spec: ProcessStartSpec, entity
 
     if(spec.on === ProcessStartOn.Create || spec.on === ProcessStartOn.Update) {
         service.after(spec.on!, entity, async (results: any, request: any) => { 
-            const row = await fetchMissingColumns(spec, results, request);
+            const row = await fetchMissingColumns([...spec.inputs.map(input => input.sourceElement), ...spec.predicates], results, request);
             processStartHandler(row, request); 
         });
     } else if(spec.on === ProcessStartOn.Delete) { 
         service.before(spec.on!, entity, async (request: any) => { 
-            const row = await fetchMissingColumns(spec, request.data, request);
+            const row = await fetchMissingColumns([...spec.inputs.map(input => input.sourceElement), ...spec.predicates], request.data, request);
             processStartHandler(row, request);
         });
 
@@ -118,80 +118,40 @@ export function validateProcessStartSpecification(spec: ProcessStartSpec, entity
     return result;
 }
 
-export function initProcessStartSpecifications(entity: typeof cds.entity): ProcessStartSpec {
+export function initProcessStartSpecifications(entity: cds.entity): ProcessStartSpec {
     // read annotations and detect start annotation
     const spec: ProcessStartSpec = { inputs: [], predicates: [] };
 
-    const entityAnnotations = Object.entries(entity).filter(([key]) => key.startsWith('@build'));
-        for(const [key, value] of entityAnnotations) {
-            switch (key) {
-                case '@build.process.start.id':
-                    spec.id = coerceToString(value);
-                    break;
-                case '@build.process.start.on':
-                    spec.on = coerceToString(value, true);
-                    break;
-            }
+    const entityAnnotations = getEntityAnnotations(entity);
+    for(const [key, value] of entityAnnotations) {
+        switch (key) {
+            case '@build.process.start.id':
+                spec.id = coerceToString(value);
+                break;
+            case '@build.process.start.on':
+                spec.on = coerceToString(value, true) as ProcessStartOn;
+                break;
         }
-        if (!entity.elements) {
-            return spec;
-        }
-
-        for (const [elementName, element] of Object.entries(entity.elements)) {
-            const elementAnnotations = Object.entries(element as any).filter(([key]) => key.startsWith('@build'));
-            for (const [key, value] of elementAnnotations) {
-                
-                switch (key) {
-                    case '@build.process.input':
-                        const input: ProcessStartInput = { sourceElement: elementName };
-                        input.targetVariable = coerceToString(value);
-                        spec.inputs.push(input);
-                        break;
-
-                    case '@build.process.start.if':
-                        spec.predicates.push(elementName);
-                        break;
-                }
-            } 
-        }
+    }
+    if (!entity.elements) {
         return spec;
-}
+    }
 
-// function to fetch missing columns required for starting process
-async function fetchMissingColumns(spec: ProcessStartSpec, results: any, request: any) {
+    const elementAnnotations = getElementAnnotations(entity);
+    for (const [elementName,key, value] of elementAnnotations) {
         
-        const tx = cds.transaction(request);
+        switch (key) {
+            case '@build.process.input':
+                const input: ProcessStartInput = { sourceElement: elementName };
+                input.targetVariable = coerceToString(value);
+                spec.inputs.push(input);
+                break;
 
-        const missingInputs = spec.inputs.filter(input => 
-            !(input.sourceElement in results) || results[input.sourceElement] === undefined
-        );
-        
-        const missingPredicates = spec.predicates.filter(predicate => 
-            !(predicate in results) || results[predicate] === undefined
-        );
-        
-        const missingColumns = [
-            ...missingInputs.map(input => input.sourceElement),
-            ...missingPredicates
-        ];
-
-        const keyFields = getKeyFieldsForEntity(request.target);
-
-        // Create object with only key fields and their values
-        const keyObject = keyFields.reduce((obj: any, keyField: string) => {
-            obj[keyField] = results[keyField];
-            return obj;
-        }, {});
-        
-        // fetch missing columns
-        let row = results;
-        if (missingColumns.length > 0) {
-            const fetchedData = await tx.run(
-                SELECT.one.from(request.target.name)
-                    .columns(...missingColumns)
-                    .where(keyObject)
-            );
-            row = { ...results, ...fetchedData };
+            case '@build.process.start.if':
+                spec.predicates.push(elementName);
+                break;
         }
-        return row;
+    } 
+    console.log(spec);
+    return spec;
 }

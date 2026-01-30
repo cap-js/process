@@ -57,4 +57,11 @@ declare module '@sap/cds' {
     [key: string]: any;
   }
 
+  interface Target extends cds.Definition_2 {
+    '@build.process.start.id'?: string;
+    '@build.process.start.on'?: string;
+    '@build.process.cancel.on'?: string;
+    '@build.process.cancel.cascade'?: boolean;
+  }
+
 }

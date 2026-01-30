@@ -1,10 +1,32 @@
-import { handleEntityOperations } from './lib/entityServiceHandler';
-import cds from '@sap/cds';
+import cds, { Target } from "@sap/cds"
+import {
+  coerceToString,
+} from "./lib/handler"
+import { handleProcessStart } from "./lib/newProcessStartHandler"
 
-console.log("1st - Plugin loaded")
+cds.on("serving", async (service: cds.Service) => {
+  if (service instanceof cds.ApplicationService == false) return
 
+  service.after("*", async (each: object[], req: cds.Request) => {
+    // validate annotations
+    const target = req.target as Target // all entity annotations
+    if (!target) return
 
-cds.on("serving", async (service : cds.Service) => {
-    if (service instanceof cds.ApplicationService == false) return;
-    handleEntityOperations(service);
-});
+    if (target["@build.process.start.id"] && target["@build.process.start.on"]) {
+      // process start annotation found
+
+      if (target["@build.process.start.on"] === req.event) {
+        // process start should be initiated
+        await handleProcessStart(
+          target,
+          coerceToString(target["@build.process.start.id"]!)!,
+          coerceToString(
+            target["@build.process.start.on"],
+          )!,
+          each,
+          req,
+        )
+      }
+    }
+  })
+})

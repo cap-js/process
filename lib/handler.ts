@@ -1,5 +1,5 @@
 import cds from '@sap/cds';
-
+const { SELECT } = cds.ql; 
 
 export type ValidationResult = {
     isValid: boolean;
@@ -9,24 +9,33 @@ export type ValidationResult = {
     }[];
 };
 
-export type EntityAnnotationCallback = (key: string, value: any) => void;
-export type ElementAnnotationCallback = (key: string, value: any, context: { elementName: string }) => void;
-
-export function getKeyFieldsForEntity(entity: typeof cds.entity): string[] {
+export function getKeyFieldsForEntity(entity: cds.entity): string[] {
     const keys = entity.keys;
-    const result = [];
+    const result: string[] = [];
     for(const key in keys) {
         result.push(key);
     }
     return result;
  }
 
-export function coerceToString(value: any, toUpperCase?: boolean) : any | undefined {
+export function concatenateBusinessKey(target: cds.entity, row: any): string {
+    let businessKey = ""
+        for (const keyField of getKeyFieldsForEntity(target as cds.entity)) {
+            businessKey += row[keyField]
+        }
+    return businessKey
+}
+
+export function coerceToString(value: string | object, toUpperCase?: boolean) : string | undefined {
     if (typeof value === 'string') {
+        if(value === 'true' || value === 'false') {
+            return undefined;
+         }
         return toUpperCase ? value.toUpperCase() : value;
     } else if (typeof value === 'object') {
-        if ('=' in value && value['='] !== undefined) {
-            return toUpperCase ? value['='].toUpperCase() : value['='];
+        if ('=' in value && value['='] !== undefined && value['='] !== null) {
+            const equalValue = String(value['=']);
+            return toUpperCase ? equalValue.toUpperCase() : equalValue;
         } else if (typeof value.toString === 'function') {
             return toUpperCase ? value.toString().toUpperCase() : value.toString();
         }
@@ -35,16 +44,57 @@ export function coerceToString(value: any, toUpperCase?: boolean) : any | undefi
 }
 
 
-export function entityHasAnnotation(
+export function getEntityAnnotations(
   entity: cds.entity,
-): any {
+): [string, string][] {
   const entityAnnotations = Object.entries(entity).filter(([key]) => key.startsWith('@build'));
   return entityAnnotations;
 }
 
-export function elementHasAnnotation(
+export function getElementAnnotations(
   entity: cds.entity,
-) : any {
-    const elementAnnotations = Object.entries(entity.elements).filter(([key]) => key.startsWith('@build')); 
+): [string, string, string][] {
+    const elementAnnotations: [string, string, string][] = [];
+    Object.entries(entity.elements)
+        .forEach(([elementName, element]) => {
+            Object.entries(element)
+                .filter(([key]) => key.startsWith('@build'))
+                .forEach(([key, value]) => {
+                    elementAnnotations.push([elementName, key, String(value)]);
+                });
+      });
     return elementAnnotations;
+}
+
+export async function fetchMissingColumns(
+    requiredColumns: string[], 
+    results: cds.ResultSet & { [key: string]: any }, 
+    request: cds.Request
+): Promise<any> {
+    const tx = cds.transaction(request);
+    
+    const missingColumns = requiredColumns.filter(column => 
+        !(column in results) || results[column] === undefined
+    );
+    
+
+    if (missingColumns.length === 0) {
+        return results;
+    }
+    
+    const keyFields = getKeyFieldsForEntity((request.target) as cds.entity);
+    
+    // Create object with only key fields and their values
+    const keyObject = keyFields.reduce((obj: any, keyField: string) => {
+        obj[keyField] = results[keyField];
+        return obj;
+    }, {});
+    
+    const fetchedData = await tx.run(
+        SELECT.one.from(request.target.name)
+            .columns(...missingColumns)
+            .where(keyObject)
+    );
+    
+    return { ...results, ...fetchedData };
 }

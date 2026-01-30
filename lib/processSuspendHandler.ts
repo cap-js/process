@@ -3,23 +3,22 @@ import { coerceToString, fetchMissingColumns, getKeyFieldsForEntity, ValidationR
 const cds = require('@sap/cds');
 const { SELECT } = cds.ql; 
 
-enum ProcessCancelOn {
+enum ProcessSuspendOn {
     Update = 'UPDATE',
     Delete = 'DELETE',
 }
 
-type ProcessCancelSpec = {
-    on?: ProcessCancelOn,
+type ProcessSuspendSpec = {
+    on?: ProcessSuspendOn,
     cascade?: string,
     predicates: string[]
 }
-
-export async function registerProcessCancelHandler(spec: ProcessCancelSpec, entity: typeof cds.entity, service: typeof cds.ApplicationService) {
+export async function registerProcessSuspendHandler(spec: ProcessSuspendSpec, entity: typeof cds.entity, service: typeof cds.ApplicationService) {
     // to register handler, we need business Key = entity keys
 
     const processService = await cds.connect.to('ProcessService');
     
-    const processCancelHandler = async(row: any, cascade: boolean, request: typeof cds.Request) => { 
+    const processSuspendHandler = async(row: any, cascade: boolean, request: typeof cds.Request) => { 
 
         let cancel = true;
         for (let predicate of spec.predicates) {
@@ -33,30 +32,29 @@ export async function registerProcessCancelHandler(spec: ProcessCancelSpec, enti
          }
 
         if (!cancel) {
-            console.log(`Not cancelling process for ${entity.name} with business Key ${businessKey} as cancel condition(s) are not met`);
+            console.log(`Not suspending process for ${entity.name} with business Key ${businessKey} as suspend condition(s) are not met`);
             return;
         }
 
-        await processService.cancel(businessKey, cascade);
+        await processService.suspend(businessKey, cascade);
     }
-
-    if(spec.on === ProcessCancelOn.Update) {
+    if(spec.on === ProcessSuspendOn.Update) {
         service.after(spec.on!, entity, async (results: any, request: any) => { 
             const row = await fetchMissingColumns(spec.predicates, results, request);
-            processCancelHandler(row, spec.cascade! === 'true', request); 
+            processSuspendHandler(row, spec.cascade! === 'true', request); 
         });
-    } else if(spec.on === ProcessCancelOn.Delete) { 
+    } else if(spec.on === ProcessSuspendOn.Delete) { 
         service.before(spec.on!, entity, async (request: any) => { 
             const row = await fetchMissingColumns(spec.predicates, request.data, request);
-            processCancelHandler(row, spec.cascade! === 'true', request);
+            processSuspendHandler(row, spec.cascade! === 'true', request);
         });
 
-    } 
-        
+    }     
         
 }
 
-export function validateProcessCancelSpecification(spec: ProcessCancelSpec, entity: typeof cds.entity) : ValidationResult { 
+
+export function validateProcessSuspendSpecification(spec: ProcessSuspendSpec, entity: typeof cds.entity) : ValidationResult { 
     
     const result: ValidationResult = {
         isValid: true,
@@ -88,7 +86,7 @@ export function validateProcessCancelSpecification(spec: ProcessCancelSpec, enti
      }
 
 
-    if (!Object.values(ProcessCancelOn).includes(spec.on as ProcessCancelOn)) {
+    if (!Object.values(ProcessSuspendOn).includes(spec.on as ProcessSuspendOn)) {
         result.isValid = false;
         result.errors!.push({
             message: `${spec.on} is not a valid 'on' specifier and must be either 'UPDATE' or 'DELETE'`,
@@ -101,7 +99,7 @@ export function validateProcessCancelSpecification(spec: ProcessCancelSpec, enti
         if (type != 'cds.Boolean') {
             result.isValid = false;
             result.errors!.push({
-                message: `${predicate} is not a valid cancel predicate and must be of type 'cds.Boolean'`,
+                message: `${predicate} is not a valid suspend predicate and must be of type 'cds.Boolean'`,
                 code: '102: INVALID_PREDICATE'
             });
         }
@@ -112,17 +110,17 @@ export function validateProcessCancelSpecification(spec: ProcessCancelSpec, enti
 }
 
 
-export function initProcessCancelSpecifications(entity: typeof cds.entity): ProcessCancelSpec {
+export function initProcessSuspendSpecifications(entity: typeof cds.entity): ProcessSuspendSpec {
     // read annotations and detect start annotation
-    const spec: ProcessCancelSpec = { predicates: [] };
+    const spec: ProcessSuspendSpec = { predicates: [] };
 
     const entityAnnotations = Object.entries(entity).filter(([key]) => key.startsWith('@build'));
         for(const [key, value] of entityAnnotations) {
             switch (key) {
-                case '@build.process.cancel.on':
+                case '@build.process.suspend.on':
                     spec.on = coerceToString(value, true);
                     break;
-                case '@build.process.cancel.cascade':
+                case '@build.process.suspend.cascade':
                     spec.cascade = coerceToString(value);
                     break;
             }
@@ -136,7 +134,7 @@ export function initProcessCancelSpecifications(entity: typeof cds.entity): Proc
             for (const [key, value] of elementAnnotations) {
                 
                 switch (key) {
-                    case '@build.process.cancel.if':
+                    case '@build.process.suspend.if':
                         spec.predicates.push(elementName);
                         break;
                 }

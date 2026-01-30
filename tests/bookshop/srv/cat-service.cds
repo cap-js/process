@@ -4,15 +4,11 @@ service CatalogService {
 
   /** For displaying lists of Books */
   @readonly
-  @build.process.start: {
-        id: 'eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
-        on: 'READ'
-  }
   entity ListOfBooks as
     projection on Books {
       *,
-      genre.name      as genre @build.process.input,
-      currency.symbol as currency @(build.process.input: 'otherField'),
+      genre.name      as genre,
+      currency.symbol as currency,
       case genre.name
         when 'Science Fiction' then true
         else false
@@ -24,9 +20,6 @@ service CatalogService {
 
   /** For display in details pages */
   @readonly
-  @build.process.start: {
-        id: 'eu10-canary.bpm-flying-saucer.riskmanagement.riskManagementProcess'
-  }
   entity Books       as
     projection on my.Books {
       *,
@@ -37,19 +30,15 @@ service CatalogService {
       modifiedBy
     };
 
-  @build.process.start: {
-        id: 'eu10-canary.bpm-flying-saucer.riskmanagement.riskManagementProcess',
-        on: 'DELETE'
-  }
   entity AnotherListOfBooks as
     projection on Books {
       *,
-      genre.name      as genre @build.process.input,
-      currency.symbol as currency @(build.process.input: 'otherField'),
+      genre.name      as genre,
+      currency.symbol as currency,
       case genre.name
         when 'Science Fiction' then true
         else false
-      end            as startCondition: Boolean @build.process.start.if
+      end            as startCondition: Boolean
     }
     excluding {
       descr
@@ -60,11 +49,15 @@ service CatalogService {
     stock : Integer
   };
   @build.process.start: {
-        id: 'eu10-canary.bpm-flying-saucer.riskmanagement.customProcess',
-        on: 'CREATE'
+    id: 'eu10-canary.bpm-flying-saucer.riskmanagement.customProcess',
+    on: 'CREATE'
   }
   @build.process.cancel: {
     on: 'DELETE',
+    cascade: 'true'
+  }
+  @build.process.suspend: {
+    on: 'UPDATE',
     cascade: 'true'
   }
   entity Shipment as projection on Shipments {
@@ -75,7 +68,7 @@ service CatalogService {
     case
       when weight > 100 then true
       else false
-    end as isTooHeavy: Boolean @build.process.cancel.if
+    end as isTooHeavy: Boolean @build.process.suspend.if
   };
   entity Shipments {
     key ID: String;

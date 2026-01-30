@@ -1,12 +1,25 @@
 
 @server = http://localhost:4004
 
-# @name createShipment
-POST {{server}}/odata/v4/catalog/Shipment
+# @name createShipment with annotation
+POST {{server}}/odata/v4/test/AnnotatedShipments
 Content-Type: application/json
 
 {
-    "ID": "1234",
+    "ID": "123456",
+    "address": "Germany",
+    "date": "2026",
+    "weight": 1000
+}
+
+###
+
+# @name createShipment without annotation
+POST {{server}}/odata/v4/test/UnAnnotatedShipments
+Content-Type: application/json
+
+{
+    "ID": "12345",
     "address": "Germany",
     "date": "2026",
     "weight": 1
@@ -14,8 +27,9 @@ Content-Type: application/json
 
 ###
 
+
 # @name updateShipment
-PATCH {{server}}/odata/v4/catalog/Shipment('1234')
+PATCH {{server}}/odata/v4/test/AnnotatedShipments('1234')
 Content-Type: application/json
 
 {
@@ -25,4 +39,4 @@ Content-Type: application/json
 ###
 
 # @name deleteShipment
-DELETE {{server}}/odata/v4/catalog/Shipment('1234')
+DELETE {{server}}/odata/v4/test/AnnotatedShipments('1234')

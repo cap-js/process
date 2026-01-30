@@ -74,6 +74,15 @@ class ProcessService extends cds.ApplicationService {
             };
 
         });
+        this.on('suspend', async (request: any) => {
+            return {
+            id: "1234",
+            success: false,
+            message: "Not implemented yet"
+        
+            };
+        }); 
+          
 
         return super.init();
     }
