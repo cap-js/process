@@ -1,0 +1,60 @@
+declare module '@sap/cds' {
+
+  interface RemoteEndpoints {
+      api: string;
+  }
+
+  interface Html5AppsRepo {
+      app_host_id: string;
+  }
+
+  interface UaaConfig {
+      tenantmode: string;
+      sburl: string;
+      subaccountid: string;
+      'credential-type': string;
+      clientid: string;
+      xsappname: string;
+      clientsecret: string;
+      serviceInstanceId: string;
+      url: string;
+      uaadomain: string;
+      verificationkey: string;
+      apiurl: string;
+      identityzone: string;
+      identityzoneid: string;
+      tenantid: string;
+      zoneid: string;
+  }
+
+  interface Destination {
+      name?: string;
+      endpoints: RemoteEndpoints;
+      'sap.cloud.service': string;
+      'sap.cloud.service.alias': string;
+      saasregistryenabled: boolean;
+      'html5-apps-repo': Html5AppsRepo;
+      uaa: UaaConfig;
+  }
+
+  interface RemoteService {
+      destination: Destination;
+  }
+
+  interface ServiceDefinitionAnnotation {
+    [key: string]: any;
+  }
+
+  interface Service {
+    definition: ServiceDefinitionAnnotation;
+  }
+
+  interface entity {
+    [key: string]: any;
+  }
+
+  interface type {
+    [key: string]: any;
+  }
+
+}

@@ -1,4 +1,4 @@
-const cds = require('@sap/cds')
+import cds from '@sap/cds';
 
 module.exports = class CatalogService extends cds.ApplicationService { init() {
 

@@ -1,8 +1,8 @@
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
 import { initProcessCancelSpecifications, registerProcessCancelHandler, validateProcessCancelSpecification } from './processCancelHandler';
 import { initProcessStartSpecifications, validateProcessStartSpecification, registerProcessStartHandler } from './processStartHandler';
 
-export function handleEntityOperations(service: typeof cds.ApplicationService) {
+export function handleEntityOperations(service: cds.ApplicationService) {
     console.log(`Handling entity operations for service: ${service.name}`);
     for (const entity of service.entities) {
         // read annotations and detect start annotation

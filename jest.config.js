@@ -1,5 +1,6 @@
 const config = {
   preset: 'ts-jest',
+  globalSetup: './tests/setup.ts',
   testEnvironment: 'node',
   testTimeout: 60000,
   testMatch: ["**/*.test.ts"],
@@ -8,4 +9,4 @@ const config = {
   extensionsToTreatAsEsm: ['.ts']
 }
 
-module.exports = config
+module.exports = config;

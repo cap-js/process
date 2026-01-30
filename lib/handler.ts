@@ -1,4 +1,4 @@
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
 
 
 export type ValidationResult = {
@@ -35,27 +35,16 @@ export function coerceToString(value: any, toUpperCase?: boolean) : any | undefi
 }
 
 
-export function walkEntityAnnotations(
-  entity: typeof cds.entity,
-  onEntityAnnotation?: EntityAnnotationCallback,
-  onElementAnnotation?: ElementAnnotationCallback
-) {
+export function entityHasAnnotation(
+  entity: cds.entity,
+): any {
   const entityAnnotations = Object.entries(entity).filter(([key]) => key.startsWith('@build'));
-  for(const [key, value] of entityAnnotations) {
-    console.log(`  - Entity property: ${key} = ${value}`);
-    onEntityAnnotation?.(key, value);
-  }
+  return entityAnnotations;
+}
 
-  if (!entity.elements) {
-    return;
-  }
-
-  for (const [elementName, element] of Object.entries(entity.elements)) {
-    console.log(`   - Element: ${elementName}`);  
-    const elementAnnotations = Object.entries(element as any).filter(([key]) => key.startsWith('@build'));
-    for (const [key, value] of elementAnnotations) {
-      console.log(`    - Element property: ${key} = ${value}`);
-      onElementAnnotation?.(key, value, { elementName });
-    }
-  }
+export function elementHasAnnotation(
+  entity: cds.entity,
+) : any {
+    const elementAnnotations = Object.entries(entity.elements).filter(([key]) => key.startsWith('@build')); 
+    return elementAnnotations;
 }

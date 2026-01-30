@@ -1,6 +1,6 @@
 import { coerceToString, getKeyFieldsForEntity, ValidationResult } from "./handler";
 
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
         
 const { SELECT } = cds.ql;        
 

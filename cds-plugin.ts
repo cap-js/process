@@ -1,10 +1,10 @@
 import { handleEntityOperations } from './lib/entityServiceHandler';
-const cds = require('@sap/cds');
+import cds from '@sap/cds';
 
 console.log("1st - Plugin loaded")
 
 
-cds.on("serving", async (service : typeof cds.Service) => {
+cds.on("serving", async (service : cds.Service) => {
     if (service instanceof cds.ApplicationService == false) return;
     handleEntityOperations(service);
 });

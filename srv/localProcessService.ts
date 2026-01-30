@@ -1,6 +1,6 @@
-import crypto = require("crypto");
+import crypto from 'crypto';
+import cds from '@sap/cds';
 
-const cds = require('@sap/cds');
 const LOG = cds.log("process");
 
 class ProcessService extends cds.ApplicationService { async init() {

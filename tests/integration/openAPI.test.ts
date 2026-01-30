@@ -1,27 +1,28 @@
-const cds = require('@sap/cds');
-const { getAuth } = require('../../utils/cdk-utils');
+import cds from '@sap/cds';
+import { getServiceCredentials, getServiceToken } from '../../lib/btp-utils';
+
+const PROCESS_SERVICE = 'ProcessService';
 
 test('should create query request', async () => {
-    const workflowService = await cds.connect.to('Workflow');
-    expect(workflowService).toBeDefined();
+    const processService = await cds.connect.to('ProcessService');
+    expect(processService).toBeDefined();
 });
 
 test('should execute query', async () => {
-    const workflowService = await cds.connect.to('Workflow');
-    const processAutomationService = await cds.connect.to('process-automation-service') as typeof cds.RemoteService;
-    const authToken = await getAuth(processAutomationService);
+    const credentials = await getServiceCredentials(PROCESS_SERVICE);
+    const srvUrl = credentials?.endpoints.api;
+    const token = await getServiceToken(PROCESS_SERVICE);
 
-    const result = await workflowService.send({
+    expect(srvUrl).toBeDefined();
+    expect(token).toBeDefined();
+
+    const response = await fetch(`${srvUrl}/public/workflow/rest/v1/workflow-instances`, {
         method: 'GET',
-        path: '/v1/workflow-instances',
         headers: {
-            'Authorization': authToken
-        },
-        params: {
-            status: 'RUNNING'
+            'Authorization': `Bearer ${token.jwt}`
         }
     });
-    console.log(result);
 
-    expect(Array.isArray(result)).toBe(true);
+
+    expect(Array.isArray(response)).toBe(true);
 });
