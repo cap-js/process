@@ -1,30 +1,37 @@
 # Current annotation implementation:
+
 ## For starting a process:
-* `@build.process.start` -- Start a process (or classic workflow), either after entity creation, update, or before deletion, including all entity elements unless at least one `@build.process.input` is given
-  * `@build.process.start.id` -- definition ID for deployed process
-  * `@build.process.start.on` -- either CREATE/UPDATE/DELETE 
-* `@build.process.input` -- includes this element in the process start assuming name equality
-* `@(build.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
-* `@build.process.start.if` -- Only start a process if this element has a truthy value
-* Important: the process that has been started needs to have an input attribute 'businessKey' of type string that is then assigned to the businessKey in process configuration so that the process can be later CANCELLED/SUSPENDED/RESUMED
+
+- `@build.process.start` -- Start a process (or classic workflow), either after entity creation, update, or before deletion, including all entity elements unless at least one `@build.process.input` is given
+  - `@build.process.start.id` -- definition ID for deployed process
+  - `@build.process.start.on`
+- `@build.process.input` -- includes this element in the process start assuming name equality
+- `@(build.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
+- `@build.process.start.if` -- Only start a process if this element has a truthy value
+- Important: the process that has been started needs to have an input attribute 'businessKey' of type string that is then assigned to the businessKey in process configuration so that the process can be later CANCELLED/SUSPENDED/RESUMED
 
 ### Missing:
+
 - return any result in srv handler
 - type validation for inputs
 - validation if given definition ID exists as import
 - deep read for input structures
 
 ## For cancelling a process
-* `@build.process.cancel` -- Cancel any processes bound to the entity (using entityKey as businessKey in SBPA) after update or deletion
-  * `@build.process.cancel.on` -- either UPDATE / DELETE
-  * `@build.process.cancel.cascade` -- either boolean or string 'true' | 'false'
-* `@build.process.cancel.if` -- Only cancel if this element has a truthy value
+
+- `@build.process.cancel` -- Cancel any processes bound to the entity (using entityKey as businessKey in SBPA) after update or deletion
+  - `@build.process.cancel.on`
+  - `@build.process.cancel.cascade` -- either boolean or string 'true' | 'false'
+- `@build.process.cancel.if` -- Only cancel if this element has a truthy value
 
 ### Missing:
+
 - return any result in srv handler
 - build time validation
+- currently cancel.if does not work if on is DELETE
 
 ## Missing annotations:
+
 - `@build.process.resume/suspend`
 
 # cap-js Repository Template

@@ -1,12 +1,12 @@
 service TestService {
 
   @build.process.start: {
-    id: 'eu10-canary.bpm-flying-saucer.riskmanagement.customProcess',
+    id: 'eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
     on: 'CREATE'
   }
   @build.process.cancel: {
     on: 'DELETE',
-    cascade: 'true'
+    cascade: 'false'
   }
   @build.process.suspend: {
     on: 'UPDATE',
@@ -22,7 +22,7 @@ service TestService {
         when weight > 100
              then true
         else false
-      end as isTooHeavy : Boolean @build.process.start.if
+      end as isTooHeavy : Boolean @build.process.cancel.if
     }
 
   entity UnAnnotatedShipments as

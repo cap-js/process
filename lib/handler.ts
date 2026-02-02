@@ -1,4 +1,4 @@
-import cds from '@sap/cds';
+import cds, { Results } from '@sap/cds';
 const { SELECT } = cds.ql; 
 
 export type ValidationResult = {
@@ -18,7 +18,7 @@ export function getKeyFieldsForEntity(entity: cds.entity): string[] {
     return result;
  }
 
-export function concatenateBusinessKey(target: cds.entity, row: any): string {
+export function concatenateBusinessKey(target: cds.entity, row: Results): string {
     let businessKey = ""
         for (const keyField of getKeyFieldsForEntity(target as cds.entity)) {
             businessKey += row[keyField]
@@ -68,15 +68,18 @@ export function getElementAnnotations(
 
 export async function fetchMissingColumns(
     requiredColumns: string[], 
-    results: cds.ResultSet & { [key: string]: any }, 
+    results: Results, 
     request: cds.Request
-): Promise<any> {
+): Promise<Results> {
     const tx = cds.transaction(request);
-    
+
+    if(typeof results !== 'object') {
+        results = {};
+    }
+
     const missingColumns = requiredColumns.filter(column => 
         !(column in results) || results[column] === undefined
     );
-    
 
     if (missingColumns.length === 0) {
         return results;
@@ -84,17 +87,31 @@ export async function fetchMissingColumns(
     
     const keyFields = getKeyFieldsForEntity((request.target) as cds.entity);
     
+
+
     // Create object with only key fields and their values
     const keyObject = keyFields.reduce((obj: any, keyField: string) => {
         obj[keyField] = results[keyField];
         return obj;
     }, {});
+
+    const columns = [...missingColumns, ...keyFields];
     
     const fetchedData = await tx.run(
+        // request.target.name = TestService.AnnotatedShipments
         SELECT.one.from(request.target.name)
-            .columns(...missingColumns)
+            .columns(columns)
             .where(keyObject)
     );
     
+
     return { ...results, ...fetchedData };
+}
+
+export function isPredicateConditionMet(predicates: string[], row: Results): boolean {
+  let start = true
+  for (let predicate of predicates) {
+    start = start && row?.[predicate]
+  }
+  return start
 }

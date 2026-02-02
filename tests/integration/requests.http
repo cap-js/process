@@ -29,7 +29,7 @@ Content-Type: application/json
 
 
 # @name updateShipment
-PATCH {{server}}/odata/v4/test/AnnotatedShipments('1234')
+PATCH {{server}}/odata/v4/test/AnnotatedShipments('123456')
 Content-Type: application/json
 
 {
@@ -39,4 +39,4 @@ Content-Type: application/json
 ###
 
 # @name deleteShipment
-DELETE {{server}}/odata/v4/test/AnnotatedShipments('1234')
+DELETE {{server}}/odata/v4/test/AnnotatedShipments('123456')

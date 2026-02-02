@@ -1,7 +1,6 @@
-import { coerceToString, fetchMissingColumns, getKeyFieldsForEntity, ValidationResult } from "./handler";
-
-const cds = require('@sap/cds');
-const { SELECT } = cds.ql; 
+import { Results, Target } from "@sap/cds";
+import cds from "@sap/cds"
+import { concatenateBusinessKey, fetchMissingColumns, getElementAnnotations, isPredicateConditionMet } from "./handler";
 
 enum ProcessCancelOn {
     Update = 'UPDATE',
@@ -10,137 +9,58 @@ enum ProcessCancelOn {
 
 type ProcessCancelSpec = {
     on?: ProcessCancelOn,
-    cascade?: string,
+    cascade?: boolean,
     predicates: string[]
 }
 
-export async function registerProcessCancelHandler(spec: ProcessCancelSpec, entity: typeof cds.entity, service: typeof cds.ApplicationService) {
-    // to register handler, we need business Key = entity keys
 
-    const processService = await cds.connect.to('ProcessService');
-    
-    const processCancelHandler = async(row: any, cascade: boolean, request: typeof cds.Request) => { 
+export async function handleProcessCancel(
+    target: Target,
+    data: Results,
+    req: cds.Request
+) {
+    // init specification
+    const cancelSpecs = initCancelSpecs(target);
 
-        let cancel = true;
-        for (let predicate of spec.predicates) {
-            cancel = cancel && row?.[predicate];
-        };
+    // fetch required columns
+    const row = await fetchMissingColumns(
+        cancelSpecs.predicates,
+        data,
+        req
+    );
 
-        const keyFields = getKeyFieldsForEntity(entity);
-        let businessKey = '';
-        for(const keyField of keyFields) {
-            businessKey += row[keyField];
-         }
-
-        if (!cancel) {
-            console.log(`Not cancelling process for ${entity.name} with business Key ${businessKey} as cancel condition(s) are not met`);
-            return;
-        }
-
-        await processService.cancel(businessKey, cascade);
+    // check cancel condition or if event is delete
+    if(!isPredicateConditionMet(cancelSpecs.predicates, row) && req.event !== 'DELETE') {
+        console.log(`Not cancelling process as cancel condition(s) are not met`)
+        return
     }
 
-    if(spec.on === ProcessCancelOn.Update) {
-        service.after(spec.on!, entity, async (results: any, request: any) => { 
-            const row = await fetchMissingColumns(spec.predicates, results, request);
-            processCancelHandler(row, spec.cascade! === 'true', request); 
-        });
-    } else if(spec.on === ProcessCancelOn.Delete) { 
-        service.before(spec.on!, entity, async (request: any) => { 
-            const row = await fetchMissingColumns(spec.predicates, request.data, request);
-            processCancelHandler(row, spec.cascade! === 'true', request);
-        });
+    // get business Key
+    const businessKey = concatenateBusinessKey(target as cds.entity, row)
 
-    } 
-        
-        
+    // cancel process
+    const processService = await cds.connect.to("ProcessService")
+    await processService.emit("cancel", {
+        businessKey: businessKey,
+        cascade: cancelSpecs.cascade
+    })
+
 }
 
-export function validateProcessCancelSpecification(spec: ProcessCancelSpec, entity: typeof cds.entity) : ValidationResult { 
-    
-    const result: ValidationResult = {
-        isValid: true,
-        errors: []
+function initCancelSpecs(target: Target): ProcessCancelSpec { 
+    const cancelSpecs: ProcessCancelSpec = {
+        on: target['@build.process.cancel.on'] as ProcessCancelOn,
+        cascade: target['@build.process.cancel.cascade'],
+        predicates: []
     }
-
-    if (!spec.on) {
-        result.isValid = false;
-        result.errors!.push({
-            message: `${entity.name} has no matching 'on' specifier`,
-            code: '100: MISSING_ON_SPECIFIER'
-        });
-    }
-
-    if(!spec.cascade) {
-        result.isValid = false;
-        result.errors!.push({
-            message: `${entity.name} has no cascade specifier`,
-            code: '200: MISSING_CASCADE_SPECIFIER'
-        });
-    }
-
-    if(spec.cascade && !(spec.cascade === 'true' || spec.cascade === 'false')) {
-        result.isValid = false;
-        result.errors!.push({
-            message: `${spec.cascade} is not a valid 'cascade' specifier and must be either 'true' or 'false'`,
-            code: '201: INVALID_CASCADE_SPECIFIER'
-        });
-     }
-
-
-    if (!Object.values(ProcessCancelOn).includes(spec.on as ProcessCancelOn)) {
-        result.isValid = false;
-        result.errors!.push({
-            message: `${spec.on} is not a valid 'on' specifier and must be either 'UPDATE' or 'DELETE'`,
-            code: '101: INVALID_ON_SPECIFIER'
-        });
-    }
-
-    for (let predicate of spec.predicates) {
-        let type = entity.elements[predicate].type;
-        if (type != 'cds.Boolean') {
-            result.isValid = false;
-            result.errors!.push({
-                message: `${predicate} is not a valid cancel predicate and must be of type 'cds.Boolean'`,
-                code: '102: INVALID_PREDICATE'
-            });
+    const elementAnnotations = getElementAnnotations(target as cds.entity)
+    for (const [elementName, key, value] of elementAnnotations) {
+        switch (key) {
+            case "@build.process.cancel.if":
+            cancelSpecs.predicates.push(elementName)
+            break
         }
     }
 
-
-    return result;
-}
-
-
-export function initProcessCancelSpecifications(entity: typeof cds.entity): ProcessCancelSpec {
-    // read annotations and detect start annotation
-    const spec: ProcessCancelSpec = { predicates: [] };
-
-    const entityAnnotations = Object.entries(entity).filter(([key]) => key.startsWith('@build'));
-        for(const [key, value] of entityAnnotations) {
-            switch (key) {
-                case '@build.process.cancel.on':
-                    spec.on = coerceToString(value, true);
-                    break;
-                case '@build.process.cancel.cascade':
-                    spec.cascade = coerceToString(value);
-                    break;
-            }
-        }
-        if (!entity.elements) {
-            return spec;
-        }
-
-        for (const [elementName, element] of Object.entries(entity.elements)) {
-            const elementAnnotations = Object.entries(element as any).filter(([key]) => key.startsWith('@build'));
-            for (const [key, value] of elementAnnotations) {
-                
-                switch (key) {
-                    case '@build.process.cancel.if':
-                        spec.predicates.push(elementName);
-                        break;
-                }
-            } 
-        }
-        return spec;
+    return cancelSpecs;
 }
