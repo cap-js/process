@@ -2,6 +2,7 @@ import cds, { Results, Target } from "@sap/cds"
 import { handleProcessStart } from "./lib/processStartHandler"
 import { handleProcessCancel } from "./lib/processCancelHandler"
 import { handleProcessSuspend } from "./lib/processSuspendHandler"
+import { handleProcessResume } from "./lib/processResumeHandler"
 
 cds.on("serving", async (service: cds.Service) => {
   if (service instanceof cds.ApplicationService == false) return
@@ -19,6 +20,9 @@ cds.on("serving", async (service: cds.Service) => {
 
     } else if( target['@build.process.suspend.on'] && target['@build.process.suspend.cascade'] && target['@build.process.suspend.on'] === req.event) {
       await handleProcessSuspend(target, req.data, req);
+     
+    } else if( target['@build.process.resume.on'] && target['@build.process.resume.cascade'] && target['@build.process.resume.on'] === req.event) {
+      await handleProcessResume(target, req.data, req);
 
      }
   })

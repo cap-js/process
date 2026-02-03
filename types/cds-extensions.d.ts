@@ -64,6 +64,8 @@ declare module '@sap/cds' {
     '@build.process.cancel.cascade'?: boolean;
     '@build.process.suspend.on'?: string;
     '@build.process.suspend.cascade'?: boolean;
+    '@build.process.resume.on'?: string;
+    '@build.process.resume.cascade'?: boolean;
   }
 
   interface Results extends cds.ResultSet {

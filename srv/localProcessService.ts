@@ -72,6 +72,21 @@ class ProcessService extends cds.ApplicationService { async init() {
                 message: message
             }; 
         }); 
+        this.on('resume', async (req: any) => {
+            LOG.info("==============================================================");
+            LOG.info(`Process resume for ${req.data.businessKey} initiated`);
+            LOG.info('Context: ', JSON.stringify(req.data, null, 2));
+            LOG.info("==============================================================");
+
+            const businessKey = { id: crypto.randomUUID() }; // Placeholder
+            const message = `Process with ID ${businessKey.id} was successfully resumed.`;
+            
+            return {
+                id: businessKey.id,
+                success: true,
+                message: message
+            }; 
+        }); 
 
         return super.init();
 }}
