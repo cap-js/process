@@ -1,6 +1,7 @@
 import cds from "@sap/cds";
 import { getServiceCredentials, getServiceToken } from "../lib/btp-utils";
 import { TokenCache } from "../lib/token-cache";
+import { handleProcessRoutingForEvent } from "../lib/processEventRouter";
 
 const LOG = cds.log("process");
 
@@ -126,30 +127,41 @@ class ProcessService extends cds.ApplicationService {
             return;
         });
 
+        this.on('*', async (req: any) => {
+            await handleProcessRoutingForEvent(this, req);
+        });
+
         return super.init();
     }
 
     async patchWorkflowInstanceStatus(workflowInstances: any[], status: string, jwt: string, srvUrl: string, cascade: boolean) {
-        const resumeResults = [];
-        for (const instance of workflowInstances) {
-            const resumeResponse = await fetch(`${srvUrl}${BASE_PATH}/v1/workflow-instances/${instance.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${jwt}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ status: status, cascade: cascade })
-            });
-            if (resumeResponse.ok) {
-                LOG.debug(`Successfully updated workflow instance ${instance.id} to status ${status}`);
-                resumeResults.push({ id: instance.id, success: true });
-            } else {
-                const errorBody = await resumeResponse.text();
-                LOG.error(`Failed to update workflow instance ${instance.id} to status ${status}. Status: ${resumeResponse.status}, Body: ${errorBody}`);
-                resumeResults.push({ id: instance.id, success: false, error: errorBody });
+        const updatePromises = workflowInstances.map(async (instance) => {
+            try {
+                const resumeResponse = await fetch(`${srvUrl}${BASE_PATH}/v1/workflow-instances/${instance.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${jwt}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: status, cascade: cascade })
+                });
+
+                if (resumeResponse.ok) {
+                    LOG.debug(`Successfully updated workflow instance ${instance.id} to status ${status}`);
+                    return { id: instance.id, success: true };
+                } else {
+                    const errorBody = await resumeResponse.text();
+                    LOG.error(`Failed to update workflow instance ${instance.id} to status ${status}. Status: ${resumeResponse.status}, Body: ${errorBody}`);
+                    return { id: instance.id, success: false, error: errorBody };
+                }
+            } catch (error) {
+                LOG.error(`Error updating workflow instance ${instance.id} to status ${status}:`, error);
+                return { id: instance.id, success: false, error: String(error) };
             }
-        }
-        LOG.debug(`Updated ${resumeResults.filter(r => r.success).length} out of ${workflowInstances.length} workflow instances to status ${status}`);
+        });
+
+        const resumeResults = await Promise.all(updatePromises);
+        LOG.info(`Updated ${resumeResults.filter(r => r.success).length} out of ${workflowInstances.length} workflow instances to status ${status}`);
     }
 
     async getWorkflowDefinitionByKey(businessKey: string, jwt: string, srvUrl: string, status: string | string[]) {

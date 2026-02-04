@@ -39,3 +39,13 @@ export const PROCESS_INPUT = '@build.process.input' as const;
  * Annotation prefix for filtering
  */
 export const BUILD_PREFIX = '@build' as const;
+
+/**
+ * Process Event Annotations (Runtime)
+ * These annotations are used on dynamically created ProcessService events
+ */
+export const PROCESS_START_EVENT = '@Process.StartEvent' as const;
+export const PROCESS_CANCEL_EVENT = '@Process.CancelEvent' as const;
+export const PROCESS_SUSPEND_EVENT = '@Process.SuspendEvent' as const;
+export const PROCESS_RESUME_EVENT = '@Process.ResumeEvent' as const;
+export const PROCESS_DEFINITION_ID = '@Process.DefinitionId' as const;

@@ -5,5 +5,6 @@ clients/
 @cds-models/
 package-lock.json
 .cdsrc-private.json
-
+tests/bookshop/srv/external/*
+tests/bookshop/specs/*
 @cds-models
