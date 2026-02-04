@@ -1,14 +1,6 @@
-import cds, { column_expr, expr, Results, type } from '@sap/cds';
+import cds, { column_expr, expr, Results } from '@sap/cds';
 import { BUILD_PREFIX } from './constants';
 const { SELECT } = cds.ql; 
-
-export type ValidationResult = {
-    isValid: boolean;
-    errors?: {
-        code: string;
-        message: string;
-    }[];
-};
 
 export function getKeyFieldsForEntity(entity: cds.entity): string[] {
     const keys = entity.keys;
@@ -25,31 +17,6 @@ export function concatenateBusinessKey(target: cds.entity, row: Results): string
             businessKey += row[keyField]
         }
     return businessKey
-}
-
-export function coerceToString(value: string | object, toUpperCase?: boolean) : string | undefined {
-    if (typeof value === 'string') {
-        if(value === 'true' || value === 'false') {
-            return undefined;
-         }
-        return toUpperCase ? value.toUpperCase() : value;
-    } else if (typeof value === 'object') {
-        if ('=' in value && value['='] !== undefined && value['='] !== null) {
-            const equalValue = String(value['=']);
-            return toUpperCase ? equalValue.toUpperCase() : equalValue;
-        } else if (typeof value.toString === 'function') {
-            return toUpperCase ? value.toString().toUpperCase() : value.toString();
-        }
-    }
-    return undefined;
-}
-
-
-export function getEntityAnnotations(
-  entity: cds.entity,
-): [string, string][] {
-  const entityAnnotations = Object.entries(entity).filter(([key]) => key.startsWith(BUILD_PREFIX));
-  return entityAnnotations;
 }
 
 export function getElementAnnotations(

@@ -1,14 +1,9 @@
-import cds, { DeleteRequest, expr, Results, Target } from "@sap/cds";
+import cds, { DeleteRequest, expr, Target } from "@sap/cds";
 import { concatenateBusinessKey, fetchEntity } from "./handler";
 import { PROCESS_SUSPEND_ON, PROCESS_SUSPEND_CASCADE, PROCESS_SUSPEND_WHEN } from "./constants";
 
-enum ProcessSuspendOn {
-    Update = 'UPDATE',
-    Delete = 'DELETE',
-}
-
 type ProcessSuspendSpec = {
-    on?: ProcessSuspendOn,
+    on?: string,
     cascade?: boolean,
     suspendExpr: expr | undefined
 }
@@ -56,7 +51,7 @@ export async function handleProcessSuspend(req: cds.Request) {
 
 function initSuspendSpecs(target: Target): ProcessSuspendSpec {
     const suspendSpecs: ProcessSuspendSpec = {
-        on: target[PROCESS_SUSPEND_ON] as ProcessSuspendOn,
+        on: target[PROCESS_SUSPEND_ON] as string,
         cascade: target[PROCESS_SUSPEND_CASCADE],
         suspendExpr: target[PROCESS_SUSPEND_WHEN] ? (target[PROCESS_SUSPEND_WHEN]as any).xpr as expr : undefined,
     }

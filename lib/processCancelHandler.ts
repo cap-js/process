@@ -1,15 +1,10 @@
-import { DeleteRequest, expr, Results, Target } from "@sap/cds";
+import { DeleteRequest, expr, Target } from "@sap/cds";
 import cds from "@sap/cds"
 import { concatenateBusinessKey, fetchEntity } from "./handler";
 import { PROCESS_CANCEL_ON, PROCESS_CANCEL_CASCADE, PROCESS_CANCEL_WHEN } from "./constants";
 
-enum ProcessCancelOn {
-    Update = 'UPDATE',
-    Delete = 'DELETE',
-}
-
 type ProcessCancelSpec = {
-    on?: ProcessCancelOn,
+    on?: string,
     cascade?: boolean,
     cancelExpr: expr | undefined;
 }
@@ -59,7 +54,7 @@ export async function handleProcessCancel(
 
 function initCancelSpecs(target: Target): ProcessCancelSpec { 
     const cancelSpecs: ProcessCancelSpec = {
-        on: target[PROCESS_CANCEL_ON] as ProcessCancelOn,
+        on: target[PROCESS_CANCEL_ON] as string,
         cascade: target[PROCESS_CANCEL_CASCADE],
         cancelExpr: target[PROCESS_CANCEL_WHEN] ? (target[PROCESS_CANCEL_WHEN]as any).xpr as expr : undefined,
     }

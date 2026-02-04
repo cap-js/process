@@ -1,15 +1,9 @@
-import cds, { DeleteRequest, expr, Results, Target } from "@sap/cds";
+import cds, { DeleteRequest, expr, Target } from "@sap/cds";
 import { concatenateBusinessKey, fetchEntity } from "./handler";
 import { PROCESS_RESUME_ON, PROCESS_RESUME_CASCADE, PROCESS_RESUME_WHEN } from "./constants";
 
-
-enum ProcessResumeOn {
-    Update = 'UPDATE',
-    Delete = 'DELETE',
-}
-
 type ProcessResumeSpec = {
-    on?: ProcessResumeOn,
+    on?: string,
     cascade?: boolean,
     resumeExpr: expr | undefined
 }
@@ -57,7 +51,7 @@ export async function handleProcessResume(req: cds.Request) {
 
 function initResumeSpecs(target: Target): ProcessResumeSpec {
     const resumeSpecs: ProcessResumeSpec = {
-        on: target[PROCESS_RESUME_ON] as ProcessResumeOn,
+        on: target[PROCESS_RESUME_ON] as string,
         cascade: target[PROCESS_RESUME_CASCADE],
         resumeExpr: target[PROCESS_RESUME_WHEN] ? (target[PROCESS_RESUME_WHEN]as any).xpr as expr : undefined,
     }

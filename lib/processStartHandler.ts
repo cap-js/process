@@ -1,6 +1,5 @@
-import { column_expr, DeleteRequest, expr, Results, Target } from "@sap/cds"
+import { column_expr, DeleteRequest, expr, Target } from "@sap/cds"
 import {
-  coerceToString,
   concatenateBusinessKey,
   fetchEntity,
   getElementAnnotations,
@@ -12,12 +11,6 @@ const LOG = cds.log("process");
 const processNotStartingLog = "Not starting process as start condition(s) are not met";
 const noProcessInputsDefinedLog = "No process start input annotations defined, fetching entire entity row for process start context.";
 
-enum ProcessStartOn {
-  Create = "CREATE",
-  Update = "UPDATE",
-  Delete = "DELETE",
-}
-
 type ProcessStartInput = {
   sourceElement: string
   targetVariable?: string
@@ -27,7 +20,7 @@ type ProcessStartInput = {
 
 export type ProcessStartSpec = {
   id?: string
-  on?: ProcessStartOn
+  on?: string
   inputs: ProcessStartInput[]
   startExpr: expr | undefined
 }
@@ -97,7 +90,7 @@ export async function handleProcessStart(
 function initStartSpecs(target: Target): ProcessStartSpec {
   const startSpecs: ProcessStartSpec = {
     id: target[PROCESS_START_ID] as string,
-    on: target[PROCESS_START_ON] as ProcessStartOn,
+    on: target[PROCESS_START_ON] as string,
     inputs: [],
     startExpr: target[PROCESS_START_WHEN] ? (target[PROCESS_START_WHEN]as any).xpr as expr : undefined,
   }
@@ -113,38 +106,19 @@ function getInputElements(elementAnnotations: [string, string, string, any][]): 
     switch (key) {
       case PROCESS_INPUT:
         const input: ProcessStartInput = { sourceElement: elementName, associatedInputElements: associatedElements ? getInputElements(getElementAnnotations(associatedElements)) : undefined }
-        input.targetVariable = coerceToString(value)
+
+        if(typeof value === 'boolean' || (value === 'true' || value === 'false')) {
+          input.targetVariable = undefined;
+        } else {
+          input.targetVariable = value;
+        }
+
         inputs.push(input)  
         break
 
     }
   }
   return inputs;
-}
-
-function buildContext(startSpecs: ProcessStartSpec, row: Results, target: Target): { [key: string]: string } {
-    const businessKey = concatenateBusinessKey(target as cds.entity, row)
-    const context = !startSpecs.inputs.length
-    ? { ...row, businessKey: businessKey }
-    : { ...buildPayload(startSpecs.inputs, row), businessKey: businessKey }
-
-    return context;
-
-}
-
-function buildPayload(inputs: ProcessStartInput[], row: Results & { [key: string]: any }) {
-  const payload: { [key: string]: unknown } = {}
-  for (let input of inputs) {
-    
-    if(input.associatedInputElements && input.associatedInputElements.length > 0) {
-      // check for many to many associations wg. array
-      
-      payload[input.targetVariable ?? input.sourceElement] = buildPayload(input.associatedInputElements, row[input.sourceElement]);
-    } else {
-      payload[input.targetVariable ?? input.sourceElement] = row[input.sourceElement];
-    }
-  }
-  return payload
 }
 
 // TODO: need to handle cycles?
