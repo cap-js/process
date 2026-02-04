@@ -9,7 +9,8 @@ import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_WHEN, PROCESS_INPUT }
 
 import cds from "@sap/cds"
 const LOG = cds.log("process");
-const processNotStartingMessage = "Not starting process as start condition(s) are not met";
+const processNotStartingLog = "Not starting process as start condition(s) are not met";
+const noProcessInputsDefinedLog = "No process start input annotations defined, fetching entire entity row for process start context.";
 
 enum ProcessStartOn {
   Create = "CREATE",
@@ -31,11 +32,17 @@ export type ProcessStartSpec = {
   startExpr: expr | undefined
 }
 
-export async function getColumnsForProcessStart(
+export function getColumnsForProcessStart(
   target: Target
-): Promise<column_expr[]> {
+): column_expr[] | string[] {
   const startSpecs = initStartSpecs(target)
-  return convertToColumns(startSpecs.inputs)
+  if(startSpecs.inputs.length > 0) {
+    LOG.debug(noProcessInputsDefinedLog);
+    return ['*']
+  } else {
+    return convertToColumnsExpr(startSpecs.inputs);
+
+  }
 };
 
 // TODO: handle entities without input annotations, need to discuss whether that makes sense
@@ -44,7 +51,7 @@ export async function handleProcessStart(
 ) {
 
   if(req.event === 'DELETE' && ((req as DeleteRequest)._Process === undefined || (req as DeleteRequest)._Process?.length === 0)) {
-    LOG.debug(processNotStartingMessage);
+    LOG.debug(processNotStartingLog);
     return;
   }
 
@@ -53,16 +60,26 @@ export async function handleProcessStart(
 
   const startSpecs = initStartSpecs(target)
 
+  // if startSpecs.input = [] --> no input defined, fetch entire row
+  let columns: column_expr[] | string[] = [];
+  if(startSpecs.inputs.length === 0) {
+    columns = ['*'];
+    LOG.debug("No input annotations defined, fetching entire entity row for process start context.");
+  } else {
+    columns = convertToColumnsExpr(startSpecs.inputs);
+  }
+
+
   // fetch entity new when event is not delete, otherwise use data object
   const row = req.event === 'DELETE' ? data : await fetchEntity(
     data,
     req,
     startSpecs.startExpr,
-    convertToColumns(startSpecs.inputs)
+    columns
   )
 
   if(!row) {
-      LOG.debug(processNotStartingMessage);
+      LOG.debug(processNotStartingLog);
       return
   }
 
@@ -131,7 +148,7 @@ function buildPayload(inputs: ProcessStartInput[], row: Results & { [key: string
 }
 
 // TODO: need to handle cycles?
-function convertToColumns(array: ProcessStartInput[]): column_expr[] {
+function convertToColumnsExpr(array: ProcessStartInput[]): column_expr[] {
   return array.map((item) => {
     const column: column_expr = {};
 
@@ -145,7 +162,7 @@ function convertToColumns(array: ProcessStartInput[]): column_expr[] {
 
     // Handle nested associations (expand)
     if (item.associatedInputElements && item.associatedInputElements.length > 0) {
-      column.expand = convertToColumns(item.associatedInputElements);
+      column.expand = convertToColumnsExpr(item.associatedInputElements);
     }
 
     return column;

@@ -3,7 +3,7 @@
 ## For starting a process:
 
 - `@build.process.start` -- Start a process (or classic workflow), either after entity creation, update, or before deletion, including all entity elements unless at least one `@build.process.input` is given
-  - Important: right now it is only supported if you have at least one attribute annotated with `@build.process.input`
+  - if not attribute is annotated with`@build.process.input`, all attributes of that entity will be fetched and are part of the context for process input. Associations will not be expanded in that case
   - `@build.process.start.id` -- definition ID for deployed process
   - `@build.process.start.on`
   - `@build.process.start.when` -- only starting process when expression is true

@@ -77,7 +77,7 @@ export async function fetchEntity(
     results: Results, 
     request: cds.Request,
     condition: expr | undefined,
-    columns?: column_expr[], 
+    columns?: column_expr[] | string[], 
 ): Promise<Results | undefined> {
 
     if(typeof results !== 'object') {
