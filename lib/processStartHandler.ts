@@ -4,12 +4,10 @@ import {
   fetchEntity,
   getElementAnnotations,
 } from "./handler"
-import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_WHEN, PROCESS_INPUT } from "./constants"
+import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_WHEN, PROCESS_INPUT, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants"
 
 import cds from "@sap/cds"
 const LOG = cds.log("process");
-const processNotStartingLog = "Not starting process as start condition(s) are not met";
-const noProcessInputsDefinedLog = "No process start input annotations defined, fetching entire entity row for process start context.";
 
 type ProcessStartInput = {
   sourceElement: string
@@ -30,7 +28,7 @@ export function getColumnsForProcessStart(
 ): column_expr[] | string[] {
   const startSpecs = initStartSpecs(target)
   if(startSpecs.inputs.length > 0) {
-    LOG.debug(noProcessInputsDefinedLog);
+    LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
     return ['*']
   } else {
     return convertToColumnsExpr(startSpecs.inputs);
@@ -38,13 +36,12 @@ export function getColumnsForProcessStart(
   }
 };
 
-// TODO: handle entities without input annotations, need to discuss whether that makes sense
 export async function handleProcessStart(
   req: cds.Request,
 ) {
 
   if(req.event === 'DELETE' && ((req as DeleteRequest)._Process === undefined || (req as DeleteRequest)._Process?.length === 0)) {
-    LOG.debug(processNotStartingLog);
+    LOG.debug(LOG_MESSAGES.PROCESS_NOT_STARTED);
     return;
   }
 
@@ -57,33 +54,52 @@ export async function handleProcessStart(
   let columns: column_expr[] | string[] = [];
   if(startSpecs.inputs.length === 0) {
     columns = ['*'];
-    LOG.debug("No input annotations defined, fetching entire entity row for process start context.");
+    LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
   } else {
     columns = convertToColumnsExpr(startSpecs.inputs);
   }
 
 
   // fetch entity new when event is not delete, otherwise use data object
-  const row = req.event === 'DELETE' ? data : await fetchEntity(
-    data,
-    req,
-    startSpecs.startExpr,
-    columns
-  )
+  let row;
+  try {
+    row = req.event === 'DELETE' ? data : await fetchEntity(
+      data,
+      req,
+      startSpecs.startExpr,
+      columns
+    );
+  } catch (error) {
+    LOG.error(ERROR_MESSAGES.PROCESS_START_FETCH_FAILED, error);
+    return req.reject(500, ERROR_CODES.PROCESS_START_FETCH_FAILED);
+  }
 
   if(!row) {
-      LOG.debug(processNotStartingLog);
+      LOG.debug(LOG_MESSAGES.PROCESS_NOT_STARTED);
       return
   }
 
-  const context = {...row, businessKey: concatenateBusinessKey(target as cds.entity, {...row, ...req.data})};
+  let businessKey;
+  try {
+    businessKey = concatenateBusinessKey(target as cds.entity, {...row, ...req.data});
+  } catch (error) {
+    LOG.error(ERROR_MESSAGES.PROCESS_START_INVALID_KEY, error);
+    return req.reject(400, ERROR_CODES.PROCESS_START_INVALID_KEY);
+  }
 
-  const processService = await cds.connect.to("ProcessService")
+  const context = {...row, businessKey};
 
-  await processService.emit("start", {
-    definitionId: startSpecs.id!,
-    context: context,
-  })
+  try {
+    const processService = await cds.connect.to("ProcessService")
+
+    await processService.emit("start", {
+      definitionId: startSpecs.id!,
+      context: context,
+    })
+  } catch (error) {
+    LOG.error(ERROR_MESSAGES.PROCESS_START_FAILED + `${startSpecs.id}`, error);
+    return req.reject(500, ERROR_CODES.PROCESS_START_FAILED);
+  }
 
 }
 

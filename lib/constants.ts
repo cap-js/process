@@ -49,3 +49,65 @@ export const PROCESS_CANCEL_EVENT = '@Process.CancelEvent' as const;
 export const PROCESS_SUSPEND_EVENT = '@Process.SuspendEvent' as const;
 export const PROCESS_RESUME_EVENT = '@Process.ResumeEvent' as const;
 export const PROCESS_DEFINITION_ID = '@Process.DefinitionId' as const;
+
+/**
+ * Error Codes
+ * Error Codes for Process Handlers
+ */
+export const ERROR_CODES = {
+    // Cancel errors
+    PROCESS_CANCEL_FETCH_FAILED: 'PROCESS_CANCEL_FETCH_FAILED',
+    PROCESS_CANCEL_INVALID_KEY: 'PROCESS_CANCEL_INVALID_KEY',
+    PROCESS_CANCEL_EMPTY_KEY: 'PROCESS_CANCEL_EMPTY_KEY',
+    PROCESS_CANCEL_FAILED: 'PROCESS_CANCEL_FAILED',
+    // Start errors
+    PROCESS_START_FETCH_FAILED: 'PROCESS_START_FETCH_FAILED',
+    PROCESS_START_INVALID_KEY: 'PROCESS_START_INVALID_KEY',
+    PROCESS_START_FAILED: 'PROCESS_START_FAILED',
+    // Suspend errors
+    PROCESS_SUSPEND_FETCH_FAILED: 'PROCESS_SUSPEND_FETCH_FAILED',
+    PROCESS_SUSPEND_INVALID_KEY: 'PROCESS_SUSPEND_INVALID_KEY',
+    PROCESS_SUSPEND_EMPTY_KEY: 'PROCESS_SUSPEND_EMPTY_KEY',
+    PROCESS_SUSPEND_FAILED: 'PROCESS_SUSPEND_FAILED',
+    // Resume errors
+    PROCESS_RESUME_FETCH_FAILED: 'PROCESS_RESUME_FETCH_FAILED',
+    PROCESS_RESUME_INVALID_KEY: 'PROCESS_RESUME_INVALID_KEY',
+    PROCESS_RESUME_EMPTY_KEY: 'PROCESS_RESUME_EMPTY_KEY',
+    PROCESS_RESUME_FAILED: 'PROCESS_RESUME_FAILED'
+} as const;
+
+/**
+ * Error Messages
+ */
+export const ERROR_MESSAGES = {
+    // Start errorrs
+    PROCESS_START_FETCH_FAILED: 'Failed to fetch entity for process start.',
+    PROCESS_START_INVALID_KEY: 'Failed to build business key for process start.',
+    PROCESS_START_FAILED: 'Failed to start process with definition ID ',
+    // Suspend errors
+    PROCESS_SUSPEND_FETCH_FAILED: 'Failed to fetch entity for process suspend.',
+    PROCESS_SUSPEND_INVALID_KEY: 'Failed to build business key for process suspend.',
+    PROCESS_SUSPEND_EMPTY_KEY: 'Business key is empty for process suspend.',
+    PROCESS_SUSPEND_FAILED: 'Failed to suspend process with business Key ',
+    // Resume errors
+    PROCESS_RESUME_FETCH_FAILED: 'Failed to fetch entity for process resume.',
+    PROCESS_RESUME_INVALID_KEY: 'Failed to build business key for process resume.',
+    PROCESS_RESUME_EMPTY_KEY: 'Business key is empty for process resume.',
+    PROCESS_RESUME_FAILED: 'Failed to resume process with business Key ',
+    // Cancel errors
+    PROCESS_CANCEL_FETCH_FAILED: 'Failed to fetch entity for process cancellation.',
+    PROCESS_CANCEL_INVALID_KEY: 'Failed to build business key for process cancellation.',
+    PROCESS_CANCEL_EMPTY_KEY: 'Business key is empty for process cancellation.',
+    PROCESS_CANCEL_FAILED: 'Failed to cancel process with business Key '
+} as const;
+
+/**
+ * Log Messages
+ */
+export const LOG_MESSAGES = {
+    PROCESS_NOT_STARTED: "Not starting process as start condition(s) are not met",
+    NO_PROCESS_INPUTS_DEFINED: "No process start input annotations defined, fetching entire entity row for process start context.",
+    PROCESS_NOT_SUSPENDED: "Not suspending process as suspend condition(s) are not met",
+    PROCESS_NOT_RESUMED: "Not resuming process as resume condition(s) are not met",
+    PROCESS_NOT_CANCELLED: "Not canceling process as cancel condition(s) are not met"
+} as const;

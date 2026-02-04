@@ -13,8 +13,8 @@
 
 ### Missing:
 
-- if no input attribute is defined, all attributes should be given as process start context
-- error handling
+- build time validation
+- proper testing
 
 ## For cancelling/resuming/suspending a process
 
