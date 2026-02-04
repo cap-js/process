@@ -19,7 +19,7 @@ class ProcessService extends cds.ApplicationService {
 
     tokenCache = new TokenCache();
     async init() {
-        console.log('Initializing Process Service...');
+        LOG.debug('Initializing Process Service...');
 
         this.on('start', async (request: any) => {
             const credentials = await getServiceCredentials(PROCESS_SERVICE);
@@ -60,7 +60,7 @@ class ProcessService extends cds.ApplicationService {
                 throw new Error(`Unexpected error during starting a workflow. Status: ${response.status}`);
             }
             const workflowInstance = await response.json();
-            LOG.info(`Workflow instance started with ID: ${workflowInstance.id}`);
+            LOG.debug(`Workflow instance started with ID: ${workflowInstance.id}`);
             LOG.debug(`Workflow Instance Details: ${JSON.stringify(workflowInstance)}`);
 
             return {
@@ -149,7 +149,7 @@ class ProcessService extends cds.ApplicationService {
                 resumeResults.push({ id: instance.id, success: false, error: errorBody });
             }
         }
-        LOG.info(`Updated ${resumeResults.filter(r => r.success).length} out of ${workflowInstances.length} workflow instances to status ${status}`);
+        LOG.debug(`Updated ${resumeResults.filter(r => r.success).length} out of ${workflowInstances.length} workflow instances to status ${status}`);
     }
 
     async getWorkflowDefinitionByKey(businessKey: string, jwt: string, srvUrl: string, status: string | string[]) {

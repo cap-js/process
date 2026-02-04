@@ -1,4 +1,4 @@
-import cds, { Results } from '@sap/cds';
+import cds, { column_expr, expr, Results, type } from '@sap/cds';
 const { SELECT } = cds.ql; 
 
 export type ValidationResult = {
@@ -53,65 +53,76 @@ export function getEntityAnnotations(
 
 export function getElementAnnotations(
   entity: cds.entity,
-): [string, string, string][] {
-    const elementAnnotations: [string, string, string][] = [];
+): [string, string, string, any][] {
+    const elementAnnotations: [string, string, string, any][] = [];
     Object.entries(entity.elements)
         .forEach(([elementName, element]) => {
             Object.entries(element)
                 .filter(([key]) => key.startsWith('@build'))
                 .forEach(([key, value]) => {
-                    elementAnnotations.push([elementName, key, String(value)]);
+                    // for association elements: element._target.elements
+                    let associatedElements;
+                    if(element.type === 'cds.Association' || element.type === 'cds.Composition') {
+                        
+                        associatedElements = element._target;
+                    }
+                    elementAnnotations.push([elementName, key, String(value), associatedElements]);
                 });
       });
     return elementAnnotations;
 }
 
-export async function fetchMissingColumns(
-    requiredColumns: string[], 
+export async function fetchEntity(
     results: Results, 
-    request: cds.Request
-): Promise<Results> {
-    const tx = cds.transaction(request);
+    request: cds.Request,
+    condition: expr | undefined,
+    columns?: column_expr[], 
+): Promise<Results | undefined> {
 
     if(typeof results !== 'object') {
         results = {};
     }
-
-    const missingColumns = requiredColumns.filter(column => 
-        !(column in results) || results[column] === undefined
-    );
-
-    if (missingColumns.length === 0) {
-        return results;
-    }
     
     const keyFields = getKeyFieldsForEntity((request.target) as cds.entity);
     
+    // build where clause
+    const where = buildWhereClause(keyFields, results, condition);
+    
+    const fetchedData = await 
+        SELECT.one.from(request.target.name)
+            .columns(columns ? columns : keyFields)
+            .where(where as any);
 
+    if(!fetchedData) {
+        // condition not met
+        return undefined;
+    }
 
-    // Create object with only key fields and their values
+    return { ...fetchedData };
+}
+
+function buildWhereClause(keyFields: string[], results: Results, condition: expr | undefined) {
+
     const keyObject = keyFields.reduce((obj: any, keyField: string) => {
         obj[keyField] = results[keyField];
         return obj;
     }, {});
 
-    const columns = [...missingColumns, ...keyFields];
+    // build where expression for object keys
+    // TODO: make more efficient, especially for batch operations
+    const entries = Object.entries(keyObject);
+    const parts = [];
+    for (const [k, v] of entries) {
+        if (parts.length) parts.push("and");
+        parts.push({ ref: [k] }, "=", { val: v });
+    }
     
-    const fetchedData = await tx.run(
-        // request.target.name = TestService.AnnotatedShipments
-        SELECT.one.from(request.target.name)
-            .columns(columns)
-            .where(keyObject)
-    );
-    
-
-    return { ...results, ...fetchedData };
-}
-
-export function isPredicateConditionMet(predicates: string[], row: Results): boolean {
-  let start = true
-  for (let predicate of predicates) {
-    start = start && row?.[predicate]
-  }
-  return start
+    // { ref: [ 'ID' ] }, '=', { val: '123456' }
+    let where;
+    if(condition !== undefined) {
+        where = [{xpr: parts}, 'and', {xpr: condition}];
+    } else {
+        where = {xpr: parts};
+    }
+    return where;
 }

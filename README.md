@@ -3,36 +3,30 @@
 ## For starting a process:
 
 - `@build.process.start` -- Start a process (or classic workflow), either after entity creation, update, or before deletion, including all entity elements unless at least one `@build.process.input` is given
+  - Important: right now it is only supported if you have at least one attribute annotated with `@build.process.input`
   - `@build.process.start.id` -- definition ID for deployed process
   - `@build.process.start.on`
+  - `@build.process.start.when` -- only starting process when expression is true
 - `@build.process.input` -- includes this element in the process start assuming name equality
 - `@(build.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
-- `@build.process.start.if` -- Only start a process if this element has a truthy value
 - Important: the process that has been started needs to have an input attribute 'businessKey' of type string that is then assigned to the businessKey in process configuration so that the process can be later CANCELLED/SUSPENDED/RESUMED
 
 ### Missing:
 
-- return any result in srv handler
-- type validation for inputs
-- validation if given definition ID exists as import
-- deep read for input structures
+- if no input attribute is defined, all attributes should be given as process start context
+- error handling
 
-## For cancelling a process
+## For cancelling/resuming/suspending a process
 
-- `@build.process.cancel` -- Cancel any processes bound to the entity (using entityKey as businessKey in SBPA) after update or deletion
-  - `@build.process.cancel.on`
-  - `@build.process.cancel.cascade` -- either boolean or string 'true' | 'false'
-- `@build.process.cancel.if` -- Only cancel if this element has a truthy value
+- `@build.process.<cancel|resume|suspend>` -- Cancel any processes bound to the entity (using entityKey as businessKey in SBPA)
+  - `@build.process.<cancel|resume|suspend>.on`
+  - `@build.process.<cancel|resume|suspend>.cascade` -- boolean
+  - `@build.process.<cancel|resume|suspend>.when` -- only starting process when expression is true
+    - example: `@build.process.suspend.when: (weight > 10)`
 
 ### Missing:
 
-- return any result in srv handler
-- build time validation
-- currently cancel.if does not work if on is DELETE
-
-## Missing annotations:
-
-- `@build.process.resume/suspend`
+- error handling
 
 # cap-js Repository Template
 

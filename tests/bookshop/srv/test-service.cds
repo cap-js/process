@@ -1,16 +1,9 @@
 service TestService {
 
   @build.process.start: {
-    id: 'eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
-    on: 'CREATE'
-  }
-  @build.process.cancel: {
-    on: 'DELETE',
-    cascade: 'false'
-  }
-  @build.process.suspend: {
+    id: 'ShipmentProcess',
     on: 'UPDATE',
-    cascade: 'true'
+    when: (weight > 10)
   }
   entity AnnotatedShipments   as
     projection on Shipments {
@@ -18,11 +11,7 @@ service TestService {
       address @(build.process.input: 'Adresse'),
       date,
       weight @build.process.input,
-      case
-        when weight > 100
-             then true
-        else false
-      end as isTooHeavy : Boolean @build.process.cancel.if
+      items @build.process.input,
     }
 
   entity UnAnnotatedShipments as
@@ -35,5 +24,25 @@ service TestService {
         address : String;
         date    : String;
         weight  : Integer;
+        items   : Composition of many Items
+                    on items.shipmentID = ID;
+  }
+
+  entity Items {
+    key itemID      : String @build.process.input;
+        description : String @build.process.input;
+        quantity    : Integer @build.process.input;
+        shipmentID  : String;
+        shipment    : Association to Shipments
+                        on shipment.ID = shipmentID;
+        materialID  : String;
+        material    : Association to one Material
+                        on material.materialID = materialID
+                      @build.process.input;
+  }
+
+  entity Material {
+    key materialID : String @build.process.input;
+        unit       : String @build.process.input;
   }
 }

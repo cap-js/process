@@ -1,5 +1,5 @@
-import cds, { expr, Results, Target } from "@sap/cds";
-import { concatenateBusinessKey, fetchMissingColumns, getElementAnnotations, isPredicateConditionMet } from "./handler";
+import cds, { DeleteRequest, expr, Results, Target } from "@sap/cds";
+import { concatenateBusinessKey, fetchEntity } from "./handler";
 
 
 enum ProcessResumeOn {
@@ -10,30 +10,41 @@ enum ProcessResumeOn {
 type ProcessResumeSpec = {
     on?: ProcessResumeOn,
     cascade?: boolean,
-    predicates: string[],
+    resumeExpr: expr | undefined
 }
 
+const LOG = cds.log("process");
+const processNotResumedMessage = "Not resuming process as resume condition(s) are not met";
 
-export async function handleProcessResume(target: Target, data: Results, req: cds.Request) {
+
+export async function handleProcessResume(req: cds.Request) {
+    
+    if(req.event === 'DELETE' && ((req as DeleteRequest)._Process === undefined || (req as DeleteRequest)._Process?.length === 0)) {
+        LOG.debug(processNotResumedMessage);
+        return;
+    }
+
+    const target = req.target as Target;
+    const data = (req as DeleteRequest)._Process ?? req.data
     
     // init specification
     const resumeSpecs = initResumeSpecs(target);
 
     // fetch entity new when event is not delete, otherwise use data object
-    const row = await fetchMissingColumns(
-        resumeSpecs.predicates,
+    const row = req.event === 'DELETE' ? data : await fetchEntity(
         data,
-        req
+        req,
+        resumeSpecs.resumeExpr    
     );
 
     // check resume condition or if event is delete
-    if(!isPredicateConditionMet(resumeSpecs.predicates, row) && req.event !== 'DELETE') {
-            console.log(`Not resuming process as resume condition(s) are not met`)
-            return
-        }
+    if(!row) {
+        LOG.debug(processNotResumedMessage)
+        return
+    }
     
     // get business Key
-    const businessKey = concatenateBusinessKey(target as cds.entity, row);
+    const businessKey = concatenateBusinessKey(target as cds.entity, {...row, ...req.data});
 
     // resume process
     const processService = await cds.connect.to("ProcessService");
@@ -47,15 +58,7 @@ function initResumeSpecs(target: Target): ProcessResumeSpec {
     const resumeSpecs: ProcessResumeSpec = {
         on: target['@build.process.resume.on'] as ProcessResumeOn,
         cascade: target['@build.process.resume.cascade'],
-        predicates: [],
+        resumeExpr: target['@build.process.resume.when'] ? (target['@build.process.resume.when']as any).xpr as expr : undefined,
     }
-    const elementAnnotations = getElementAnnotations(target as cds.entity)
-        for (const [elementName, key, value] of elementAnnotations) {
-            switch (key) {
-                case "@build.process.resume.if":
-                resumeSpecs.predicates.push(elementName)
-                break
-            }
-        }
     return resumeSpecs;
 }

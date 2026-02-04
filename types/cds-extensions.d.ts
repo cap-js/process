@@ -60,16 +60,23 @@ declare module '@sap/cds' {
   interface Target extends cds.Definition_2 {
     '@build.process.start.id'?: string;
     '@build.process.start.on'?: string;
+    '@build.process.start.when'?: object;
     '@build.process.cancel.on'?: string;
     '@build.process.cancel.cascade'?: boolean;
+    '@build.process.cancel.when'?: object;
     '@build.process.suspend.on'?: string;
     '@build.process.suspend.cascade'?: boolean;
+    '@build.process.suspend.when'?: object;
     '@build.process.resume.on'?: string;
     '@build.process.resume.cascade'?: boolean;
+    '@build.process.resume.when'?: object;
   }
 
   interface Results extends cds.ResultSet {
     [key: string]: any ;
-  } 
-
+  }
+  
+  interface DeleteRequest extends cds.Request {
+    _Process?: cds.entity[];
+  }
 }

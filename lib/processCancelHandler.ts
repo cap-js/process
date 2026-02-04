@@ -1,6 +1,6 @@
-import { Results, Target } from "@sap/cds";
+import { DeleteRequest, expr, Results, Target } from "@sap/cds";
 import cds from "@sap/cds"
-import { concatenateBusinessKey, fetchMissingColumns, getElementAnnotations, isPredicateConditionMet } from "./handler";
+import { concatenateBusinessKey, fetchEntity } from "./handler";
 
 enum ProcessCancelOn {
     Update = 'UPDATE',
@@ -10,33 +10,42 @@ enum ProcessCancelOn {
 type ProcessCancelSpec = {
     on?: ProcessCancelOn,
     cascade?: boolean,
-    predicates: string[]
+    cancelExpr: expr | undefined;
 }
 
+const LOG = cds.log("process");
+const processNotCancellingMessage = "Not cancelling process as cancel condition(s) are not met";
 
 export async function handleProcessCancel(
-    target: Target,
-    data: Results,
     req: cds.Request
 ) {
+    if(req.event === 'DELETE' && ((req as DeleteRequest)._Process === undefined || (req as DeleteRequest)._Process?.length === 0)) {
+        LOG.debug(processNotCancellingMessage);
+        return;
+      }
+    
+      const target = req.target as Target;
+      const data = (req as DeleteRequest)._Process ?? req.data
+      
     // init specification
     const cancelSpecs = initCancelSpecs(target);
 
-    // fetch required columns
-    const row = await fetchMissingColumns(
-        cancelSpecs.predicates,
+    // fetch entity new when event is not delete, otherwise use data object
+    const row = req.event === 'DELETE' ? data : await fetchEntity(
         data,
-        req
+        req,
+        cancelSpecs.cancelExpr    
     );
+    
 
     // check cancel condition or if event is delete
-    if(!isPredicateConditionMet(cancelSpecs.predicates, row) && req.event !== 'DELETE') {
-        console.log(`Not cancelling process as cancel condition(s) are not met`)
+    if(!row) {
+        LOG.debug(processNotCancellingMessage);
         return
     }
 
     // get business Key
-    const businessKey = concatenateBusinessKey(target as cds.entity, row)
+    const businessKey = concatenateBusinessKey(target as cds.entity, {...row, ...req.data})
 
     // cancel process
     const processService = await cds.connect.to("ProcessService")
@@ -51,16 +60,7 @@ function initCancelSpecs(target: Target): ProcessCancelSpec {
     const cancelSpecs: ProcessCancelSpec = {
         on: target['@build.process.cancel.on'] as ProcessCancelOn,
         cascade: target['@build.process.cancel.cascade'],
-        predicates: []
+        cancelExpr: target['@build.process.cancel.when'] ? (target['@build.process.cancel.when']as any).xpr as expr : undefined,
     }
-    const elementAnnotations = getElementAnnotations(target as cds.entity)
-    for (const [elementName, key, value] of elementAnnotations) {
-        switch (key) {
-            case "@build.process.cancel.if":
-            cancelSpecs.predicates.push(elementName)
-            break
-        }
-    }
-
     return cancelSpecs;
 }

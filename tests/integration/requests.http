@@ -1,4 +1,3 @@
-
 @server = http://localhost:4004
 
 # @name createShipment with annotation
@@ -9,8 +8,55 @@ Content-Type: application/json
     "ID": "123456",
     "address": "Germany",
     "date": "2026",
-    "weight": 1000
+    "weight": 11,
+    "items": [
+        {
+            "itemID": "item1",
+            "description": "Item 1 description",
+            "quantity": 5,
+            "materialID": "mat1"
+        }
+    ]
 }
+
+###
+
+# @name create material
+POST {{server}}/odata/v4/test/Material
+Content-Type: application/json
+
+{
+    "materialID": "mat1",
+    "unit": "kg"
+}
+
+###
+
+# @name create multiple shipments with annotation (CAP deep insert)
+// does not work
+POST {{server}}/odata/v4/test/AnnotatedShipments
+Content-Type: application/json
+
+[
+    {
+        "ID": "123456",
+        "address": "Germany",
+        "date": "2026",
+        "weight": 1000
+    },
+    {
+        "ID": "123457",
+        "address": "France",
+        "date": "2026",
+        "weight": 1500
+    },
+    {
+        "ID": "123458",
+        "address": "Italy",
+        "date": "2026",
+        "weight": 2000
+    }
+]
 
 ###
 
@@ -33,10 +79,100 @@ PATCH {{server}}/odata/v4/test/AnnotatedShipments('123456')
 Content-Type: application/json
 
 {
-    "weight": 1000
+    "weight": 10
 }
 
 ###
 
 # @name deleteShipment
 DELETE {{server}}/odata/v4/test/AnnotatedShipments('123456')
+
+###
+
+# @name create multiple shipments with batch request
+POST {{server}}/odata/v4/test/$batch
+Content-Type: application/json
+
+{
+  "requests": [
+    {
+      "id": "1",
+      "method": "POST",
+      "url": "AnnotatedShipments",
+      "headers": {"Content-Type": "application/json"},
+      "body": {"ID": "123456", "address": "Germany", "date": "2026", "weight": 9}
+    },
+    {
+      "id": "2",
+      "method": "POST",
+      "url": "AnnotatedShipments",
+      "headers": {"Content-Type": "application/json"},
+      "body": {"ID": "123457", "address": "France", "date": "2026", "weight": 5}
+    },
+    {
+      "id": "3",
+      "method": "POST",
+      "url": "AnnotatedShipments",
+      "headers": {"Content-Type": "application/json"},
+      "body": {"ID": "123458", "address": "Italy", "date": "2026", "weight": 2000}
+    }
+  ]
+}
+
+###
+
+# @name delete multiple shipments with batch request
+POST {{server}}/odata/v4/test/$batch
+Content-Type: application/json
+
+{
+  "requests": [
+    {
+      "id": "1",
+      "method": "DELETE",
+      "url": "AnnotatedShipments('123456')"
+    },
+    {
+      "id": "2",
+      "method": "DELETE",
+      "url": "AnnotatedShipments('123457')"
+    },
+    {
+      "id": "3",
+      "method": "DELETE",
+      "url": "AnnotatedShipments('123458')"
+    }
+  ]
+}
+
+###
+
+# @name update multiple shipments with batch request
+POST {{server}}/odata/v4/test/$batch
+Content-Type: application/json
+
+{
+  "requests": [
+    {
+      "id": "12",
+      "method": "PATCH",
+      "url": "AnnotatedShipments('123456')",
+      "headers": {"Content-Type": "application/json"},
+      "body": {"weight": 1100}
+    },
+    {
+      "id": "2",
+      "method": "PATCH",
+      "url": "AnnotatedShipments('123457')",
+      "headers": {"Content-Type": "application/json"},
+      "body": {"weight": 1600}
+    },
+    {
+      "id": "3",
+      "method": "PATCH",
+      "url": "AnnotatedShipments('123458')",
+      "headers": {"Content-Type": "application/json"},
+      "body": {"weight": 1}
+    }
+  ]
+}

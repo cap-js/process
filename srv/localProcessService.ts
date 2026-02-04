@@ -4,14 +4,14 @@ import cds from '@sap/cds';
 const LOG = cds.log("process");
 
 class ProcessService extends cds.ApplicationService { async init() {
-        console.log('Initializing Local Process Service...')
+        LOG.debug('Initializing Local Process Service...')
 
         this.on('startEvent', async (req: any) => {
 
-            LOG.info("==============================================================");
-            LOG.info(`Process start for ${req.data.definitionId} initiated`);
-            LOG.info('Context: ', JSON.stringify(req.data.context, null, 2));
-            LOG.info("==============================================================");
+            LOG.debug("==============================================================");
+            LOG.debug(`Process start for ${req.data.definitionId} initiated`);
+            LOG.debug('Context: ', JSON.stringify(req.data.context, null, 2));
+            LOG.debug("==============================================================");
 
             const workflowInstance = { id: crypto.randomUUID() }; // Placeholder
             const message = `Process with ID ${workflowInstance.id} was successfully started.`;
@@ -26,10 +26,10 @@ class ProcessService extends cds.ApplicationService { async init() {
 
         this.on('start', async (req: any) => {
             
-            LOG.info("==============================================================");
-            LOG.info(`Process start for ${req.data.definitionId} initiated`);
-            LOG.info('Context: ', JSON.stringify(req.data.context, null, 2));
-            LOG.info("==============================================================");
+            LOG.debug("==============================================================");
+            LOG.debug(`Process start for ${req.data.definitionId} initiated`);
+            LOG.debug('Context: ', JSON.stringify(req.data.context, null, 2));
+            LOG.debug("==============================================================");
 
             const workflowInstance = { id: crypto.randomUUID() }; // Placeholder
             const message = `Process with ID ${workflowInstance.id} was successfully started.`;
@@ -42,10 +42,10 @@ class ProcessService extends cds.ApplicationService { async init() {
         });
 
         this.on('cancel', async (req: any) => {
-            LOG.info("==============================================================");
-            LOG.info(`Process cancel for ${req.data.businessKey} initiated`);
-            LOG.info('Context: ', JSON.stringify(req.data, null, 2));
-            LOG.info("==============================================================");
+            LOG.debug("==============================================================");
+            LOG.debug(`Process cancel for ${req.data.businessKey} initiated`);
+            LOG.debug('Context: ', JSON.stringify(req.data, null, 2));
+            LOG.debug("==============================================================");
 
             const businessKey = { id: crypto.randomUUID() }; // Placeholder
             const message = `Process with ID ${businessKey.id} was successfully cancelled.`;
@@ -58,10 +58,10 @@ class ProcessService extends cds.ApplicationService { async init() {
         }); 
 
         this.on('suspend', async (req: any) => {
-            LOG.info("==============================================================");
-            LOG.info(`Process suspend for ${req.data.businessKey} initiated`);
-            LOG.info('Context: ', JSON.stringify(req.data, null, 2));
-            LOG.info("==============================================================");
+            LOG.debug("==============================================================");
+            LOG.debug(`Process suspend for ${req.data.businessKey} initiated`);
+            LOG.debug('Context: ', JSON.stringify(req.data, null, 2));
+            LOG.debug("==============================================================");
 
             const businessKey = { id: crypto.randomUUID() }; // Placeholder
             const message = `Process with ID ${businessKey.id} was successfully suspended.`;
@@ -73,10 +73,10 @@ class ProcessService extends cds.ApplicationService { async init() {
             }; 
         }); 
         this.on('resume', async (req: any) => {
-            LOG.info("==============================================================");
-            LOG.info(`Process resume for ${req.data.businessKey} initiated`);
-            LOG.info('Context: ', JSON.stringify(req.data, null, 2));
-            LOG.info("==============================================================");
+            LOG.debug("==============================================================");
+            LOG.debug(`Process resume for ${req.data.businessKey} initiated`);
+            LOG.debug('Context: ', JSON.stringify(req.data, null, 2));
+            LOG.debug("==============================================================");
 
             const businessKey = { id: crypto.randomUUID() }; // Placeholder
             const message = `Process with ID ${businessKey.id} was successfully resumed.`;
