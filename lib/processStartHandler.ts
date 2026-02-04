@@ -5,6 +5,7 @@ import {
   fetchEntity,
   getElementAnnotations,
 } from "./handler"
+import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_WHEN, PROCESS_INPUT } from "./constants"
 
 import cds from "@sap/cds"
 const LOG = cds.log("process");
@@ -78,10 +79,10 @@ export async function handleProcessStart(
 
 function initStartSpecs(target: Target): ProcessStartSpec {
   const startSpecs: ProcessStartSpec = {
-    id: target['@build.process.start.id'] as string,
-    on: target['@build.process.start.on'] as ProcessStartOn,
+    id: target[PROCESS_START_ID] as string,
+    on: target[PROCESS_START_ON] as ProcessStartOn,
     inputs: [],
-    startExpr: target['@build.process.start.when'] ? (target['@build.process.start.when']as any).xpr as expr : undefined,
+    startExpr: target[PROCESS_START_WHEN] ? (target[PROCESS_START_WHEN]as any).xpr as expr : undefined,
   }
   const elementAnnotations = getElementAnnotations(target as cds.entity)
   startSpecs.inputs = getInputElements(elementAnnotations);
@@ -93,7 +94,7 @@ function getInputElements(elementAnnotations: [string, string, string, any][]): 
   const inputs: ProcessStartInput[] = [];
   for (const [elementName, key, value, associatedElements] of elementAnnotations) {
     switch (key) {
-      case "@build.process.input":
+      case PROCESS_INPUT:
         const input: ProcessStartInput = { sourceElement: elementName, associatedInputElements: associatedElements ? getInputElements(getElementAnnotations(associatedElements)) : undefined }
         input.targetVariable = coerceToString(value)
         inputs.push(input)  

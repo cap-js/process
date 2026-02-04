@@ -1,4 +1,5 @@
 import cds, { column_expr, expr, Results, type } from '@sap/cds';
+import { BUILD_PREFIX } from './constants';
 const { SELECT } = cds.ql; 
 
 export type ValidationResult = {
@@ -47,7 +48,7 @@ export function coerceToString(value: string | object, toUpperCase?: boolean) : 
 export function getEntityAnnotations(
   entity: cds.entity,
 ): [string, string][] {
-  const entityAnnotations = Object.entries(entity).filter(([key]) => key.startsWith('@build'));
+  const entityAnnotations = Object.entries(entity).filter(([key]) => key.startsWith(BUILD_PREFIX));
   return entityAnnotations;
 }
 
@@ -58,7 +59,7 @@ export function getElementAnnotations(
     Object.entries(entity.elements)
         .forEach(([elementName, element]) => {
             Object.entries(element)
-                .filter(([key]) => key.startsWith('@build'))
+                .filter(([key]) => key.startsWith(BUILD_PREFIX))
                 .forEach(([key, value]) => {
                     // for association elements: element._target.elements
                     let associatedElements;

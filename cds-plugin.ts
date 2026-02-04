@@ -1,9 +1,19 @@
-import cds, { column_expr, DeleteRequest, Results, Target } from "@sap/cds"
-import { getColumnsForProcessStart, handleProcessStart } from "./lib/processStartHandler"
+import cds, { Results, Target } from "@sap/cds"
+import {  handleProcessStart } from "./lib/processStartHandler"
 import { handleProcessCancel } from "./lib/processCancelHandler"
 import { handleProcessSuspend } from "./lib/processSuspendHandler"
 import { handleProcessResume } from "./lib/processResumeHandler"
 import { addDeletedEntityToRequest } from "./lib/srv-before-utils"
+import { 
+  PROCESS_START_ID, 
+  PROCESS_START_ON, 
+  PROCESS_CANCEL_ON, 
+  PROCESS_CANCEL_CASCADE, 
+  PROCESS_SUSPEND_ON, 
+  PROCESS_SUSPEND_CASCADE, 
+  PROCESS_RESUME_ON, 
+  PROCESS_RESUME_CASCADE 
+} from "./lib/constants"
 const LOG = cds.log("process");
 
 
@@ -13,7 +23,7 @@ cds.on("serving", async (service: cds.Service) => {
 
   service.before("DELETE", async (req: cds.Request) => { 
     
-    const target = req.target as any
+    const target = req.target as Target
 
     if (areCancelAnnotationsDefined(target, req.event) || areSuspendAnnotationsDefined(target, req.event) || areStartAnnotationsDefined(target, req.event) || areResumeAnnotationsDefined(target, req.event)) {  
       await addDeletedEntityToRequest(target, req, areStartAnnotationsDefined(target, req.event));
@@ -45,19 +55,18 @@ cds.on("serving", async (service: cds.Service) => {
   })
 })
 
-// TODO: move anno strings to constants
 function areCancelAnnotationsDefined(target: Target, event: string): boolean {
-  return !!(target['@build.process.cancel.on'] && (typeof target['@build.process.cancel.cascade'] === "boolean") && target['@build.process.cancel.on'] === event)
+  return !!(target[PROCESS_CANCEL_ON] && (typeof target[PROCESS_CANCEL_CASCADE] === "boolean") && target[PROCESS_CANCEL_ON] === event)
 }
 
 function areStartAnnotationsDefined(target: Target, event: string): boolean {
-  return !!(target["@build.process.start.id"] && target["@build.process.start.on"] && target["@build.process.start.on"] === event);
+  return !!(target[PROCESS_START_ID] && target[PROCESS_START_ON] && target[PROCESS_START_ON] === event);
 }
 
 function areSuspendAnnotationsDefined(target: Target, event: string): boolean {
-  return !!( target['@build.process.suspend.on'] && (typeof target['@build.process.suspend.cascade'] === "boolean") && target['@build.process.suspend.on'] === event);
+  return !!( target[PROCESS_SUSPEND_ON] && (typeof target[PROCESS_SUSPEND_CASCADE] === "boolean") && target[PROCESS_SUSPEND_ON] === event);
 }
 
 function areResumeAnnotationsDefined(target: Target, event: string): boolean {
-  return !!( target['@build.process.resume.on'] && (typeof target['@build.process.resume.cascade'] === "boolean") && target['@build.process.resume.on'] === event);
+  return !!( target[PROCESS_RESUME_ON] && (typeof target[PROCESS_RESUME_CASCADE] === "boolean") && target[PROCESS_RESUME_ON] === event);
 }

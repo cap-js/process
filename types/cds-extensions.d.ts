@@ -57,6 +57,7 @@ declare module '@sap/cds' {
     [key: string]: any;
   }
 
+  // Process annotation types - using literal strings that match constants in lib/constants.ts
   interface Target extends cds.Definition_2 {
     '@build.process.start.id'?: string;
     '@build.process.start.on'?: string;
