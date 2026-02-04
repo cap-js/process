@@ -77,7 +77,7 @@ function areResumeAnnotationsDefined(target: Target, event: string): boolean {
   return !!(target[PROCESS_RESUME_ON] && (typeof target[PROCESS_RESUME_CASCADE] === "boolean") && target[PROCESS_RESUME_ON] === event);
 }
 
-cds.on('compile.for.runtime', async csn => {
+cds.on('loaded', async csn => {
   const externalDir = path.join(process.cwd(), 'srv', 'external');
 
   function getAllCsnFiles(dirPath: string, arrayOfFiles: string[] = []): string[] {
@@ -133,27 +133,34 @@ cds.on('compile.for.runtime', async csn => {
       kind: 'event',
       [PROCESS_START_EVENT]: true,
       [PROCESS_DEFINITION_ID]: service['@build.process'],
-      elements: {
-        context: {
-          elements: data.definitions[`${serviceName}.ProcessInputs`].elements,
-          notNull: true
-        }
-      },
+      elements: data.definitions[`${serviceName}.ProcessInputs`].elements,
     } as any;
 
     csn.definitions[`ProcessService.cancel${processName}`] = {
       kind: 'event',
-      [PROCESS_CANCEL_EVENT]: true
+      [PROCESS_CANCEL_EVENT]: true,
+      elements: {
+        businessKey: { type: "cds.String", length: 256 },
+        cascade: { type: "cds.Boolean" }
+      }
     } as any;
 
     csn.definitions[`ProcessService.resume${processName}`] = {
       kind: 'event',
-      [PROCESS_RESUME_EVENT]: true
+      [PROCESS_RESUME_EVENT]: true,
+      elements: {
+        businessKey: { type: "cds.String", length: 256 },
+        cascade: { type: "cds.Boolean" }
+      }
     } as any;
 
     csn.definitions[`ProcessService.suspend${processName}`] = {
       kind: 'event',
-      [PROCESS_SUSPEND_EVENT]: true
+      [PROCESS_SUSPEND_EVENT]: true,
+      elements: {
+        businessKey: { type: "cds.String", length: 256 },
+        cascade: { type: "cds.Boolean" }
+      }
     } as any;
 
   }

@@ -1,5 +1,6 @@
-import cds from '@sap/cds';
-import { title } from 'process';
+import cds, { context } from '@sap/cds';
+import { startRiskManagementProcess, cancelRiskManagementProcess, resumeRiskManagementProcess, suspendRiskManagementProcess } from '#cds-models/ProcessService';
+import { start } from 'repl';
 
 module.exports = class CatalogService extends cds.ApplicationService {
   init() {
@@ -32,21 +33,35 @@ module.exports = class CatalogService extends cds.ApplicationService {
       let { book, quantity } = req.data
       await this.emit('OrderedBook', { book, quantity, buyer: req.user.id })
       const processService = await cds.connect.to('ProcessService');
-      const context = {
-        "title": "Sample Risk",
-        "desciption": "This is a sample risk created to demonstrate process integration.",
-        "probability": 0.75,
-        "severity": "High",
-        "impact": 50000.00,
-        "category": "Operational",
-        "dueDate": "2024-12-31",
-        "owner": req.user.id,
-      };
 
-      // await processService.send('startRiskManagementProcess', context);
-      await processService.send('cancelRiskManagementProcess', { businessKey: "test_businessKey", cascade: true });
-      // await processService.send('resumeRiskManagementProcess', { businessKey: "test_businessKey", cascade: true });
-      // await processService.send('suspendRiskManagementProcess', { businessKey: "test_businessKey", cascade: true });
+      const startContext: startRiskManagementProcess = {
+        title: "Sample Risk",
+        desciption: "This is a sample risk created to demonstrate process integration.",
+        probability: 0.75,
+        severity: "High",
+        impact: 50000.00,
+        category: "Operational",
+        dueDate: "2024-12-31",
+        owner: req.user.id,
+      }
+
+      const cancelContext: cancelRiskManagementProcess = {
+        businessKey: "test_businessKey",
+        cascade: true
+      }
+      const resumeContext: resumeRiskManagementProcess = {
+        businessKey: "test_businessKey",
+        cascade: true
+      }
+      const suspendContext: suspendRiskManagementProcess = {
+        businessKey: "test_businessKey",
+        cascade: true
+      }
+
+      await processService.send('startRiskManagementProcess', startContext);
+      await processService.send('cancelRiskManagementProcess', cancelContext);
+      await processService.send('resumeRiskManagementProcess', resumeContext);
+      await processService.send('suspendRiskManagementProcess', suspendContext);
 
 
 
