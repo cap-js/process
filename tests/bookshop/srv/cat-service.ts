@@ -1,6 +1,7 @@
 import cds, { context } from '@sap/cds';
-import { startRiskManagementProcess, cancelRiskManagementProcess, resumeRiskManagementProcess, suspendRiskManagementProcess } from '#cds-models/ProcessService';
+import { startShipmentHandler, startRiskManagementProcess, cancelRiskManagementProcess, resumeRiskManagementProcess, suspendRiskManagementProcess, start } from '#cds-models/ProcessService';
 import { start } from 'repl';
+import { Item } from '#cds-models/ProcessService/ShipmentHandlerService';
 
 module.exports = class CatalogService extends cds.ApplicationService {
   init() {
@@ -45,6 +46,8 @@ module.exports = class CatalogService extends cds.ApplicationService {
         owner: req.user.id,
       }
 
+
+
       const cancelContext: cancelRiskManagementProcess = {
         businessKey: "test_businessKey",
         cascade: true
@@ -58,10 +61,32 @@ module.exports = class CatalogService extends cds.ApplicationService {
         cascade: true
       }
 
-      await processService.send('startRiskManagementProcess', startContext);
-      await processService.send('cancelRiskManagementProcess', cancelContext);
-      await processService.send('resumeRiskManagementProcess', resumeContext);
-      await processService.send('suspendRiskManagementProcess', suspendContext);
+
+      processService.emit(startShipmentHandler, {
+        startingShipment: {
+          identifier: "Hi",
+          items: [
+            {
+              identifier: "Item1",
+              price: 100,
+              quantity: 2,
+              title: "Sample Item"
+            }
+          ]
+
+        }
+      })
+
+      await processService.emit(startRiskManagementProcess, {
+
+      });
+
+
+      await processService.emit(cancelRiskManagementProcess, {
+
+      });
+      await processService.emit('resumeRiskManagementProcess', resumeContext);
+      await processService.emit('suspendRiskManagementProcess', suspendContext);
 
 
 
