@@ -1,0 +1,4 @@
+ID,business_key,name,code,contactEmail,contactPhone,website,rating,active,createdAt,createdBy,modifiedAt,modifiedBy
+301e8400-e29b-41d4-a716-446655440001,CARRIER-001,Global Express Logistics,GEL,contact@globalexpress.com,+1-555-0100,https://globalexpress.com,4.50,true,2023-01-01T00:00:00Z,admin,2023-01-01T00:00:00Z,admin
+301e8400-e29b-41d4-a716-446655440002,CARRIER-002,EuroShip International,ESI,info@euroship.eu,+44-20-5550-2000,https://euroship.eu,4.20,true,2023-01-01T00:00:00Z,admin,2023-01-01T00:00:00Z,admin
+301e8400-e29b-41d4-a716-446655440003,CARRIER-003,Pacific Freight Services,PFS,support@pacificfreight.com,+61-2-5550-3000,https://pacificfreight.com,4.75,true,2023-01-01T00:00:00Z,admin,2023-01-01T00:00:00Z,admin

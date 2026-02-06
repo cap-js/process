@@ -4,7 +4,7 @@
   "description": "",
   "main": "cds-plugin.ts",
   "scripts": {
-    "test": "jest",
+    "test": "jest --silent",
     "test:watch": "jest --watch",
     "test:integration": "jest tests/integration",
     "build": "npm run cds-build && npm run cds-typer",
@@ -59,6 +59,7 @@
     }
   },
   "devDependencies": {
+    "@cap-js/cds-test": "^0.4",
     "@cap-js/cds-types": "^0.15.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",

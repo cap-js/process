@@ -1,4 +1,9 @@
 /**
+ * Process Service
+ */
+export const PROCESS_SERVICE = 'ProcessService' as const;
+
+/**
  * Process Start Annotations
  */
 export const PROCESS_START = '@build.process.start' as const;

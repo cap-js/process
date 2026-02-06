@@ -12,7 +12,6 @@ export function findCsnFiles(externalDir: string): string[] | null {
 
     try {
         const files = getAllCsnFilesRecursive(externalDir);
-        LOG.info(`Found ${files.length} CSN file(s) in srv/external:`);
         return files.length > 0 ? files : null;
     } catch (error) {
         LOG.error('Error reading srv/external directory:', error);
