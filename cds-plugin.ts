@@ -5,6 +5,8 @@ import { handleProcessSuspend } from "./lib/processSuspendHandler"
 import { handleProcessResume } from "./lib/processResumeHandler"
 import { addDeletedEntityToRequest } from "./lib/srv-before-utils"
 import { findCsnFiles, processWorkflowDefinition } from "./lib/csn-type-utils"
+import { ProcessValidationPlugin } from "./lib/build/build-plugin"
+import * as fs from 'fs'
 import * as path from 'path'
 import {
   PROCESS_START_ID,
@@ -18,6 +20,9 @@ import {
 } from "./lib/constants"
 
 const LOG = cds.log("process");
+
+// Register build plugin for annotation validation during cds build
+cds.build?.register?.('process-validation', ProcessValidationPlugin)
 
 cds.on("serving", async (service: cds.Service) => {
   if (service instanceof cds.ApplicationService == false) return

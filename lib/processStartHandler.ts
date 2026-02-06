@@ -121,7 +121,14 @@ function getInputElements(elementAnnotations: [string, string, string, any][]): 
   for (const [elementName, key, value, associatedElements] of elementAnnotations) {
     switch (key) {
       case PROCESS_INPUT:
-        const input: ProcessStartInput = { sourceElement: elementName, associatedInputElements: associatedElements ? getInputElements(getElementAnnotations(associatedElements)) : undefined }
+        // For associations, recursively get input elements from the associated entity
+        // If the associated entity has no annotated elements, use empty array to signal "expand all"
+        const input: ProcessStartInput = { 
+          sourceElement: elementName, 
+          associatedInputElements: associatedElements 
+            ? getInputElements(getElementAnnotations(associatedElements)) 
+            : undefined 
+        }
 
         if(typeof value === 'boolean' || (value === 'true' || value === 'false')) {
           input.targetVariable = undefined;
@@ -151,8 +158,17 @@ function convertToColumnsExpr(array: ProcessStartInput[]): column_expr[] {
     }
 
     // Handle nested associations (expand)
-    if (item.associatedInputElements && item.associatedInputElements.length > 0) {
-      column.expand = convertToColumnsExpr(item.associatedInputElements);
+    // If associatedInputElements is defined (i.e., this is an association):
+    // - If it has elements, expand with those specific elements
+    // - If it's empty (no annotated elements in associated entity), expand with '*' to get all direct attributes
+    if (item.associatedInputElements !== undefined) {
+      if (item.associatedInputElements.length > 0) {
+        column.expand = convertToColumnsExpr(item.associatedInputElements);
+      } else {
+        // Association annotated as input but associated entity has no annotated elements
+        // -> expand with '*' to include all direct attributes
+        column.expand = ['*'] as unknown as column_expr[];
+      }
     }
 
     return column;

@@ -77,7 +77,6 @@ function buildWhereClause(keyFields: string[], results: Results, condition: expr
     }, {});
 
     // build where expression for object keys
-    // TODO: make more efficient, especially for batch operations
     const entries = Object.entries(keyObject);
     const parts = [];
     for (const [k, v] of entries) {
