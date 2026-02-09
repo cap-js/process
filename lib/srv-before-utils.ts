@@ -1,6 +1,6 @@
 import cds, { column_expr, DeleteRequest, Target } from "@sap/cds";
 import { getColumnsForProcessStart } from "./processStartHandler";
-import { PROCESS_CANCEL_WHEN, PROCESS_START_WHEN, PROCESS_SUSPEND_WHEN, PROCESS_RESUME_WHEN } from "./constants";
+import { PROCESS_CANCEL_WHEN, PROCESS_START_WHEN, PROCESS_SUSPEND_WHEN, PROCESS_RESUME_WHEN, PROCESS_CANCEL_ON, PROCESS_START_ON, PROCESS_SUSPEND_ON, PROCESS_RESUME_ON } from "./constants";
 import { getKeyFieldsForEntity } from "./handler";
 
 export async function addDeletedEntityToRequest(target: any, req: cds.Request, areStartAnnotationsDefined: boolean) {
@@ -13,14 +13,17 @@ export async function addDeletedEntityToRequest(target: any, req: cds.Request, a
     
     let where = (req as any).query.DELETE.from.ref[0]?.where ?? req.query.DELETE!.where;
 
-    
-    const whenAnnotations = [PROCESS_CANCEL_WHEN, PROCESS_START_WHEN, PROCESS_SUSPEND_WHEN, PROCESS_RESUME_WHEN];
-    for (const annotationKey of whenAnnotations) {
-        if(target[annotationKey]) {
-            where = where.length ? [{xpr: where}, 'and', {xpr: target[annotationKey].xpr}] : target[annotationKey].xpr;
-            break; 
+    const onAnnotations = [PROCESS_CANCEL_ON, PROCESS_START_ON, PROCESS_SUSPEND_ON, PROCESS_RESUME_ON];
+    let annotationWhen;
+    for(const annotationKey of onAnnotations) {
+        if(target[annotationKey] && target[annotationKey] === 'DELETE') {
+            annotationWhen = target[annotationKey.replace("on", "when")];
+            if(annotationWhen){
+                where = where.length ? [{xpr: where}, 'and', {xpr: annotationWhen.xpr}] : annotationWhen.xpr;
+            }
         }
     }
+
     if (where) {
         const entities = await SELECT.one.from(req.subject).columns(columns).where(where);
         (req as DeleteRequest)._Process = entities;
