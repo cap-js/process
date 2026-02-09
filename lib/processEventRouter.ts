@@ -32,7 +32,7 @@ const PROCESS_ANNOTATIONS = {
 } as const;
 
 function getProcessDefinition(eventName: string): ProcessDefinition | undefined {
-    const def = cds.model?.definitions?.[`ProcessService.${eventName}`];
+    const def = cds.model?.definitions?.[`${eventName}`];
     return def as ProcessDefinition | undefined;
 }
 

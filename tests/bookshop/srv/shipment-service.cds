@@ -20,10 +20,9 @@ service ShipmentService {
 
   action updateShipmentStatus(shipmentID: UUID,
                               @mandatory newStatus: String,
-                              notes: String)       returns Shipments;
+                              notes: String) returns Shipments;
 
-  action cancelShipment(shipmentID: UUID,
-                        @mandatory reason: String) returns Shipments;
+  action cancelShipment(shipmentID: UUID)    returns Shipments;
 
-  action startShipment(shipmentID: UUID)           returns Shipments;
+  action startShipment(shipmentID: UUID)     returns Shipments;
 }

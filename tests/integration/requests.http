@@ -176,3 +176,45 @@ Content-Type: application/json
     }
   ]
 }
+
+###
+POST  {{server}}/odata/v4/shipment/startShipment 
+Content-Type: application/json
+
+{
+  "shipmentID": "401e8400-e29b-41d4-a716-446655440001"
+}
+
+
+###
+POST  {{server}}/odata/v4/shipment/updateShipmentStatus
+Content-Type: application/json
+
+{
+  "shipmentID": "401e8400-e29b-41d4-a716-446655440001",
+  "newStatus": "SUSPENDED"
+  }
+
+###
+POST  {{server}}/odata/v4/shipment/updateShipmentStatus
+Content-Type: application/json
+
+{
+  "shipmentID": "401e8400-e29b-41d4-a716-446655440001",
+  "newStatus": "RESUMED"
+}
+
+###
+POST  {{server}}/odata/v4/shipment/cancelShipment
+Content-Type: application/json
+
+{
+  "shipmentID": "401e8400-e29b-41d4-a716-446655440001"
+}
+
+
+
+
+
+
+
