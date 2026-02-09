@@ -87,7 +87,7 @@ export async function handleProcessStart(
     return req.reject(400, ERROR_CODES.PROCESS_START_INVALID_KEY);
   }
 
-  const context = {...row, businessKey};
+  const context = {...row, "businesskey": businessKey};
 
   try {
     const processService = await cds.connect.to("ProcessService")
