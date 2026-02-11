@@ -23,6 +23,6 @@ test('should execute query', async () => {
         }
     });
 
-
-    expect(Array.isArray(response)).toBe(true);
+    const data = await response.json();
+    expect(Array.isArray(data)).toBe(true);
 });

@@ -60,6 +60,7 @@ export async function handleProcessRoutingForEvent(
     const definition = getProcessDefinition(eventName);
 
     if (!definition) {
+        LOG.warn("Process Definition is undefined")
         return;
     }
 

@@ -47,8 +47,7 @@ describe("ProcessService Event Emit Integration Tests", () => {
             const response = await POST(
                 "/odata/v4/shipment/cancelShipment",
                 {
-                    shipmentID: shipmentID,
-                    reason: "Customer requested cancellation"
+                    shipmentID: shipmentID
                 }
             );
 
@@ -68,8 +67,7 @@ describe("ProcessService Event Emit Integration Tests", () => {
                 "/odata/v4/shipment/updateShipmentStatus",
                 {
                     shipmentID: shipmentID,
-                    newStatus: "SUSPENDED",
-                    notes: "Temporarily suspended"
+                    newStatus: "SUSPENDED"
                 }
             );
 
@@ -89,8 +87,7 @@ describe("ProcessService Event Emit Integration Tests", () => {
                 "/odata/v4/shipment/updateShipmentStatus",
                 {
                     shipmentID: shipmentID,
-                    newStatus: "RESUMED",
-                    notes: "Resuming shipment"
+                    newStatus: "RESUMED"
                 }
             );
 
