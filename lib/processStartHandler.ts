@@ -91,8 +91,8 @@ export async function handleProcessStart(
 
   try {
     const processService = await cds.connect.to("ProcessService")
-
-    await processService.emit("start", {
+    const outboxedService = cds.outboxed(processService);
+    await outboxedService.emit("start", {
       definitionId: startSpecs.id!,
       context: context,
     })

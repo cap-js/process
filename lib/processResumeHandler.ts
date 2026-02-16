@@ -59,7 +59,8 @@ export async function handleProcessResume(req: cds.Request) {
     // resume process
     try {
         const processService = await cds.connect.to("ProcessService");
-        await processService.emit("resume", {
+        const outboxedService = cds.outboxed(processService);
+        await outboxedService.emit("resume", {
             businessKey: businessKey,
             cascade: resumeSpecs.cascade
         });

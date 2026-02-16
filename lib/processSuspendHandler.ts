@@ -58,7 +58,8 @@ export async function handleProcessSuspend(req: cds.Request) {
     // suspend process
     try {
         const processService = await cds.connect.to("ProcessService");
-        await processService.emit("suspend", {
+        const outboxedService = cds.outboxed(processService);
+        await outboxedService.emit("suspend", {
             businessKey: businessKey,
             cascade: suspendSpecs.cascade
         });

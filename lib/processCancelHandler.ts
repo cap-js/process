@@ -61,7 +61,8 @@ export async function handleProcessCancel(
     // cancel process
     try {
         const processService = await cds.connect.to("ProcessService")
-        await processService.emit("cancel", {
+        const outboxedService = cds.outboxed(processService);
+        await outboxedService.emit("cancel", {
             businessKey: businessKey,
             cascade: cancelSpecs.cascade
         })

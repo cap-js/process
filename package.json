@@ -46,7 +46,8 @@
       },
       "kinds": {
         "local-process-service": {
-          "model": "@cap-js/process/srv/localProcessService"
+          "model": "@cap-js/process/srv/localProcessService",
+          "outbox": true
         },
         "deployed-process-service": {
           "model": "@cap-js/process/srv/BTPProcessService",
