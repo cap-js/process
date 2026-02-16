@@ -6,7 +6,7 @@ import { getKeyFieldsForEntity } from "./handler";
 export async function addDeletedEntityToRequest(target: any, req: cds.Request, areStartAnnotationsDefined: boolean) {
     let columns: column_expr[] | string[] = [];
     if(areStartAnnotationsDefined) {
-        columns = await getColumnsForProcessStart(target);
+        columns = await getColumnsForProcessStart(target, req);
     } else {
         columns = getKeyFieldsForEntity(target as cds.entity);
     }

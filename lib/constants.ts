@@ -69,6 +69,7 @@ export const ERROR_CODES = {
     PROCESS_START_FETCH_FAILED: 'PROCESS_START_FETCH_FAILED',
     PROCESS_START_INVALID_KEY: 'PROCESS_START_INVALID_KEY',
     PROCESS_START_FAILED: 'PROCESS_START_FAILED',
+    PROCESS_START_CYCLE_DETECTED: 'PROCESS_START_CYCLE_DETECTED',
     // Suspend errors
     PROCESS_SUSPEND_FETCH_FAILED: 'PROCESS_SUSPEND_FETCH_FAILED',
     PROCESS_SUSPEND_INVALID_KEY: 'PROCESS_SUSPEND_INVALID_KEY',
@@ -89,6 +90,7 @@ export const ERROR_MESSAGES = {
     PROCESS_START_FETCH_FAILED: 'Failed to fetch entity for process start.',
     PROCESS_START_INVALID_KEY: 'Failed to build business key for process start.',
     PROCESS_START_FAILED: 'Failed to start process with definition ID ',
+    PROCESS_START_CYCLE_DETECTED: 'Cycle detected in @build.process.input annotations: ',
     // Suspend errors
     PROCESS_SUSPEND_FETCH_FAILED: 'Failed to fetch entity for process suspend.',
     PROCESS_SUSPEND_INVALID_KEY: 'Failed to build business key for process suspend.',

@@ -24,9 +24,10 @@ export type ProcessStartSpec = {
 }
 
 export function getColumnsForProcessStart(
-  target: Target
+  target: Target,
+  req: cds.Request
 ): column_expr[] | string[] {
-  const startSpecs = initStartSpecs(target)
+  const startSpecs = initStartSpecs(target, req)
   if(startSpecs.inputs.length > 0) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
     return ['*']
@@ -48,7 +49,7 @@ export async function handleProcessStart(
   const target = req.target as Target;
   const data = (req as DeleteRequest)._Process ?? req.data
 
-  const startSpecs = initStartSpecs(target)
+  const startSpecs = initStartSpecs(target, req)
 
   // if startSpecs.input = [] --> no input defined, fetch entire row
   let columns: column_expr[] | string[] = [];
@@ -103,7 +104,7 @@ export async function handleProcessStart(
 
 }
 
-function initStartSpecs(target: Target): ProcessStartSpec {
+function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
   const startSpecs: ProcessStartSpec = {
     id: target[PROCESS_START_ID] as string,
     on: target[PROCESS_START_ON] as string,
@@ -111,23 +112,51 @@ function initStartSpecs(target: Target): ProcessStartSpec {
     startExpr: target[PROCESS_START_WHEN] ? (target[PROCESS_START_WHEN]as any).xpr as expr : undefined,
   }
   const elementAnnotations = getElementAnnotations(target as cds.entity)
-  startSpecs.inputs = getInputElements(elementAnnotations);
+  const entityName = (target as cds.entity).name;
+  startSpecs.inputs = getInputElements(elementAnnotations, new Set([entityName]), [entityName], req);
   
   return startSpecs
 }
 
-function getInputElements(elementAnnotations: [string, string, string, any][]): ProcessStartInput[] {
+function getInputElements(
+  elementAnnotations: [string, string, string, any][],
+  visitedEntities: Set<string> = new Set(),
+  currentPath: string[] = [],
+  req: cds.Request
+): ProcessStartInput[] {
   const inputs: ProcessStartInput[] = [];
   for (const [elementName, key, value, associatedElements] of elementAnnotations) {
     switch (key) {
       case PROCESS_INPUT:
         // For associations, recursively get input elements from the associated entity
         // If the associated entity has no annotated elements, use empty array to signal "expand all"
+        let associatedInputElements: ProcessStartInput[] | undefined = undefined;
+        
+        if (associatedElements) {
+          const associatedEntityName = associatedElements.name || elementName;
+          
+          // Check for cycle: if we've already visited this entity, throw an error
+          if (visitedEntities.has(associatedEntityName)) {
+            LOG.error(ERROR_MESSAGES.PROCESS_START_CYCLE_DETECTED);
+            return req.reject(400, ERROR_CODES.PROCESS_START_CYCLE_DETECTED);
+          }
+          
+          // Add to visited set and path for this branch
+          const newVisited = new Set(visitedEntities);
+          newVisited.add(associatedEntityName);
+          const newPath = [...currentPath, associatedEntityName];
+          
+          associatedInputElements = getInputElements(
+            getElementAnnotations(associatedElements),
+            newVisited,
+            newPath,
+            req
+          );
+        }
+        
         const input: ProcessStartInput = { 
           sourceElement: elementName, 
-          associatedInputElements: associatedElements 
-            ? getInputElements(getElementAnnotations(associatedElements)) 
-            : undefined 
+          associatedInputElements 
         }
 
         if(typeof value === 'boolean' || (value === 'true' || value === 'false')) {
@@ -144,7 +173,7 @@ function getInputElements(elementAnnotations: [string, string, string, any][]): 
   return inputs;
 }
 
-// TODO: need to handle cycles?
+// Cycles are detected in getInputElements, so no cycle handling needed here
 function convertToColumnsExpr(array: ProcessStartInput[]): column_expr[] {
   return array.map((item) => {
     const column: column_expr = {};
