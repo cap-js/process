@@ -28,12 +28,11 @@ export function getColumnsForProcessStart(
   req: cds.Request
 ): column_expr[] | string[] {
   const startSpecs = initStartSpecs(target, req)
-  if(startSpecs.inputs.length > 0) {
+  if(startSpecs.inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
     return ['*']
   } else {
     return convertToColumnsExpr(startSpecs.inputs);
-
   }
 };
 

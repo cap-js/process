@@ -25,8 +25,9 @@ export async function addDeletedEntityToRequest(target: any, req: cds.Request, a
     }
 
     if (where) {
-        const entities = await SELECT.one.from(req.subject).columns(columns).where(where);
+        // Safeguard: use ['*'] if columns array is empty to avoid invalid SQL
+        const selectColumns = columns.length > 0 ? columns : ['*'];
+        const entities = await SELECT.one.from(req.subject).columns(selectColumns).where(where);
         (req as DeleteRequest)._Process = entities;
-    
     }
 }

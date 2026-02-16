@@ -47,3 +47,11 @@ entity Carriers : managed {
       shipments    : Association to many Shipments
                        on shipments.carrier = $self;
 }
+
+entity Car {
+  key ID           : UUID;
+      model        : String(100);
+      manufacturer : String(100);
+      mileage      : Integer;
+      year         : Integer;
+}
