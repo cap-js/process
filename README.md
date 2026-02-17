@@ -2,31 +2,85 @@
 
 ## For starting a process:
 
-- `@build.process.start` -- Start a process (or classic workflow), either after entity creation, update, or before deletion, including all entity elements unless at least one `@build.process.input` is given
-  - if not attribute is annotated with`@build.process.input`, all attributes of that entity will be fetched and are part of the context for process input. Associations will not be expanded in that case
+- `@build.process.start` -- Start a process (or classic workflow), either after entity creation, update, deletion, or any custom action including all entity elements unless at least one `@build.process.input` is given
+  - if no attribute is annotated with`@build.process.input`, all attributes of that entity will be fetched and are part of the context for process input. Associations will not be expanded in that case
   - `@build.process.start.id` -- definition ID for deployed process
   - `@build.process.start.on`
   - `@build.process.start.when` -- only starting process when expression is true
+    - example: `@build.process.start.when: (weight > 10)`
 - `@build.process.input` -- includes this element in the process start assuming name equality
 - `@(build.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
-- Important: the process that has been started needs to have an input attribute 'businessKey' of type string that is then assigned to the businessKey in process configuration so that the process can be later CANCELLED/SUSPENDED/RESUMED
+- Important: the process that has been started needs to have an input attribute 'businesskey' of type string that is then assigned to the businessKey in process configuration so that the process can be later CANCELLED/SUSPENDED/RESUMED
 
-### Missing:
+Example:
 
-- build time validation
-- proper testing
+```cds
+service MyService {
+
+    @build.process.start: {
+        id: '<projectId>.<processId>',
+        on: 'CREATE | UPDATE | DELETE | boundAction',
+        when: (<expression>)
+    }
+    entity MyProjection as projection on MyEntity {
+      myElement @build.process.input,
+      myElement2 @(build.process.input: 'targetVariable')
+      myElement3
+    };
+
+}
+
+```
 
 ## For cancelling/resuming/suspending a process
 
-- `@build.process.<cancel|resume|suspend>` -- Cancel any processes bound to the entity (using entityKey as businessKey in SBPA)
+- `@build.process.<cancel|resume|suspend>` -- Cancel/Suspend/Resume any processes bound to the entity (using entityKey as businessKey in SBPA)
   - `@build.process.<cancel|resume|suspend>.on`
   - `@build.process.<cancel|resume|suspend>.cascade` -- boolean
-  - `@build.process.<cancel|resume|suspend>.when` -- only starting process when expression is true
+  - `@build.process.<cancel|resume|suspend>.when` -- only starting process when expression is true --> optional annotation
     - example: `@build.process.suspend.when: (weight > 10)`
 
-### Missing:
+Example:
 
-- error handling
+```cds
+service MyService {
+
+    @build.process.<cancel|suspend|resume>: {
+        on: 'CREATE | UPDATE | DELETE | boundAction',
+        cascade: true | false,
+        when: (<expression>)
+    }
+    entity MyProjection as projection on MyEntity {
+      myElement,
+      myElement2,
+      myElement3
+    };
+
+}
+
+```
+
+# Current build time validation
+
+- currently, all validations are hard checked and will throw an error
+
+## Process Start
+
+- `@build.process.start.id` --> validates if id is there and if process with that ID is imported
+- `@build.process.start.on` --> validates if standard CRUD operation or if bound action on that entity exists
+  - Important: if the on annotation is set to 'DELETE', a custom before delete handler stores the entity that will be deleted, and uses the data as process input
+- `@build.process.start.when` --> validates if it is a valid expression
+- `@build.process.input`
+  - Currently not enabled
+  - validates if all entity attributes marked as input are also in the process inputs
+  - validates types and names
+  - also checks for optional attributes
+
+## Process Cancel/Suspend/resume
+
+- `@build.process.<cancel|suspend|resume>.on` --> validates if standard CRUD operation or if bound action on that entity exists
+- `@build.process.<cancel|suspend|resume>.cascade` --> validates if exists and if boolean
+- `@build.process.<cancel|suspend|resume>.when` --> validates if it is a valid expression
 
 # cap-js Repository Template
 
