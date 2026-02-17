@@ -4,7 +4,7 @@ import {
   fetchEntity,
   getElementAnnotations,
 } from "./handler"
-import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_WHEN, PROCESS_INPUT, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants"
+import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_IF, PROCESS_INPUT, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants"
 
 import cds from "@sap/cds"
 const LOG = cds.log("process");
@@ -108,7 +108,7 @@ function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
     id: target[PROCESS_START_ID] as string,
     on: target[PROCESS_START_ON] as string,
     inputs: [],
-    startExpr: target[PROCESS_START_WHEN] ? (target[PROCESS_START_WHEN]as any).xpr as expr : undefined,
+    startExpr: target[PROCESS_START_IF] ? (target[PROCESS_START_IF]as any).xpr as expr : undefined,
   }
   const elementAnnotations = getElementAnnotations(target as cds.entity)
   const entityName = (target as cds.entity).name;

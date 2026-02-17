@@ -2,23 +2,23 @@ import cds from "@sap/cds"
 import {
   PROCESS_START_ID,
   PROCESS_START_ON,
-  PROCESS_START_WHEN,
+  PROCESS_START_IF,
   PROCESS_CANCEL_ON,
   PROCESS_CANCEL_CASCADE,
-  PROCESS_CANCEL_WHEN,
+  PROCESS_CANCEL_IF,
   PROCESS_SUSPEND_ON,
   PROCESS_SUSPEND_CASCADE,
-  PROCESS_SUSPEND_WHEN,
+  PROCESS_SUSPEND_IF,
   PROCESS_RESUME_ON,
   PROCESS_RESUME_CASCADE,
-  PROCESS_RESUME_WHEN,
+  PROCESS_RESUME_IF,
   PROCESS_INPUT,
   PROCESS_CANCEL,
   PROCESS_SUSPEND,
   PROCESS_RESUME,
 } from "../constants"
 import { CsnDefinition } from "../../types/csn-extensions"
-import { validateAllowedAnnotations, validateOnAnnotation, validateRequiredGenericAnnotations, validateRequiredStartAnnotations, validateWhenAnnotation } from "./build-validations"
+import { validateAllowedAnnotations, validateOnAnnotation, validateRequiredGenericAnnotations, validateRequiredStartAnnotations, validateIfAnnotation } from "./build-validations"
 import { getProcessDefinitions } from "./build-validation-utils"
 
 const LOG = cds.log("process-build")
@@ -71,12 +71,12 @@ export class ProcessValidationPlugin extends BuildPluginBase {
   private validateStartAnnotations(entityName: string, def: CsnDefinition, processDefinitions: Map<string, CsnDefinition>, allDefinitions: Record<string, CsnDefinition> | undefined) {
 
     // check unknown annotations
-    const allowedAnnotations = [PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_WHEN, PROCESS_INPUT]
+    const allowedAnnotations = [PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_IF, PROCESS_INPUT]
     validateAllowedAnnotations(allowedAnnotations, def, entityName, PROCESS_START_ID, this);
 
     const hasId = def[PROCESS_START_ID] !== undefined
     const hasOn = def[PROCESS_START_ON] !== undefined
-    const hasWhen = def[PROCESS_START_WHEN] !== undefined
+    const hasIf = def[PROCESS_START_IF] !== undefined
 
     // required fields
     const processDef = processDefinitions.get(def[PROCESS_START_ID]);
@@ -87,8 +87,8 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       validateOnAnnotation(def, entityName, PROCESS_START_ON, this);
     }
 
-    if (hasWhen) {
-      validateWhenAnnotation(def, entityName, PROCESS_START_WHEN, this);
+    if (hasIf) {
+      validateIfAnnotation(def, entityName, PROCESS_START_IF, this);
     }
     
     if(hasId && hasOn && processDef) { 
@@ -107,7 +107,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       def,
       PROCESS_CANCEL_ON,
       PROCESS_CANCEL_CASCADE,
-      PROCESS_CANCEL_WHEN,
+      PROCESS_CANCEL_IF,
       PROCESS_CANCEL
     )
   }
@@ -118,7 +118,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       def,
       PROCESS_SUSPEND_ON,
       PROCESS_SUSPEND_CASCADE,
-      PROCESS_SUSPEND_WHEN,
+      PROCESS_SUSPEND_IF,
       PROCESS_SUSPEND
     )
   }
@@ -129,7 +129,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       def,
       PROCESS_RESUME_ON,
       PROCESS_RESUME_CASCADE,
-      PROCESS_RESUME_WHEN,
+      PROCESS_RESUME_IF,
       PROCESS_RESUME
     )
   }
@@ -169,7 +169,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     }
 
     if (hasWhen) {
-      validateWhenAnnotation(def, entityName, annotationWhen, this);
+      validateIfAnnotation(def, entityName, annotationWhen, this);
     }
   }
 }

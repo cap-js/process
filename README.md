@@ -6,8 +6,7 @@
   - if no attribute is annotated with`@build.process.input`, all attributes of that entity will be fetched and are part of the context for process input. Associations will not be expanded in that case
   - `@build.process.start.id` -- definition ID for deployed process
   - `@build.process.start.on`
-  - `@build.process.start.when` -- only starting process when expression is true
-    - example: `@build.process.start.when: (weight > 10)`
+  - `@build.process.start.if` -- only starting process if expression is true
 - `@build.process.input` -- includes this element in the process start assuming name equality
 - `@(build.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
 - Important: the process that has been started needs to have an input attribute 'businesskey' of type string that is then assigned to the businessKey in process configuration so that the process can be later CANCELLED/SUSPENDED/RESUMED
@@ -37,8 +36,8 @@ service MyService {
 - `@build.process.<cancel|resume|suspend>` -- Cancel/Suspend/Resume any processes bound to the entity (using entityKey as businessKey in SBPA)
   - `@build.process.<cancel|resume|suspend>.on`
   - `@build.process.<cancel|resume|suspend>.cascade` -- boolean
-  - `@build.process.<cancel|resume|suspend>.when` -- only starting process when expression is true --> optional annotation
-    - example: `@build.process.suspend.when: (weight > 10)`
+  - `@build.process.<cancel|resume|suspend>.if` -- only starting process if expression is true
+    - example: `@build.process.suspend.if: (weight > 10)`
 
 Example:
 
@@ -69,7 +68,7 @@ service MyService {
 - `@build.process.start.id` --> validates if id is there and if process with that ID is imported
 - `@build.process.start.on` --> validates if standard CRUD operation or if bound action on that entity exists
   - Important: if the on annotation is set to 'DELETE', a custom before delete handler stores the entity that will be deleted, and uses the data as process input
-- `@build.process.start.when` --> validates if it is a valid expression
+- `@build.process.start.if` --> validates if it is a valid expression
 - `@build.process.input`
   - Currently not enabled
   - validates if all entity attributes marked as input are also in the process inputs
@@ -80,7 +79,7 @@ service MyService {
 
 - `@build.process.<cancel|suspend|resume>.on` --> validates if standard CRUD operation or if bound action on that entity exists
 - `@build.process.<cancel|suspend|resume>.cascade` --> validates if exists and if boolean
-- `@build.process.<cancel|suspend|resume>.when` --> validates if it is a valid expression
+- `@build.process.<cancel|suspend|resume>.if` --> validates if it is a valid expression
 
 # cap-js Repository Template
 

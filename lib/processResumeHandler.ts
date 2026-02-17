@@ -1,6 +1,6 @@
 import cds, { DeleteRequest, expr, Target } from "@sap/cds";
 import { concatenateBusinessKey, fetchEntity } from "./handler";
-import { PROCESS_RESUME_ON, PROCESS_RESUME_CASCADE, PROCESS_RESUME_WHEN, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants";
+import { PROCESS_RESUME_ON, PROCESS_RESUME_CASCADE, PROCESS_RESUME_IF, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants";
 
 type ProcessResumeSpec = {
     on?: string,
@@ -74,7 +74,7 @@ function initResumeSpecs(target: Target): ProcessResumeSpec {
     const resumeSpecs: ProcessResumeSpec = {
         on: target[PROCESS_RESUME_ON] as string,
         cascade: target[PROCESS_RESUME_CASCADE],
-        resumeExpr: target[PROCESS_RESUME_WHEN] ? (target[PROCESS_RESUME_WHEN]as any).xpr as expr : undefined,
+        resumeExpr: target[PROCESS_RESUME_IF] ? (target[PROCESS_RESUME_IF]as any).xpr as expr : undefined,
     }
     return resumeSpecs;
 }

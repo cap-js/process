@@ -27,13 +27,13 @@ export function validateOnAnnotation(def: any, entityName: string, annotationOn:
       }
   }
 
-export function validateWhenAnnotation(def: any, entityName: string, annotationWhen: string, buildPlugin: ProcessValidationPlugin) {
-    const whenExpr = def[annotationWhen];
+export function validateIfAnnotation(def: any, entityName: string, annotationIf: string, buildPlugin: ProcessValidationPlugin) {
+    const ifExpr = def[annotationIf];
       
-    if(whenExpr['='] && whenExpr['xpr']) {
+    if(ifExpr['='] && ifExpr['xpr']) {
       // should be valid --> TODO: further validations?
     } else {
-      buildPlugin.pushMessage(`${entityName}: ${annotationWhen} must be a valid expression`, ERROR)
+      buildPlugin.pushMessage(`${entityName}: ${annotationIf} must be a valid expression`, ERROR)
     }
 }
 

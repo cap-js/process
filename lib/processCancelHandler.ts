@@ -1,7 +1,7 @@
 import { DeleteRequest, expr, Target } from "@sap/cds";
 import cds from "@sap/cds"
 import { concatenateBusinessKey, fetchEntity } from "./handler";
-import { PROCESS_CANCEL_ON, PROCESS_CANCEL_CASCADE, PROCESS_CANCEL_WHEN, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants";
+import { PROCESS_CANCEL_ON, PROCESS_CANCEL_CASCADE, PROCESS_CANCEL_IF, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants";
 
 type ProcessCancelSpec = {
     on?: string,
@@ -77,7 +77,7 @@ function initCancelSpecs(target: Target): ProcessCancelSpec {
     const cancelSpecs: ProcessCancelSpec = {
         on: target[PROCESS_CANCEL_ON] as string,
         cascade: target[PROCESS_CANCEL_CASCADE],
-        cancelExpr: target[PROCESS_CANCEL_WHEN] ? (target[PROCESS_CANCEL_WHEN]as any).xpr as expr : undefined,
+        cancelExpr: target[PROCESS_CANCEL_IF] ? (target[PROCESS_CANCEL_IF]as any).xpr as expr : undefined,
     }
     return cancelSpecs;
 }

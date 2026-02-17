@@ -1,6 +1,6 @@
 import cds, { DeleteRequest, expr, Target } from "@sap/cds";
 import { concatenateBusinessKey, fetchEntity } from "./handler";
-import { PROCESS_SUSPEND_ON, PROCESS_SUSPEND_CASCADE, PROCESS_SUSPEND_WHEN, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants";
+import { PROCESS_SUSPEND_ON, PROCESS_SUSPEND_CASCADE, PROCESS_SUSPEND_IF, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants";
 
 type ProcessSuspendSpec = {
     on?: string,
@@ -73,7 +73,7 @@ function initSuspendSpecs(target: Target): ProcessSuspendSpec {
     const suspendSpecs: ProcessSuspendSpec = {
         on: target[PROCESS_SUSPEND_ON] as string,
         cascade: target[PROCESS_SUSPEND_CASCADE],
-        suspendExpr: target[PROCESS_SUSPEND_WHEN] ? (target[PROCESS_SUSPEND_WHEN]as any).xpr as expr : undefined,
+        suspendExpr: target[PROCESS_SUSPEND_IF] ? (target[PROCESS_SUSPEND_IF]as any).xpr as expr : undefined,
     }
     return suspendSpecs; 
 }

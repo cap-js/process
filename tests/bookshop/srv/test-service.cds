@@ -3,7 +3,7 @@ service TestService {
   @build.process.start: {
     id: 'ShipmentProcess',
     on: 'UPDATE',
-    when: (weight > 10)
+    if: (weight > 10)
   }
   entity AnnotatedShipments   as
     projection on Shipments {

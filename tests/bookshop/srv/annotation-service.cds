@@ -60,12 +60,12 @@ service AnnotationService {
   @build.process.start: {
     id: 'carProcess',
     on: 'CREATE',
-    when: (mileage > 1000)
+    if: (mileage > 1000)
   }
   @build.process.cancel: {
     on: 'UPDATE',
     cascade: false,
-    when: (mileage > 1000)
+    if: (mileage > 1000)
   }
   entity CarWhen                    as
     projection on my.Car {
@@ -107,11 +107,11 @@ service AnnotationService {
       year
     }
 
-  // Start on CREATE with when condition
+  // Start on CREATE with if condition
   @build.process.start: {
     id: 'startOnCreateWhenProcess',
     on: 'CREATE',
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity StartOnCreateWhen          as
     projection on my.Car {
@@ -136,11 +136,11 @@ service AnnotationService {
       year
     }
 
-  // Start on UPDATE with when condition
+  // Start on UPDATE with if condition
   @build.process.start: {
     id: 'startOnUpdateWhenProcess',
     on: 'UPDATE',
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity StartOnUpdateWhen          as
     projection on my.Car {
@@ -165,11 +165,11 @@ service AnnotationService {
       year
     }
 
-  // Start on DELETE with when condition
+  // Start on DELETE with if condition
   @build.process.start: {
     id: 'startOnDeleteWhenProcess',
     on: 'DELETE',
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity StartOnDeleteWhen          as
     projection on my.Car {
@@ -198,11 +198,11 @@ service AnnotationService {
       year
     }
 
-  // Cancel on CREATE with when condition
+  // Cancel on CREATE with if condition
   @build.process.cancel: {
     on: 'CREATE',
     cascade: true,
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity CancelOnCreateWhen         as
     projection on my.Car {
@@ -227,11 +227,11 @@ service AnnotationService {
       year
     }
 
-  // Cancel on UPDATE with when condition
+  // Cancel on UPDATE with if condition
   @build.process.cancel: {
     on: 'UPDATE',
     cascade: true,
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity CancelOnUpdateWhen         as
     projection on my.Car {
@@ -256,11 +256,11 @@ service AnnotationService {
       year
     }
 
-  // Cancel on DELETE with when condition
+  // Cancel on DELETE with if condition
   @build.process.cancel: {
     on: 'DELETE',
     cascade: true,
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity CancelOnDeleteWhen         as
     projection on my.Car {
@@ -289,11 +289,11 @@ service AnnotationService {
       year
     }
 
-  // Suspend on CREATE with when condition
+  // Suspend on CREATE with if condition
   @build.process.suspend: {
     on: 'CREATE',
     cascade: true,
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity SuspendOnCreateWhen        as
     projection on my.Car {
@@ -318,11 +318,11 @@ service AnnotationService {
       year
     }
 
-  // Suspend on UPDATE with when condition
+  // Suspend on UPDATE with if condition
   @build.process.suspend: {
     on: 'UPDATE',
     cascade: true,
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity SuspendOnUpdateWhen        as
     projection on my.Car {
@@ -347,11 +347,11 @@ service AnnotationService {
       year
     }
 
-  // Suspend on DELETE with when condition
+  // Suspend on DELETE with if condition
   @build.process.suspend: {
     on: 'DELETE',
     cascade: true,
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity SuspendOnDeleteWhen        as
     projection on my.Car {
@@ -380,11 +380,11 @@ service AnnotationService {
       year
     }
 
-  // Resume on CREATE with when condition
+  // Resume on CREATE with if condition
   @build.process.resume: {
     on: 'CREATE',
     cascade: true,
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity ResumeOnCreateWhen         as
     projection on my.Car {
@@ -409,11 +409,11 @@ service AnnotationService {
       year
     }
 
-  // Resume on UPDATE with when condition
+  // Resume on UPDATE with if condition
   @build.process.resume: {
     on: 'UPDATE',
     cascade: true,
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity ResumeOnUpdateWhen         as
     projection on my.Car {
@@ -438,11 +438,11 @@ service AnnotationService {
       year
     }
 
-  // Resume on DELETE with when condition
+  // Resume on DELETE with if condition
   @build.process.resume: {
     on: 'DELETE',
     cascade: true,
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   entity ResumeOnDeleteWhen         as
     projection on my.Car {
@@ -491,7 +491,7 @@ service AnnotationService {
   @build.process.cancel: {
     on: 'UPDATE',
     cascade: false,
-    when: (mileage > 1000)
+    if: (mileage > 1000)
   }
   entity StatusBasedCancel          as
     projection on my.Car {
@@ -504,8 +504,8 @@ service AnnotationService {
 
   // --------------------------------------------
   // Scenario 3: Suspend/Resume Workflow
-  // Start on CREATE, Suspend on UPDATE (when mileage > 500),
-  // Resume on UPDATE (when mileage <= 500)
+  // Start on CREATE, Suspend on UPDATE (if mileage > 500),
+  // Resume on UPDATE (if mileage <= 500)
   // Use case: Pause processing when item is on hold
   // --------------------------------------------
   @build.process.start: {
@@ -515,12 +515,12 @@ service AnnotationService {
   @build.process.suspend: {
     on: 'UPDATE',
     cascade: false,
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   @build.process.resume: {
     on: 'UPDATE',
     cascade: false,
-    when: (mileage <= 500)
+    if: (mileage <= 500)
   }
   entity SuspendResumeWorkflow      as
     projection on my.Car {
@@ -543,12 +543,12 @@ service AnnotationService {
   @build.process.suspend: {
     on: 'UPDATE',
     cascade: false,
-    when: (mileage > 800)
+    if: (mileage > 800)
   }
   @build.process.resume: {
     on: 'UPDATE',
     cascade: false,
-    when: (mileage <= 800)
+    if: (mileage <= 800)
   }
   @build.process.cancel: {
     on: 'DELETE',
@@ -571,12 +571,12 @@ service AnnotationService {
   @build.process.start: {
     id: 'conditionalStartCancelProcess',
     on: 'UPDATE',
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   @build.process.cancel: {
     on: 'UPDATE',
     cascade: false,
-    when: (mileage > 1500)
+    if: (mileage > 1500)
   }
   entity ConditionalStartCancel     as
     projection on my.Car {
@@ -596,12 +596,12 @@ service AnnotationService {
   @build.process.suspend: {
     on: 'UPDATE',
     cascade: false,
-    when: (mileage > 500)
+    if: (mileage > 500)
   }
   @build.process.resume: {
     on: 'UPDATE',
     cascade: false,
-    when: (mileage <= 500)
+    if: (mileage <= 500)
   }
   @build.process.cancel: {
     on: 'DELETE',

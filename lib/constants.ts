@@ -9,7 +9,7 @@ export const PROCESS_SERVICE = 'ProcessService' as const;
 export const PROCESS_START = '@build.process.start' as const;
 export const PROCESS_START_ID = '@build.process.start.id' as const;
 export const PROCESS_START_ON = '@build.process.start.on' as const;
-export const PROCESS_START_WHEN = '@build.process.start.when' as const;
+export const PROCESS_START_IF = '@build.process.start.if' as const;
 
 /**
  * Process Cancel Annotations
@@ -17,7 +17,7 @@ export const PROCESS_START_WHEN = '@build.process.start.when' as const;
 export const PROCESS_CANCEL = '@build.process.cancel' as const;
 export const PROCESS_CANCEL_ON = '@build.process.cancel.on' as const;
 export const PROCESS_CANCEL_CASCADE = '@build.process.cancel.cascade' as const;
-export const PROCESS_CANCEL_WHEN = '@build.process.cancel.when' as const;
+export const PROCESS_CANCEL_IF = '@build.process.cancel.if' as const;
 
 /**
  * Process Suspend Annotations
@@ -25,7 +25,7 @@ export const PROCESS_CANCEL_WHEN = '@build.process.cancel.when' as const;
 export const PROCESS_SUSPEND = '@build.process.suspend' as const;
 export const PROCESS_SUSPEND_ON = '@build.process.suspend.on' as const;
 export const PROCESS_SUSPEND_CASCADE = '@build.process.suspend.cascade' as const;
-export const PROCESS_SUSPEND_WHEN = '@build.process.suspend.when' as const;
+export const PROCESS_SUSPEND_IF = '@build.process.suspend.if' as const;
 
 /**
  * Process Resume Annotations
@@ -33,7 +33,7 @@ export const PROCESS_SUSPEND_WHEN = '@build.process.suspend.when' as const;
 export const PROCESS_RESUME = '@build.process.resume' as const;
 export const PROCESS_RESUME_ON = '@build.process.resume.on' as const;
 export const PROCESS_RESUME_CASCADE = '@build.process.resume.cascade' as const;
-export const PROCESS_RESUME_WHEN = '@build.process.resume.when' as const;
+export const PROCESS_RESUME_IF = '@build.process.resume.if' as const;
 
 /**
  * Process Input Annotation
