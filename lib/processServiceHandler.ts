@@ -31,17 +31,10 @@ function registerStartHandler(service: cds.Service, definitionId: string): void 
     const processService = await cds.connect.to('ProcessService');
 
     // revisit - check outbox
-    const result = await processService.emit('start', {
+    await processService.emit('start', {
       definitionId,
       context: inputs
     });
-
-    LOG.debug(`Process started: ${JSON.stringify(result)}`);
-    return {
-      id: result.id,
-      definitionId: definitionId,
-      definitionVersion: result.definitionVersion
-    };
   });
 }
 

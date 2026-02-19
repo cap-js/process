@@ -26,3 +26,10 @@ export {
   updateWorkflowStatus,
   updateMultipleWorkflowStatus
 } from './workflow-client';
+
+// Local Workflow Store - for local development
+export {
+  LocalWorkflowStore,
+  LocalWorkflowInstance,
+  localWorkflowStore
+} from './local-workflow-store';

@@ -1,73 +1,129 @@
-import crypto from 'crypto';
 import cds from '@sap/cds';
+import { localWorkflowStore } from '../lib/api/local-workflow-store';
+import { WorkflowStatus } from '../lib/api/workflow-client';
 
 const LOG = cds.log("process");
 
 class ProcessService extends cds.ApplicationService {
     async init() {
         this.on('start', async (req: any) => {
+            const { definitionId, context } = req.data;
+            const businessKey = context?.businesskey ?? context?.businessKey;
 
             LOG.debug("==============================================================");
-            LOG.debug(`Process start for ${req.data.definitionId} initiated`);
-            LOG.debug('Context: ', JSON.stringify(req.data.context, null, 2));
+            LOG.debug(`Process start for ${definitionId} initiated`);
+            LOG.debug(`BusinessKey: ${businessKey}`);
+            LOG.debug('Context: ', JSON.stringify(context, null, 2));
             LOG.debug("==============================================================");
 
-            const workflowInstance = { id: crypto.randomUUID() }; // Placeholder
-            const message = `Process with ID ${workflowInstance.id} was successfully started.`;
+            const result = localWorkflowStore.startWorkflow({
+                definitionId,
+                businessKey,
+                context
+            });
 
-            return {
-                id: workflowInstance.id,
-                success: true,
-                message: message
-            };
+            return result;
         });
 
         this.on('cancel', async (req: any) => {
+            const { businessKey, cascade } = req.data;
+
             LOG.debug("==============================================================");
-            LOG.debug(`Process cancel for ${req.data.businessKey} initiated`);
+            LOG.debug(`Process cancel for ${businessKey} initiated`);
             LOG.debug('Context: ', JSON.stringify(req.data, null, 2));
             LOG.debug("==============================================================");
 
-            const businessKey = { id: crypto.randomUUID() }; // Placeholder
-            const message = `Process with ID ${businessKey.id} was successfully cancelled.`;
+            const instances = localWorkflowStore.getInstancesByBusinessKey(
+                businessKey,
+                [WorkflowStatus.RUNNING, WorkflowStatus.SUSPENDED]
+            );
+
+            if (instances.length === 0) {
+                LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
+                return { success: false, message: `No running instances found for businessKey: ${businessKey}` };
+            }
+
+            const results = localWorkflowStore.updateMultipleStatus(
+                instances.map(i => i.id),
+                WorkflowStatus.CANCELED
+            );
+
+            const successCount = results.filter(r => r.success).length;
+            LOG.info(`Cancelled ${successCount}/${instances.length} workflow instance(s) for businessKey: ${businessKey}`);
 
             return {
-                id: businessKey.id,
-                success: true,
-                message: message
+                success: results.every(r => r.success),
+                message: `Cancelled ${successCount} workflow instance(s).`,
+                results
             };
         });
 
         this.on('suspend', async (req: any) => {
+            const { businessKey, cascade } = req.data;
+
             LOG.debug("==============================================================");
-            LOG.debug(`Process suspend for ${req.data.businessKey} initiated`);
+            LOG.debug(`Process suspend for ${businessKey} initiated`);
             LOG.debug('Context: ', JSON.stringify(req.data, null, 2));
             LOG.debug("==============================================================");
 
-            const businessKey = { id: crypto.randomUUID() }; // Placeholder
-            const message = `Process with ID ${businessKey.id} was successfully suspended.`;
+            const instances = localWorkflowStore.getInstancesByBusinessKey(
+                businessKey,
+                WorkflowStatus.RUNNING
+            );
+
+            if (instances.length === 0) {
+                LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
+                return { success: false, message: `No running instances found for businessKey: ${businessKey}` };
+            }
+
+            const results = localWorkflowStore.updateMultipleStatus(
+                instances.map(i => i.id),
+                WorkflowStatus.SUSPENDED
+            );
+
+            const successCount = results.filter(r => r.success).length;
+            LOG.info(`Suspended ${successCount}/${instances.length} workflow instance(s) for businessKey: ${businessKey}`);
 
             return {
-                id: businessKey.id,
-                success: true,
-                message: message
+                success: results.every(r => r.success),
+                message: `Suspended ${successCount} workflow instance(s).`,
+                results
             };
         });
+
         this.on('resume', async (req: any) => {
+            const { businessKey, cascade } = req.data;
+
             LOG.debug("==============================================================");
-            LOG.debug(`Process resume for ${req.data.businessKey} initiated`);
+            LOG.debug(`Process resume for ${businessKey} initiated`);
             LOG.debug('Context: ', JSON.stringify(req.data, null, 2));
             LOG.debug("==============================================================");
 
-            const businessKey = { id: crypto.randomUUID() }; // Placeholder
-            const message = `Process with ID ${businessKey.id} was successfully resumed.`;
+            const instances = localWorkflowStore.getInstancesByBusinessKey(
+                businessKey,
+                WorkflowStatus.SUSPENDED
+            );
+
+            if (instances.length === 0) {
+                LOG.warn(`No suspended workflow instances found with businessKey: ${businessKey}`);
+                return { success: false, message: `No suspended instances found for businessKey: ${businessKey}` };
+            }
+
+            const results = localWorkflowStore.updateMultipleStatus(
+                instances.map(i => i.id),
+                WorkflowStatus.RUNNING
+            );
+
+            const successCount = results.filter(r => r.success).length;
+            LOG.info(`Resumed ${successCount}/${instances.length} workflow instance(s) for businessKey: ${businessKey}`);
 
             return {
-                id: businessKey.id,
-                success: true,
-                message: message
+                success: results.every(r => r.success),
+                message: `Resumed ${successCount} workflow instance(s).`,
+                results
             };
         });
+
         return super.init();
     }
 }

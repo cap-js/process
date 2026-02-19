@@ -25,7 +25,7 @@ describe("ProcessService Event Emit Integration Tests", () => {
                 }
             );
 
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(204);
         });
     });
 
