@@ -61,27 +61,58 @@ service MyService {
 
 # Current build time validation
 
-- currently, all validations are hard checked and will throw an error
+Validation occurs during `cds build` and produces **errors** (hard failures that stop the build) or **warnings** (soft failures that are logged but don't stop the build).
 
 ## Process Start
 
-- `@build.process.start.id` --> validates if id is there and if process with that ID is imported
-- `@build.process.start.on` --> validates if standard CRUD operation or if bound action on that entity exists
-  - Important: if the on annotation is set to 'DELETE', a custom before delete handler stores the entity that will be deleted, and uses the data as process input
-- `@build.process.start.if` --> validates if it is a valid expression
-- `@build.process.input`
-  - Currently not enabled
-  - validates if all entity attributes marked as input are also in the process inputs
-  - validates types and names
-  - also checks for optional attributes
+### Required Annotations (Errors)
 
-## Process Cancel/Suspend/resume
+- `@build.process.start.id` and `@build.process.start.on` are mutually required — if one is present, the other must also be present
+- `@build.process.start.id` must be a string
+- `@build.process.start.on` must be a string representing either:
+  - A CRUD operation: `CREATE`, `READ`, `UPDATE`, or `DELETE`
+  - A bound action defined on the entity
+- `@build.process.start.if` must be a valid CDS expression (if present)
 
-- `@build.process.<cancel|suspend|resume>.on` --> validates if standard CRUD operation or if bound action on that entity exists
-- `@build.process.<cancel|suspend|resume>.cascade` --> validates if exists and if boolean
-- `@build.process.<cancel|suspend|resume>.if` --> validates if it is a valid expression
+### Warnings
 
-# Current programmatic approach 
+- Unknown annotations under `@build.process.start.*` trigger a warning listing allowed annotations
+- If no imported process definition is found for the given `id`, a warning is issued as input validation is skipped
+
+### Input Validation (when process definition is found)
+
+When both `@build.process.start.id` and `@build.process.start.on` are present and the process definition is imported:
+
+**Errors:**
+
+- The process definition must have a `businesskey` input
+- Entity attributes marked with `@build.process.input` (or all attributes if none are marked) must exist in the process definition inputs
+- Mandatory inputs from the process definition must be present in the entity
+
+**Warnings:**
+
+- Type mismatches between entity attributes and process definition inputs
+- Array cardinality mismatches (entity is array but process expects single value or vice versa)
+- Mandatory flag mismatches (process input is mandatory but entity attribute is not marked as `@mandatory`)
+
+**Note:** Associations and compositions are recursively validated, and cycles in entity associations are detected and reported as errors.
+
+## Process Cancel/Suspend/Resume
+
+### Required Annotations (Errors)
+
+- `@build.process.<cancel|suspend|resume>.on` and `@build.process.<cancel|suspend|resume>.cascade` are mutually required — if one is present, the other must also be present
+- `@build.process.<cancel|suspend|resume>.on` must be a string representing either:
+  - A CRUD operation: `CREATE`, `READ`, `UPDATE`, or `DELETE`
+  - A bound action defined on the entity
+- `@build.process.<cancel|suspend|resume>.cascade` must be a boolean
+- `@build.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
+
+### Warnings
+
+- Unknown annotations under `@build.process.<cancel|suspend|resume>.*` trigger a warning listing allowed annotations
+
+# Current programmatic approach
 
 ## Importing a Service
 
