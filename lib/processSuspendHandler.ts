@@ -1,6 +1,6 @@
 import cds, { DeleteRequest, expr, Target } from "@sap/cds";
 import { concatenateBusinessKey, fetchEntity } from "./handler";
-import { PROCESS_SUSPEND_ON, PROCESS_SUSPEND_CASCADE, PROCESS_SUSPEND_IF, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants";
+import { PROCESS_SUSPEND_ON, PROCESS_SUSPEND_CASCADE, PROCESS_SUSPEND_IF, LOG_MESSAGES } from "./constants";
 
 type ProcessSuspendSpec = {
     on?: string,
@@ -32,8 +32,8 @@ export async function handleProcessSuspend(req: cds.Request) {
             suspendSpecs.suspendExpr    
         );
     } catch (error) {
-        LOG.error(ERROR_MESSAGES.PROCESS_SUSPEND_FETCH_FAILED, error);
-        return req.reject(500, ERROR_CODES.PROCESS_SUSPEND_FETCH_FAILED);
+        LOG.error('PROCESS_SUSPEND_FETCH_FAILED', error);
+        return req.reject({ status: 500, message: 'PROCESS_SUSPEND_FETCH_FAILED' });
     }
 
     // check suspend condition or if event is delete
@@ -47,12 +47,12 @@ export async function handleProcessSuspend(req: cds.Request) {
     try {
         businessKey = concatenateBusinessKey(target as cds.entity, {...row, ...req.data});
     } catch (error) {
-        LOG.error(ERROR_MESSAGES.PROCESS_SUSPEND_INVALID_KEY, error);
-        return req.reject(400, ERROR_CODES.PROCESS_SUSPEND_INVALID_KEY);
+        LOG.error('PROCESS_SUSPEND_INVALID_KEY', error);
+        return req.reject({ status: 400, message: 'PROCESS_SUSPEND_INVALID_KEY' });
     }
 
     if(!businessKey) {
-        return req.reject(400, ERROR_CODES.PROCESS_SUSPEND_EMPTY_KEY);
+        return req.reject({ status: 400, message: 'PROCESS_SUSPEND_EMPTY_KEY' });
     }
     
     // suspend process
@@ -64,8 +64,8 @@ export async function handleProcessSuspend(req: cds.Request) {
             cascade: suspendSpecs.cascade
         });
     } catch (error) {
-        LOG.error(ERROR_MESSAGES.PROCESS_SUSPEND_FAILED + `${businessKey}`, error);
-        return req.reject(500, ERROR_CODES.PROCESS_SUSPEND_FAILED);
+        LOG.error('PROCESS_SUSPEND_FAILED', businessKey, error);
+        return req.reject({ status: 500, message: 'PROCESS_SUSPEND_FAILED', args: [businessKey] });
     }
 }
 

@@ -4,7 +4,7 @@ import {
   fetchEntity,
   getElementAnnotations,
 } from "./handler"
-import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_IF, PROCESS_INPUT, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants"
+import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_IF, PROCESS_INPUT, LOG_MESSAGES } from "./constants"
 
 import cds from "@sap/cds"
 const LOG = cds.log("process");
@@ -70,8 +70,8 @@ export async function handleProcessStart(
       columns
     );
   } catch (error) {
-    LOG.error(ERROR_MESSAGES.PROCESS_START_FETCH_FAILED, error);
-    return req.reject(500, ERROR_CODES.PROCESS_START_FETCH_FAILED);
+    LOG.error('PROCESS_START_FETCH_FAILED', error);
+    return req.reject({ status: 500, message: 'PROCESS_START_FETCH_FAILED' });
   }
 
   if(!row) {
@@ -83,8 +83,8 @@ export async function handleProcessStart(
   try {
     businessKey = concatenateBusinessKey(target as cds.entity, {...row, ...req.data});
   } catch (error) {
-    LOG.error(ERROR_MESSAGES.PROCESS_START_INVALID_KEY, error);
-    return req.reject(400, ERROR_CODES.PROCESS_START_INVALID_KEY);
+    LOG.error('PROCESS_START_INVALID_KEY', error);
+    return req.reject({ status: 400, message: 'PROCESS_START_INVALID_KEY' });
   }
 
   const context = {...row, "businesskey": businessKey};
@@ -97,8 +97,8 @@ export async function handleProcessStart(
       context: context,
     })
   } catch (error) {
-    LOG.error(ERROR_MESSAGES.PROCESS_START_FAILED + `${startSpecs.id}`, error);
-    return req.reject(500, ERROR_CODES.PROCESS_START_FAILED);
+    LOG.error('PROCESS_START_FAILED', startSpecs.id, error);
+    return req.reject({ status: 500, message: 'PROCESS_START_FAILED', args: [startSpecs.id] });
   }
 
 }
@@ -136,8 +136,8 @@ function getInputElements(
           
           // Check for cycle: if we've already visited this entity, throw an error
           if (visitedEntities.has(associatedEntityName)) {
-            LOG.error(ERROR_MESSAGES.PROCESS_START_CYCLE_DETECTED);
-            return req.reject(400, ERROR_CODES.PROCESS_START_CYCLE_DETECTED);
+            LOG.error('PROCESS_START_CYCLE_DETECTED', associatedEntityName);
+            return req.reject({ status: 400, message: 'PROCESS_START_CYCLE_DETECTED', args: [associatedEntityName] });
           }
           
           // Add to visited set and path for this branch

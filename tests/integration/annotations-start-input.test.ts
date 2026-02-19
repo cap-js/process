@@ -294,7 +294,7 @@ describe("Integration tests for START annotation with @build.process.input", () 
                 await POST("/odata/v4/annotation/StartCycleA", object);
             } catch (error: any) {
                 expect(error.status).toBe(400);
-                expect(error.message).toBe("400 - PROCESS_START_CYCLE_DETECTED")
+                expect(error.message).toContain("Cycle detected in @build.process.input annotations:")
             }
             
 

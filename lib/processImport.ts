@@ -81,12 +81,12 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
 async function createApiClient(): Promise<IProcessApiClient> {
   const credentials = getServiceCredentials('ProcessService');
   if (!credentials) {
-    throw new Error('No ProcessService credentials found. Run with: cds bind --exec -- ...');
+    throw new Error(cds.i18n.messages.at('IMPORT_NO_CREDENTIALS'));
   }
 
   const apiUrl = credentials.endpoints?.api;
   if (!apiUrl) {
-    throw new Error('No API URL found in ProcessService credentials.');
+    throw new Error(cds.i18n.messages.at('IMPORT_NO_API_URL'));
   }
 
   LOG.info('Creating API client...');
@@ -319,7 +319,7 @@ function mapSchemaPropertyToElement(propName: string, schema: any, isRequired: b
   // Array
   if (schema.type === 'array') {
     const arrayName = fqn(ctx.serviceName, sanitizeName(`${baseName(ctx.parentTypeName)}_${propName}_Array`));
-    if (!schema.items) throw new Error(`Array ${ctx.parentTypeName}.${propName} has no 'items'`);
+    if (!schema.items) throw new Error(cds.i18n.messages.at('IMPORT_ARRAY_NO_ITEMS', [ctx.parentTypeName, propName]));
 
     ctx.definitions[arrayName] = {
       kind: 'type',
@@ -369,7 +369,7 @@ function buildArrayItemsSpec(itemsSchema: any, ctx: SchemaMapContext): csn.CsnTy
 
   // Nested array
   if (itemsSchema.type === 'array') {
-    if (!itemsSchema.items) throw new Error(`Nested array under ${ctx.parentTypeName} missing 'items'`);
+    if (!itemsSchema.items) throw new Error(cds.i18n.messages.at('IMPORT_NESTED_ARRAY_NO_ITEMS', [ctx.parentTypeName]));
     return { items: buildArrayItemsSpec(itemsSchema.items, ctx) };
   }
 

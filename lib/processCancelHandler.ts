@@ -1,7 +1,7 @@
 import { DeleteRequest, expr, Target } from "@sap/cds";
 import cds from "@sap/cds"
 import { concatenateBusinessKey, fetchEntity } from "./handler";
-import { PROCESS_CANCEL_ON, PROCESS_CANCEL_CASCADE, PROCESS_CANCEL_IF, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants";
+import { PROCESS_CANCEL_ON, PROCESS_CANCEL_CASCADE, PROCESS_CANCEL_IF, LOG_MESSAGES } from "./constants";
 
 type ProcessCancelSpec = {
     on?: string,
@@ -34,8 +34,8 @@ export async function handleProcessCancel(
             cancelSpecs.cancelExpr    
         );
     } catch (error) {
-        LOG.error(ERROR_MESSAGES.PROCESS_CANCEL_FETCH_FAILED, error);
-        return req.reject(500, ERROR_CODES.PROCESS_CANCEL_FETCH_FAILED);
+        LOG.error('PROCESS_CANCEL_FETCH_FAILED', error);
+        return req.reject({ status: 500, message: 'PROCESS_CANCEL_FETCH_FAILED' });
     }
     
 
@@ -50,12 +50,12 @@ export async function handleProcessCancel(
     try {
         businessKey = concatenateBusinessKey(target as cds.entity, {...row, ...req.data})
     } catch (error) {
-        LOG.error(ERROR_MESSAGES.PROCESS_CANCEL_INVALID_KEY, error);
-        return req.reject(400, ERROR_CODES.PROCESS_CANCEL_INVALID_KEY);
+        LOG.error('PROCESS_CANCEL_INVALID_KEY', error);
+        return req.reject({ status: 400, message: 'PROCESS_CANCEL_INVALID_KEY' });
     }
 
     if(!businessKey) {
-        return req.reject(400, ERROR_CODES.PROCESS_CANCEL_EMPTY_KEY);
+        return req.reject({ status: 400, message: 'PROCESS_CANCEL_EMPTY_KEY' });
     }
 
     // cancel process
@@ -67,8 +67,8 @@ export async function handleProcessCancel(
             cascade: cancelSpecs.cascade
         })
     } catch (error) {
-        LOG.error(ERROR_MESSAGES.PROCESS_CANCEL_FAILED + `${businessKey}`, error);
-        return req.reject(500, ERROR_CODES.PROCESS_CANCEL_FAILED);
+        LOG.error('PROCESS_CANCEL_FAILED', businessKey, error);
+        return req.reject({ status: 500, message: 'PROCESS_CANCEL_FAILED', args: [businessKey] });
     }
 
 }

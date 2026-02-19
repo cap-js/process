@@ -26,8 +26,7 @@ function registerStartHandler(service: cds.Service, definitionId: string): void 
 
     const { inputs } = req.data;
     if (!inputs) {
-      req.reject(400, 'Missing required parameter: inputs');
-      return;
+      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INPUTS' });
     }
     const processService = await cds.connect.to('ProcessService');
 
@@ -52,8 +51,7 @@ function registerSuspendHandler(service: cds.Service, definitionId: string): voi
 
     const { businessKey, cascade } = req.data;
     if (!businessKey) {
-      req.reject(400, 'Missing required parameter: businessKey');
-      return;
+      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
     }
 
     const processService = await cds.connect.to('ProcessService');
@@ -74,8 +72,7 @@ function registerResumeHandler(service: cds.Service, definitionId: string): void
 
     const { businessKey, cascade } = req.data;
     if (!businessKey) {
-      req.reject(400, 'Missing required parameter: businessKey');
-      return;
+      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
     }
 
     const processService = await cds.connect.to('ProcessService');
@@ -96,8 +93,7 @@ function registerCancelHandler(service: cds.Service, definitionId: string): void
 
     const { businessKey, cascade } = req.data;
     if (!businessKey) {
-      req.reject(400, 'Missing required parameter: businessKey');
-      return;
+      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
     }
 
     const processService = await cds.connect.to('ProcessService');

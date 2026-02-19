@@ -76,7 +76,7 @@ export async function startWorkflow(
     if (!res.ok) {
       const body = await res.text();
       LOG.error(`Failed to start workflow. Status: ${res.status}, Body: ${body}`);
-      throw new Error(`Failed to start workflow: ${res.status}`);
+      throw new Error(cds.i18n.messages.at('WORKFLOW_START_FAILED', [res.status]));
     }
     return res.json();
   }).then(workflowInstance => {
@@ -84,7 +84,7 @@ export async function startWorkflow(
     return { id: workflowInstance.id, success: true };
   }).catch(err => {
     LOG.error(`Failed to start workflow. Error: ${err}`);
-    throw new Error(`Failed to start workflow: ${err.message}`);
+    throw new Error(cds.i18n.messages.at('WORKFLOW_START_FAILED', [err.message]));
   });
 }
 
@@ -110,12 +110,12 @@ export async function getWorkflowsByBusinessKey(
     }
   }).then(res => {
     if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
+      throw new Error(cds.i18n.messages.at('WORKFLOW_RETRIEVE_FAILED', [res.status]));
     }
     return res.json();
   }).catch(err => {
     LOG.error(`Failed to retrieve workflow instances. Error: ${err}`);
-    throw new Error(`Failed to retrieve workflow instances: ${err.message}`);
+    throw new Error(cds.i18n.messages.at('WORKFLOW_RETRIEVE_FAILED', [err.message]));
   });
 }
 
@@ -143,13 +143,13 @@ export async function updateWorkflowStatus(
     if (!res.ok) {
       const errorBody = await res.text();
       LOG.error(`Failed to update workflow instance ${instanceId}. Status: ${res.status}, Body: ${errorBody}`);
-      throw new Error(`Failed to update workflow instance: ${res.status}`);
+      throw new Error(cds.i18n.messages.at('WORKFLOW_UPDATE_FAILED', [res.status]));
     }
     LOG.debug(`Successfully updated workflow instance ${instanceId} to status ${status}`);
     return { id: instanceId, success: true };
   }).catch(err => {
     LOG.error(`Failed to update workflow instance ${instanceId}. Error: ${err}`);
-    throw new Error(`Failed to update workflow instance: ${err.message}`);
+    throw new Error(cds.i18n.messages.at('WORKFLOW_UPDATE_FAILED', [err.message]));
   });
 }
 

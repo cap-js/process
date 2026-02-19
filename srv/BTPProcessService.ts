@@ -114,7 +114,7 @@ class ProcessService extends cds.ApplicationService {
       return jwt;
     } catch (error) {
       LOG.error("Error fetching token for Process Service:", error);
-      throw new Error("Error during token fetching");
+      throw new Error(cds.i18n.messages.at('AUTH_TOKEN_FETCH_FAILED'));
     }
   }
 }

@@ -1,6 +1,6 @@
 import cds, { DeleteRequest, expr, Target } from "@sap/cds";
 import { concatenateBusinessKey, fetchEntity } from "./handler";
-import { PROCESS_RESUME_ON, PROCESS_RESUME_CASCADE, PROCESS_RESUME_IF, ERROR_CODES, LOG_MESSAGES, ERROR_MESSAGES } from "./constants";
+import { PROCESS_RESUME_ON, PROCESS_RESUME_CASCADE, PROCESS_RESUME_IF, LOG_MESSAGES } from "./constants";
 
 type ProcessResumeSpec = {
     on?: string,
@@ -33,8 +33,8 @@ export async function handleProcessResume(req: cds.Request) {
             resumeSpecs.resumeExpr    
         );
     } catch (error) {
-        LOG.error(ERROR_MESSAGES.PROCESS_RESUME_FETCH_FAILED, error);
-        return req.reject(500, ERROR_CODES.PROCESS_RESUME_FETCH_FAILED);
+        LOG.error('PROCESS_RESUME_FETCH_FAILED', error);
+        return req.reject({ status: 500, message: 'PROCESS_RESUME_FETCH_FAILED' });
     }
 
     // check resume condition or if event is delete
@@ -48,12 +48,12 @@ export async function handleProcessResume(req: cds.Request) {
     try {
         businessKey = concatenateBusinessKey(target as cds.entity, {...row, ...req.data});
     } catch (error) {
-        LOG.error(ERROR_MESSAGES.PROCESS_RESUME_INVALID_KEY, error);
-        return req.reject(400, ERROR_CODES.PROCESS_RESUME_INVALID_KEY);
+        LOG.error('PROCESS_RESUME_INVALID_KEY', error);
+        return req.reject({ status: 400, message: 'PROCESS_RESUME_INVALID_KEY' });
     }
 
     if(!businessKey) {
-        return req.reject(400, ERROR_CODES.PROCESS_RESUME_EMPTY_KEY);
+        return req.reject({ status: 400, message: 'PROCESS_RESUME_EMPTY_KEY' });
     }
 
     // resume process
@@ -65,8 +65,8 @@ export async function handleProcessResume(req: cds.Request) {
             cascade: resumeSpecs.cascade
         });
     } catch (error) {
-        LOG.error(ERROR_MESSAGES.PROCESS_RESUME_FAILED + `${businessKey}`, error);
-        return req.reject(500, ERROR_CODES.PROCESS_RESUME_FAILED);
+        LOG.error('PROCESS_RESUME_FAILED', businessKey, error);
+        return req.reject({ status: 500, message: 'PROCESS_RESUME_FAILED', args: [businessKey] });
     }
 }
 

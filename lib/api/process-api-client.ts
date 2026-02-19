@@ -69,7 +69,7 @@ async function fetchJson<T>(url: string, jwt: string): Promise<T> {
   if (!response.ok) {
     const body = await response.text();
     LOG.error(`API request failed. Status: ${response.status}, Body: ${body}`);
-    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    throw new Error(cds.i18n.messages.at('API_REQUEST_FAILED', [response.status, response.statusText]));
   }
 
   return response.json() as Promise<T>;

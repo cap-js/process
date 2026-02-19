@@ -1,5 +1,7 @@
 // Auth module - centralized authentication utilities
 
+import cds from '@sap/cds';
+
 export { getServiceCredentials } from './credentials';
 export { TokenCache } from './token-cache';
 export { 
@@ -19,7 +21,7 @@ import { createXsuaaTokenProvider, TokenResult } from './token-provider';
 export async function getServiceToken(serviceName: string): Promise<TokenResult> {
   const credentials = getServiceCredentials(serviceName);
   if (!credentials) {
-    throw new Error(`Missing binding credentials for service: ${serviceName}`);
+    throw new Error(cds.i18n.messages.at('AUTH_MISSING_BINDING_CREDENTIALS', [serviceName]));
   }
   const tokenProvider = createXsuaaTokenProvider(credentials);
   return tokenProvider.fetchToken();
