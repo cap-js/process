@@ -4,10 +4,9 @@ import { handleProcessCancel } from "./lib/processCancelHandler"
 import { handleProcessSuspend } from "./lib/processSuspendHandler"
 import { handleProcessResume } from "./lib/processResumeHandler"
 import { addDeletedEntityToRequest } from "./lib/srv-before-utils"
-import { findCsnFiles, processWorkflowDefinition } from "./lib/csn-type-utils"
 import { ProcessValidationPlugin } from "./lib/build/build-plugin"
-import * as fs from 'fs'
-import * as path from 'path'
+import { importProcess } from "./lib/processImport"
+import { registerProcessServiceHandlers } from "./lib/processServiceHandler"
 import {
   PROCESS_START_ID,
   PROCESS_START_ON,
@@ -17,6 +16,7 @@ import {
   PROCESS_SUSPEND_CASCADE,
   PROCESS_RESUME_ON,
   PROCESS_RESUME_CASCADE,
+  PROCESS_PREFIX,
 } from "./lib/constants"
 
 const LOG = cds.log("process");
@@ -24,9 +24,16 @@ const LOG = cds.log("process");
 // Register build plugin for annotation validation during cds build
 cds.build?.register?.('process-validation', ProcessValidationPlugin)
 
+// Register import handler for: cds import --from process
+// @ts-ignore
+cds.import ??= {}
+// @ts-ignore
+cds.import.from ??= {}
+// @ts-ignore
+cds.import.from.process = importProcess;
+
 cds.on("serving", async (service: cds.Service) => {
   if (service instanceof cds.ApplicationService == false) return
-
 
   service.before("DELETE", async (req: cds.Request) => {
 
@@ -76,17 +83,10 @@ function areResumeAnnotationsDefined(target: Target, event: string): boolean {
   return !!(target[PROCESS_RESUME_ON] && (typeof target[PROCESS_RESUME_CASCADE] === "boolean") && target[PROCESS_RESUME_ON] === event);
 }
 
-// TODO: Allow customer to define external dir in cds config and read from there instead of hardcoding it here
-// TODO: Investigation if it is possible to make types madetory
-cds.on('loaded', async csn => {
-  const externalDir = path.join(process.cwd(), 'srv', 'external');
 
-  const csnFiles = findCsnFiles(externalDir);
-  if (!csnFiles || csnFiles.length === 0) {
-    return;
+cds.on("served", async (services) => {
+  const processServices = Object.values(services).filter(service => service.definition?.[PROCESS_PREFIX]);
+  for (const service of processServices) {
+    registerProcessServiceHandlers(service);
   }
-
-  for (const file of csnFiles) {
-    processWorkflowDefinition(file, csn);
-  }
-});
+})

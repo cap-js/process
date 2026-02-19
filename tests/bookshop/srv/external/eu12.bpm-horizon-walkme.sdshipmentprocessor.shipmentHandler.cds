@@ -1,0 +1,82 @@
+/* checksum : f5717827e5204a9504e461a06a1db70f */
+namespace eu12.![bpm-horizon-walkme].sdshipmentprocessor;
+
+/** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
+@protocol : 'none'
+@build.process : 'eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler'
+service ShipmentHandlerService {
+  type ShipmentProcessResult_itemProcessResults_Array : many ItemProcessResult;
+
+  type ShipmentProcessResult {
+    shipmentId : String;
+    status : String;
+    itemProcessResults : ShipmentProcessResult_itemProcessResults_Array;
+  };
+
+  type Shipment_items_Array : many Item;
+
+  type Shipment {
+    identifier : String;
+    items : Shipment_items_Array;
+  };
+
+  type ItemProcessResult {
+    itemId : String;
+    isApproved : Boolean;
+    comment : String;
+  };
+
+  type Item {
+    identifier : String;
+    title : String;
+    quantity : DecimalFloat;
+    price : DecimalFloat;
+  };
+
+  type ProcessInputs {
+    startingShipment : Shipment not null;
+    businesskey : String not null;
+  };
+
+  type ProcessOutputs {
+    shipmentProcessResultOutput : ShipmentProcessResult;
+  };
+
+  type ProcessAttributes { };
+
+  type ProcessInstance {
+    definitionId : String;
+    definitionVersion : String;
+    id : String;
+    startedAt : String;
+    startedBy : String;
+  };
+
+  action start(
+    inputs : ProcessInputs not null
+  ) returns ProcessInstance;
+
+  function getAttributes(
+    processInstanceId : String not null
+  ) returns ProcessAttributes;
+
+  function getOutputs(
+    processInstanceId : String not null
+  ) returns ProcessOutputs;
+
+  action suspend(
+    businessKey : String not null,
+    cascade : Boolean
+  );
+
+  action resume(
+    businessKey : String not null,
+    cascade : Boolean
+  );
+
+  action cancel(
+    businessKey : String not null,
+    cascade : Boolean
+  );
+};
+

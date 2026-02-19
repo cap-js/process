@@ -49,6 +49,7 @@ export const PROCESS_INPUT = '@build.process.input' as const;
  * Annotation prefix for filtering
  */
 export const BUILD_PREFIX = '@build' as const;
+export const PROCESS_PREFIX = '@build.process' as const;
 
 /**
  * Process Event Annotations (Runtime)

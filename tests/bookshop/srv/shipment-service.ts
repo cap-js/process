@@ -1,66 +1,67 @@
 import cds from '@sap/cds';
-import { PROCESS_SERVICE } from '../../../lib/constants';
-import { cancelShipmentHandler, resumeShipmentHandler, startShipmentHandler, suspendShipmentHandler } from '../@cds-models/ProcessService';
-
+import ShipmentHandlerService from '#cds-models/eu12/bpm-horizon-walkme/sdshipmentprocessor/ShipmentHandlerService';
 class ShipmentService extends cds.ApplicationService {
-  async init() {
 
+  async init() {
+    // Example: Start a process
     this.on('startShipment', async (req: cds.Request) => {
-      const processService = await cds.connect.to(PROCESS_SERVICE);
+      const processService = await cds.connect.to(ShipmentHandlerService);
+
       const { shipmentID } = req.data;
       const shipment = await SELECT.one.from('Shipments').where({ ID: shipmentID });
 
-      const eventData: startShipmentHandler = {
-        businesskey: shipment.ID,
+      // Start the process with typed inputs
+      const processInstance = await processService.start({
+        businesskey: shipmentID,
         startingShipment: {
           identifier: shipment.ID,
-          items: [
-            {
-              identifier: "identifier",
-              price: 345,
-              quantity: 2,
-              title: "Test Item"
-            }
-          ]
+          items: [{
+            identifier: 'item_1',
+            title: 'Laptop',
+            quantity: 1,
+            price: 1200.00
+          }]
         }
-      };
-      await processService.emit(startShipmentHandler, eventData);
+      });
+
+      return processInstance;
     });
 
+    // Example: Update shipment status (suspend/resume based on newStatus)
     this.on('updateShipmentStatus', async (req: cds.Request) => {
-      const processService = await cds.connect.to(PROCESS_SERVICE);
-      const { newStatus, shipmentID } = req.data;
+      const processService = await cds.connect.to(ShipmentHandlerService);
+
+      const { shipmentID, newStatus } = req.data;
+
+      if (newStatus === 'SUSPENDED') {
+        await processService.suspend({
+          businessKey: shipmentID,
+          cascade: false
+        });
+      } else if (newStatus === 'RESUMED') {
+        await processService.resume({
+          businessKey: shipmentID,
+          cascade: false
+        });
+      }
+
       const shipment = await SELECT.one.from('Shipments').where({ ID: shipmentID });
-
-      if (newStatus === "RESUMED") {
-        const eventData: resumeShipmentHandler = {
-          businessKey: shipment.ID,
-          cascade: false
-        };
-        await processService.emit(resumeShipmentHandler, eventData);
-        return;
-      }
-
-      if (newStatus === "SUSPENDED") {
-        const eventData: suspendShipmentHandler = {
-          businessKey: shipment.ID,
-          cascade: false
-        };
-        await processService.emit(suspendShipmentHandler, eventData);
-        return;
-      }
+      return shipment;
     });
 
+    // Example: Cancel a process
     this.on('cancelShipment', async (req: cds.Request) => {
-      const processService = await cds.connect.to(PROCESS_SERVICE);
-      const { shipmentID } = req.data;
-      const shipment = await SELECT.one.from('Shipments').where({ ID: shipmentID });
+      const processService = await cds.connect.to(ShipmentHandlerService);
 
-      await processService.emit(cancelShipmentHandler, {
-        businessKey: shipment.ID,
+      const { shipmentID } = req.data;
+
+      await processService.cancel({
+        businessKey: shipmentID,
         cascade: false
       });
-      return;
+
+      const shipment = await SELECT.one.from('Shipments').where({ ID: shipmentID });
+      return shipment;
     });
 
     await super.init();

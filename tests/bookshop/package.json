@@ -29,6 +29,10 @@
         "[production]": {
           "model": "db/hana"
         }
+      },
+      "eu12.bpm-horizon-walkme.sdshipmentprocessor.ShipmentHandlerService": {
+        "kind": "external",
+        "model": "srv/external/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler"
       }
     }
   },

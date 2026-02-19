@@ -1,0 +1,40 @@
+{
+  "uid": "test-uid-no-inputs",
+  "name": "No Inputs Process",
+  "description": "A process that has no inputs - useful for scheduled/timer-triggered processes",
+  "type": "bpi.process",
+  "header": {
+    "outputs": {
+      "title": "outputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "Status"
+        },
+        "processedCount": {
+          "type": "integer",
+          "title": "Processed Count"
+        }
+      },
+      "required": []
+    },
+    "processAttributes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "processAttributes",
+      "type": "object",
+      "properties": {
+        "lastRunTime": {
+          "type": "string",
+          "title": "Last Run Time"
+        }
+      },
+      "required": []
+    }
+  },
+  "dependencies": [],
+  "identifier": "noInputsProcess",
+  "valid": true,
+  "projectId": "test.scheduled"
+}

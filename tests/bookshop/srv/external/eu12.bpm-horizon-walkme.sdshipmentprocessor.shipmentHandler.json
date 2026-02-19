@@ -1,0 +1,271 @@
+{
+  "uid": "eaa84ba7-0509-4569-a8eb-87e62d2e4212",
+  "name": "Shipment Handler",
+  "description": "",
+  "type": "bpi.process",
+  "createdAt": "2026-01-16T10:27:43.206414Z",
+  "updatedAt": "2026-02-13T11:51:38.983652Z",
+  "header": {
+    "inputs": {
+      "title": "inputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "startingShipment": {
+          "$ref": "$.34f71463-da33-4cb0-a9f5-f3db323f7094",
+          "refName": "Shipment",
+          "title": "Starting Shipment",
+          "description": ""
+        },
+        "businesskey": {
+          "type": "string",
+          "title": "businessKey",
+          "description": ""
+        }
+      },
+      "required": [
+        "startingShipment",
+        "businesskey"
+      ]
+    },
+    "outputs": {
+      "title": "outputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "shipmentProcessResultOutput": {
+          "$ref": "$.06c40358-f452-468e-abd7-d5e71d559559",
+          "refName": "ShipmentProcessResult",
+          "title": "Shipment Process Result Output",
+          "description": ""
+        }
+      },
+      "required": []
+    },
+    "processAttributes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "processAttributes",
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "requiresBusinessUser": false
+  },
+  "dependencies": [
+    {
+      "artifactUid": "06c40358-f452-468e-abd7-d5e71d559559",
+      "type": "both"
+    },
+    {
+      "artifactUid": "34f71463-da33-4cb0-a9f5-f3db323f7094",
+      "type": "both"
+    },
+    {
+      "artifactUid": "bf02bdc2-584f-4e46-b3e1-194ea5e5a91a",
+      "type": "content"
+    },
+    {
+      "artifactUid": "31cddec9-f3a0-4153-9286-d01f7bf26f01",
+      "type": "content"
+    },
+    {
+      "artifactUid": "6d772d0c-86ea-4ed2-8ae0-76d70d33f1ed",
+      "type": "content"
+    }
+  ],
+  "identifier": "shipmentHandler",
+  "valid": true,
+  "projectId": "eu12.bpm-horizon-walkme.sdshipmentprocessor",
+  "dataTypes": [
+    {
+      "uid": "06c40358-f452-468e-abd7-d5e71d559559",
+      "name": "ShipmentProcessResult",
+      "description": "",
+      "type": "datatype",
+      "createdAt": "2026-01-16T10:26:16.361786Z",
+      "updatedAt": "2026-01-16T10:27:21.013727Z",
+      "header": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "title": "ShipmentProcessResult",
+        "properties": {
+          "shipmentId": {
+            "type": "string",
+            "uid": "082313de-6490-494f-8881-10577a97039b"
+          },
+          "status": {
+            "type": "string",
+            "uid": "777ca51a-2e5a-4bbc-b3bc-50b2a7d48bf1",
+            "enum": [
+              "SUCCESS",
+              "FAILED"
+            ]
+          },
+          "itemProcessResults": {
+            "uid": "891237b4-1ced-4de8-9012-638159c03a76",
+            "sample": "",
+            "items": {
+              "$ref": "$.bf02bdc2-584f-4e46-b3e1-194ea5e5a91a",
+              "refName": "ItemProcessResult"
+            },
+            "type": "array"
+          }
+        },
+        "version": 1
+      },
+      "dependencies": [
+        {
+          "artifactUid": "bf02bdc2-584f-4e46-b3e1-194ea5e5a91a",
+          "type": "header"
+        }
+      ],
+      "identifier": "shipmentProcessResult",
+      "valid": true
+    },
+    {
+      "uid": "34f71463-da33-4cb0-a9f5-f3db323f7094",
+      "name": "Shipment",
+      "description": "",
+      "type": "datatype",
+      "createdAt": "2026-01-16T10:23:26.502945Z",
+      "updatedAt": "2026-01-16T10:24:15.639538Z",
+      "header": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "title": "Shipment",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "uid": "dd7575de-661d-46c2-8c00-90a3feeab723"
+          },
+          "items": {
+            "uid": "1e11374e-7593-41d6-97be-53b4ec854e95",
+            "sample": "",
+            "items": {
+              "$ref": "$.31cddec9-f3a0-4153-9286-d01f7bf26f01",
+              "refName": "Item"
+            },
+            "type": "array"
+          }
+        },
+        "version": 1
+      },
+      "dependencies": [
+        {
+          "artifactUid": "31cddec9-f3a0-4153-9286-d01f7bf26f01",
+          "type": "header"
+        }
+      ],
+      "identifier": "shipment",
+      "valid": true
+    },
+    {
+      "uid": "bf02bdc2-584f-4e46-b3e1-194ea5e5a91a",
+      "name": "ItemProcessResult",
+      "description": "",
+      "type": "datatype",
+      "createdAt": "2026-01-16T10:25:02.553566Z",
+      "updatedAt": "2026-01-16T10:25:44.170446Z",
+      "header": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "title": "ItemProcessResult",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "uid": "b668d006-dce3-461a-ab0e-fcfda659eb70"
+          },
+          "isApproved": {
+            "type": "boolean",
+            "uid": "f8237238-60de-4b77-9d9e-6e19b1ff81e2"
+          },
+          "comment": {
+            "type": "string",
+            "uid": "89009d86-c8eb-41a0-98b9-c2b85fd642d2"
+          }
+        },
+        "version": 1
+      },
+      "identifier": "itemProcessResult",
+      "valid": true
+    },
+    {
+      "uid": "31cddec9-f3a0-4153-9286-d01f7bf26f01",
+      "name": "Item",
+      "description": "",
+      "type": "datatype",
+      "createdAt": "2026-01-16T10:22:12.873741Z",
+      "updatedAt": "2026-01-16T10:23:11.068085Z",
+      "header": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "title": "Item",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "uid": "018cf817-3a79-4379-a513-9f711ed8f8e2"
+          },
+          "title": {
+            "type": "string",
+            "uid": "bdbebbfb-e0ec-4678-8ea9-47a0493283f7"
+          },
+          "quantity": {
+            "type": "number",
+            "uid": "863cf128-f550-4408-be10-7c6ffe081f84"
+          },
+          "price": {
+            "type": "number",
+            "uid": "98fb0d32-d210-47a2-859d-34cfa8a36636"
+          }
+        },
+        "version": 1
+      },
+      "identifier": "item",
+      "valid": true
+    }
+  ]
+}

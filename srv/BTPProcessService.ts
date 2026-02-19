@@ -5,12 +5,11 @@ import {
   ITokenProvider,
   createXsuaaTokenProvider
 } from "../lib/auth";
-import { handleProcessRoutingForEvent } from "../lib/processEventRouter";
 import {
   IWorkflowInstanceClient,
   createWorkflowInstanceClient,
   WorkflowStatus
-} from "../lib/workflow-client";
+} from "../lib/api";
 
 const LOG = cds.log("process");
 const PROCESS_SERVICE = 'ProcessService';
@@ -96,11 +95,6 @@ class ProcessService extends cds.ApplicationService {
         cascade
       );
     });
-
-    this.on('*', async (req: any) => {
-      await handleProcessRoutingForEvent(this, req);
-    });
-
     return super.init();
   }
 

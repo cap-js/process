@@ -10,8 +10,7 @@
     "build": "npm run cds-build && npm run cds-typer",
     "cds-build": "cds-tsx build",
     "cds-typer": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models",
-    "watch": "cds-tsx watch",
-    "process:import": "cds bind --exec -- cds-tsx import --from process --no-save --as cds"
+    "watch": "cds-tsx watch"
   },
   "keywords": [],
   "author": "",

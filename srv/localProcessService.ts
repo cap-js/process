@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 import cds from '@sap/cds';
-import { handleProcessRoutingForEvent } from '../lib/processEventRouter';
 
 const LOG = cds.log("process");
 
@@ -69,11 +68,6 @@ class ProcessService extends cds.ApplicationService {
                 message: message
             };
         });
-
-        this.on('*', async (req: any) => {
-            await handleProcessRoutingForEvent(this, req);
-        });
-
         return super.init();
     }
 }

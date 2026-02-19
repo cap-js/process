@@ -1,0 +1,135 @@
+{
+  "uid": "test-uid-complex",
+  "name": "Complex Process",
+  "description": "A process with nested types and arrays",
+  "type": "bpi.process",
+  "header": {
+    "inputs": {
+      "title": "inputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": { "type": "string", "format": "date" },
+        "dateTime": { "type": "string", "format": "date-time" },
+        "time": { "type": "string", "format": "time" }
+      },
+      "properties": {
+        "businesskey": {
+          "type": "string",
+          "title": "Business Key"
+        },
+        "customer": {
+          "$ref": "$.customer-type-uid",
+          "refName": "Customer",
+          "title": "Customer"
+        },
+        "orderDate": {
+          "$ref": "#/definitions/date",
+          "title": "Order Date"
+        }
+      },
+      "required": ["businesskey", "customer"]
+    },
+    "outputs": {
+      "title": "outputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "properties": {
+        "confirmation": {
+          "$ref": "$.confirmation-type-uid",
+          "refName": "OrderConfirmation",
+          "title": "Order Confirmation"
+        }
+      },
+      "required": []
+    },
+    "processAttributes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "processAttributes",
+      "type": "object",
+      "properties": {
+        "processedBy": {
+          "type": "string",
+          "title": "Processed By"
+        }
+      },
+      "required": []
+    }
+  },
+  "dependencies": [
+    { "artifactUid": "customer-type-uid", "type": "both" },
+    { "artifactUid": "confirmation-type-uid", "type": "both" },
+    { "artifactUid": "address-type-uid", "type": "content" }
+  ],
+  "identifier": "complexProcess",
+  "valid": true,
+  "projectId": "test.company.orders",
+  "dataTypes": [
+    {
+      "uid": "customer-type-uid",
+      "name": "Customer",
+      "type": "datatype",
+      "header": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "title": "Customer",
+        "properties": {
+          "customerId": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string" },
+          "address": {
+            "$ref": "$.address-type-uid",
+            "refName": "Address"
+          }
+        }
+      },
+      "identifier": "customer",
+      "valid": true
+    },
+    {
+      "uid": "address-type-uid",
+      "name": "Address",
+      "type": "datatype",
+      "header": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "title": "Address",
+        "properties": {
+          "street": { "type": "string" },
+          "city": { "type": "string" },
+          "zipCode": { "type": "string" },
+          "country": { "type": "string" }
+        }
+      },
+      "identifier": "address",
+      "valid": true
+    },
+    {
+      "uid": "confirmation-type-uid",
+      "name": "OrderConfirmation",
+      "type": "datatype",
+      "header": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "title": "OrderConfirmation",
+        "properties": {
+          "confirmationNumber": { "type": "string" },
+          "status": { "type": "string" },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": { "type": "string" },
+                "quantity": { "type": "number" },
+                "price": { "type": "number" }
+              }
+            }
+          }
+        }
+      },
+      "identifier": "orderConfirmation",
+      "valid": true
+    }
+  ]
+}

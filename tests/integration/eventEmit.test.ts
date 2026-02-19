@@ -1,12 +1,5 @@
 import cds from "@sap/cds";
 import * as path from 'path'
-import type {
-    startShipmentHandler,
-    cancelShipmentHandler,
-    resumeShipmentHandler,
-    suspendShipmentHandler
-} from "../bookshop/@cds-models/ProcessService";
-import { PROCESS_SERVICE } from "../../lib/constants";
 
 const app = path.join(__dirname, "../bookshop/");
 const { test, GET, POST } = cds.test(app);
@@ -32,7 +25,7 @@ describe("ProcessService Event Emit Integration Tests", () => {
                 }
             );
 
-            expect(response.status).toBe(204);
+            expect(response.status).toBe(200);
         });
     });
 
@@ -51,7 +44,7 @@ describe("ProcessService Event Emit Integration Tests", () => {
                 }
             );
 
-            expect(response.status).toBe(204);
+            expect(response.status).toBe(200);
         });
     });
 
@@ -71,7 +64,7 @@ describe("ProcessService Event Emit Integration Tests", () => {
                 }
             );
 
-            expect(response.status).toBe(204);
+            expect(response.status).toBe(200);
         });
     });
 
@@ -91,7 +84,7 @@ describe("ProcessService Event Emit Integration Tests", () => {
                 }
             );
 
-            expect(response.status).toBe(204);
+            expect(response.status).toBe(200);
         });
     });
 });

@@ -1,5 +1,5 @@
 import cds from '@sap/cds';
-import { PROCESS_LOGGER_PREFIX } from './constants';
+import { PROCESS_LOGGER_PREFIX } from '../constants';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 const BASE_PATH = '/public/workflow/rest';

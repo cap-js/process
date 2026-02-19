@@ -1,44 +1,44 @@
 declare module '@sap/cds' {
 
   interface RemoteEndpoints {
-      api: string;
+    api: string;
   }
 
   interface Html5AppsRepo {
-      app_host_id: string;
+    app_host_id: string;
   }
 
   interface UaaConfig {
-      tenantmode: string;
-      sburl: string;
-      subaccountid: string;
-      'credential-type': string;
-      clientid: string;
-      xsappname: string;
-      clientsecret: string;
-      serviceInstanceId: string;
-      url: string;
-      uaadomain: string;
-      verificationkey: string;
-      apiurl: string;
-      identityzone: string;
-      identityzoneid: string;
-      tenantid: string;
-      zoneid: string;
+    tenantmode: string;
+    sburl: string;
+    subaccountid: string;
+    'credential-type': string;
+    clientid: string;
+    xsappname: string;
+    clientsecret: string;
+    serviceInstanceId: string;
+    url: string;
+    uaadomain: string;
+    verificationkey: string;
+    apiurl: string;
+    identityzone: string;
+    identityzoneid: string;
+    tenantid: string;
+    zoneid: string;
   }
 
   interface Destination {
-      name?: string;
-      endpoints: RemoteEndpoints;
-      'sap.cloud.service': string;
-      'sap.cloud.service.alias': string;
-      saasregistryenabled: boolean;
-      'html5-apps-repo': Html5AppsRepo;
-      uaa: UaaConfig;
+    name?: string;
+    endpoints: RemoteEndpoints;
+    'sap.cloud.service': string;
+    'sap.cloud.service.alias': string;
+    saasregistryenabled: boolean;
+    'html5-apps-repo': Html5AppsRepo;
+    uaa: UaaConfig;
   }
 
   interface RemoteService {
-      destination: Destination;
+    destination: Destination;
   }
 
   interface ServiceDefinitionAnnotation {
@@ -74,10 +74,86 @@ declare module '@sap/cds' {
   }
 
   interface Results extends cds.ResultSet {
-    [key: string]: any ;
+    [key: string]: any;
   }
-  
+
   interface DeleteRequest extends cds.Request {
     _Process?: cds.entity[];
   }
+
+  /**
+ * CSN (Core Schema Notation) type definitions for CDS models
+ */
+
+  export enum CdsBuiltinType {
+    String = 'cds.String',
+    Integer = 'cds.Integer',
+    Integer64 = 'cds.Integer64',
+    Decimal = 'cds.Decimal',
+    DecimalFloat = 'cds.DecimalFloat',
+    Double = 'cds.Double',
+    Boolean = 'cds.Boolean',
+    Date = 'cds.Date',
+    Time = 'cds.Time',
+    DateTime = 'cds.DateTime',
+    Timestamp = 'cds.Timestamp',
+    Binary = 'cds.Binary',
+    LargeBinary = 'cds.LargeBinary',
+    LargeString = 'cds.LargeString',
+    UUID = 'cds.UUID',
+  }
+
+  export interface CsnElement {
+    type?: string;
+    notNull?: boolean;
+    items?: CsnTypeSpec;
+    elements?: Record<string, CsnElement>;
+  }
+
+  export interface CsnTypeSpec {
+    type?: string;
+    items?: CsnTypeSpec;
+    elements?: Record<string, CsnElement>;
+  }
+
+  export interface CsnType {
+    kind: 'type';
+    name?: string;
+    elements?: Record<string, CsnElement>;
+    items?: CsnTypeSpec;
+  }
+
+  export interface CsnService {
+    kind: 'service';
+    name?: string;
+    doc?: string;
+    '@protocol'?: string;
+    '@build.process'?: string;
+  }
+
+  export interface CsnAction {
+    kind: 'action';
+    name?: string;
+    params?: Record<string, CsnElement>;
+    returns?: CsnTypeSpec;
+  }
+
+  export interface CsnFunction {
+    kind: 'function';
+    name?: string;
+    params?: Record<string, CsnElement>;
+    returns?: CsnTypeSpec;
+  }
+
+  export type CsnDefinition = CsnType | CsnService | CsnAction | CsnFunction;
+
+  export interface CsnModel {
+    $version: string;
+    definitions: Record<string, CsnDefinition>;
+    meta?: {
+      creator?: string;
+      flavor?: string;
+    };
+  }
+
 }

@@ -81,6 +81,76 @@ service MyService {
 - `@build.process.<cancel|suspend|resume>.cascade` --> validates if exists and if boolean
 - `@build.process.<cancel|suspend|resume>.if` --> validates if it is a valid expression
 
+# Current programmatic approach 
+
+## Importing a Service
+
+To use the programmatic approach with types, you need to import an existing SBPA process. This requires credentials via `cds bind` and being logged in to Cloud Foundry.
+
+### From SBPA (Remote Import)
+
+Import your SBPA process directly from the API:
+
+**Note:** For remote imports, you must have ProcessService credentials bound. Run with `cds bind --exec` if needed:
+```bash
+cds bind --exec -- cds-tsx import --from process --name eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler
+```
+If you want to have it as a cds instead of a csn you can add --as cds at the end. If you want to reimport the process use the --force flag at the end.
+
+### From Local JSON File
+
+If you already have a process definition JSON file (e.g., exported or previously fetched), you can generate the CSN model directly from it without needing credentials:
+
+```bash
+cds import --from process ./srv/external/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler.json
+```
+
+### What Gets Generated
+
+This will generate:
+- A CDS service definition in `./srv/external/`
+- Types via `cds-typer` for full TypeScript support
+- Generic handlers for the actions and functions in the imported service
+
+## For starting a process
+
+```typescript
+const processService = await cds.connect.to(ShipmentHandlerService);
+
+const processInstance = await processService.start({
+  businesskey: 'order-12345',
+  startingShipment: {
+    identifier: 'shipment_001',
+    items: [{ identifier: 'item_1', title: 'Laptop', quantity: 1, price: 1200.00 }]
+  }
+});
+```
+
+## For suspending/resuming/cancelling a process
+
+```typescript
+// Suspend
+await processService.suspend({ businessKey: 'order-12345', cascade: false });
+
+// Resume
+await processService.resume({ businessKey: 'order-12345', cascade: false });
+
+// Cancel
+await processService.cancel({ businessKey: 'order-12345', cascade: false });
+```
+
+## For getAttributes and getOutputs 
+
+### Missing
+
+```typescript
+const attributes = await processService.getAttributes({ processInstanceId: 'instance-uuid' });
+
+const outputs = await processService.getOutputs({ processInstanceId: 'instance-uuid' });
+```
+
+
+
 # cap-js Repository Template
 
 Default templates for @cap-js open source [CAP Calesi](https://cap.cloud.sap/docs/about/best-practices#the-calesi-pattern) plugins. It includes a sample plugin and the basic setup needed to start with development. All repositories on github.com/cap-js will be created based on this template.
