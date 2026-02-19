@@ -16,9 +16,10 @@ import {
   PROCESS_CANCEL,
   PROCESS_SUSPEND,
   PROCESS_RESUME,
+  PROCESS_START,
 } from "../constants"
 import { CsnDefinition } from "../../types/csn-extensions"
-import { validateAllowedAnnotations, validateOnAnnotation, validateRequiredGenericAnnotations, validateRequiredStartAnnotations, validateIfAnnotation } from "./build-validations"
+import { validateAllowedAnnotations, validateCascadeAnnotation, validateIdAnnotation, validateInputTypes, validateOnAnnotation, validateRequiredGenericAnnotations, validateRequiredStartAnnotations, validateIfAnnotation } from "./build-validations"
 import { getProcessDefinitions } from "./build-validation-utils"
 
 const LOG = cds.log("process-build")
@@ -26,8 +27,6 @@ const LOG = cds.log("process-build")
 // cds.build is only available during build phase, not during serve/watch
 const Plugin = cds.build?.Plugin
 const ERROR = Plugin?.ERROR
-const WARNING = Plugin?.WARNING
-
 
 // Base class - use Plugin if available, otherwise a dummy class
 const BuildPluginBase = Plugin ?? class {}
@@ -55,7 +54,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       this.validateCancelAnnotations(name, def)
       this.validateResumeAnnotations(name, def)
       this.validateSuspendAnnotations(name, def)
-      this.validateStartAnnotations(name, def, processDefinitions, model.definitions);
+      this.validateStartAnnotations(name, def, processDefinitions, model.definitions || {});
 
     }
     
@@ -68,20 +67,24 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     LOG.info("All process annotations validated successfully.")
   }
 
-  private validateStartAnnotations(entityName: string, def: CsnDefinition, processDefinitions: Map<string, CsnDefinition>, allDefinitions: Record<string, CsnDefinition> | undefined) {
+  private validateStartAnnotations(entityName: string, def: CsnDefinition, processDefinitions: Map<string, CsnDefinition>, allDefinitions: Record<string, CsnDefinition>) {
 
     // check unknown annotations
     const allowedAnnotations = [PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_IF, PROCESS_INPUT]
-    validateAllowedAnnotations(allowedAnnotations, def, entityName, PROCESS_START_ID, this);
+    validateAllowedAnnotations(allowedAnnotations, def, entityName, PROCESS_START, this);
 
     const hasId = def[PROCESS_START_ID] !== undefined
     const hasOn = def[PROCESS_START_ON] !== undefined
     const hasIf = def[PROCESS_START_IF] !== undefined
 
     // required fields
+    validateRequiredStartAnnotations(hasOn, hasId, entityName, this);
+    
     const processDef = processDefinitions.get(def[PROCESS_START_ID]);
-    validateRequiredStartAnnotations(hasOn, hasId, def, entityName, processDef, this);
-
+    
+    if (hasId) {
+      validateIdAnnotation(def, entityName, processDef, this);
+    }
     
     if (hasOn) {
       validateOnAnnotation(def, entityName, PROCESS_START_ON, this);
@@ -92,12 +95,11 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     }
     
     if(hasId && hasOn && processDef) { 
-      // validate inputs
-      // TODO: refactor code inside
-      // currently disabled as validation logic needs refinement for array types
-      // validateInputTypes(this, entityName, def, processDef, allDefinitions);
-      this.pushMessage(`Inputs for ${entityName} are not validated against process definition ${def[PROCESS_START_ID]}`, WARNING)
-      
+
+      const processInputs = allDefinitions[`${processDef.name}.ProcessInputs`];
+      if(typeof processInputs !== 'undefined') {
+        validateInputTypes(this, entityName, def, processInputs, allDefinitions);
+      }
     }
   }
   
@@ -136,40 +138,37 @@ export class ProcessValidationPlugin extends BuildPluginBase {
 
 
   // generic handler for suspend/resume/cancel annotations --> have same structure
-  // TODO: type for def
   private validateProcessLifecycleAnnotations(
     entityName: string,
-    def: any,
-    annotationOn: string,
-    annotationCascade: string,
-    annotationWhen: string,
+    def: CsnDefinition,
+    annotationOn: `@${string}`,
+    annotationCascade: `@${string}`,
+    annotationIf: `@${string}`,
     annotationPrefix: string
   ) {
     
     
     // check for unknown annotations
-    const allowedAnnotations = [annotationOn, annotationCascade, annotationWhen]
+    const allowedAnnotations = [annotationOn, annotationCascade, annotationIf]
     validateAllowedAnnotations(allowedAnnotations, def, entityName, annotationPrefix, this);
 
     const hasOn = def[annotationOn] !== undefined
     const hasCascade = def[annotationCascade] !== undefined
-    const hasWhen = def[annotationWhen] !== undefined
+    const hasIf = def[annotationIf] !== undefined
 
     // required fields
     validateRequiredGenericAnnotations(hasOn, hasCascade, def, entityName, annotationOn, annotationCascade, this);
 
-    // check types here
     if (hasOn) {
       validateOnAnnotation(def, entityName, annotationOn, this);
     }
 
-
-    if (hasCascade && typeof def[annotationCascade] !== 'boolean') {
-      this.pushMessage(`${entityName}: ${annotationCascade} must be a boolean`, ERROR)
+    if (hasCascade) {
+      validateCascadeAnnotation(def, entityName, annotationCascade, this);
     }
 
-    if (hasWhen) {
-      validateIfAnnotation(def, entityName, annotationWhen, this);
+    if (hasIf) {
+      validateIfAnnotation(def, entityName, annotationIf, this);
     }
   }
 }

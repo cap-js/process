@@ -37,7 +37,6 @@ cds.on("serving", async (service: cds.Service) => {
     }
   });
 
-  //TODO: Batch request tests
   service.after("*", async (each: Results, req: cds.Request) => {
 
     const target = req.target as Target
