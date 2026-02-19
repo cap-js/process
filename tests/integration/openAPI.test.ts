@@ -1,5 +1,5 @@
 import cds from '@sap/cds';
-import { getServiceCredentials, getServiceToken } from '../../lib/btp-utils';
+import { getServiceCredentials, getServiceToken } from '../../lib/auth';
 
 const PROCESS_SERVICE = 'ProcessService';
 

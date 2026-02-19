@@ -4,6 +4,11 @@
 export const PROCESS_SERVICE = 'ProcessService' as const;
 
 /**
+ * Process Service Logger
+ */
+export const PROCESS_LOGGER_PREFIX = 'ProcessService:' as const;
+
+/**
  * Process Start Annotations
  */
 export const PROCESS_START = '@build.process.start' as const;

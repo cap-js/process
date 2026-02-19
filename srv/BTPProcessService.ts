@@ -1,220 +1,128 @@
 import cds from "@sap/cds";
-import { getServiceCredentials, getServiceToken } from "../lib/btp-utils";
-import { TokenCache } from "../lib/token-cache";
+import {
+  getServiceCredentials,
+  TokenCache,
+  ITokenProvider,
+  createXsuaaTokenProvider
+} from "../lib/auth";
 import { handleProcessRoutingForEvent } from "../lib/processEventRouter";
+import {
+  IWorkflowInstanceClient,
+  createWorkflowInstanceClient,
+  WorkflowStatus
+} from "../lib/workflow-client";
 
 const LOG = cds.log("process");
-
-const BASE_PATH = '/public/workflow/rest'
 const PROCESS_SERVICE = 'ProcessService';
 
-enum WorkflowStatus {
-    RUNNING = 'RUNNING',
-    SUSPENDED = 'SUSPENDED',
-    CANCELED = 'CANCELED',
-    ERRONEOUS = 'ERRONEOUS',
-    COMPLETED = 'COMPLETED'
-}
-
 class ProcessService extends cds.ApplicationService {
+  private workflowInstanceClient!: IWorkflowInstanceClient;
+  private tokenProvider!: ITokenProvider;
+  private tokenCache = new TokenCache();
 
-    tokenCache = new TokenCache();
-    async init() {
-        LOG.debug('Initializing Process Service...');
+  async init() {
+    LOG.debug('Initializing Process Service...');
 
-        this.on('start', async (request: any) => {
-            const credentials = await getServiceCredentials(PROCESS_SERVICE);
-            const srvUrl = credentials?.endpoints.api;
-            const jwt = await this.getToken(cds.context?.tenant, request);
+    const credentials = getServiceCredentials(PROCESS_SERVICE);
 
-            let { definitionId, context } = request.data;
+    this.tokenProvider = createXsuaaTokenProvider(credentials);
 
+    this.workflowInstanceClient = createWorkflowInstanceClient(
+      credentials?.endpoints.api,
+      () => this.getToken(cds.context?.tenant)
+    );
 
-            // context = {
-            //     "businesskey": "test_business",
-            //     "startingShipment": {
-            //         "identifier": "shipment_12345",
-            //         "items": [{
-            //             "identifier": "item_1",
-            //             "title": "Laptop",
-            //             "quantity": 1,
-            //             "price": 1200.00
-            //         }]
-            //     }
-            // }
+    this.on('start', async (request: any) => {
+      const { definitionId, context } = request.data;
+      return await this.workflowInstanceClient.startWorkflow(definitionId, context);
+    });
 
-            const response = await fetch(`${srvUrl}${BASE_PATH}/v1/workflow-instances`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${jwt}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    definitionId: definitionId,
-                    context: context
-                })
-            });
+    this.on('cancel', async (request: any) => {
+      const { businessKey, cascade } = request.data;
 
-            if (!response.ok) {
-                const body = await response.text();
-                LOG.error(`Failed to start workflow. Status: ${response.status}, Body: ${body}`);
-                throw new Error(`Unexpected error during starting a workflow. Status: ${response.status}`);
-            }
-            const workflowInstance = await response.json();
-            LOG.debug(`Workflow instance started with ID: ${workflowInstance.id}`);
-            LOG.debug(`Workflow Instance Details: ${JSON.stringify(workflowInstance)}`);
+      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
+        businessKey,
+        [WorkflowStatus.RUNNING, WorkflowStatus.SUSPENDED]
+      );
 
-            return {
-                id: workflowInstance.id,
-                success: true
-            };
-        });
+      if (instances.length === 0) {
+        LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
+        return;
+      }
 
-        this.on('cancel', async (request: any) => {
+      await this.workflowInstanceClient.updateMultipleWorkflowStatus(
+        instances,
+        WorkflowStatus.CANCELED,
+        cascade
+      );
+    });
 
-            const credentials = await getServiceCredentials(PROCESS_SERVICE);
-            const srvUrl = credentials?.endpoints.api;
-            const jwt = await this.getToken(cds.context?.tenant, request);
+    this.on('suspend', async (request: any) => {
+      const { businessKey, cascade } = request.data;
 
-            let { businessKey, cascade } = request.data;
+      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
+        businessKey,
+        WorkflowStatus.RUNNING
+      );
 
-            const workflowInstances = await this.getWorkflowDefinitionByKey(businessKey, jwt, srvUrl, [WorkflowStatus.RUNNING, WorkflowStatus.SUSPENDED]);
-            LOG.debug('Query Response Status:', workflowInstances);
+      if (instances.length === 0) {
+        LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
+        return;
+      }
 
-            if (workflowInstances.length === 0) {
-                LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
-                return;
-            }
+      await this.workflowInstanceClient.updateMultipleWorkflowStatus(
+        instances,
+        WorkflowStatus.SUSPENDED,
+        cascade
+      );
+    });
 
-            await this.patchWorkflowInstanceStatus(workflowInstances, WorkflowStatus.CANCELED, jwt, srvUrl, cascade);
-        });
+    this.on('resume', async (request: any) => {
+      const { businessKey, cascade } = request.data;
 
-        this.on('suspend', async (request: any) => {
-            const credentials = await getServiceCredentials(PROCESS_SERVICE);
-            const srvUrl = credentials?.endpoints.api;
-            const jwt = await this.getToken(cds.context?.tenant, request);
+      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
+        businessKey,
+        WorkflowStatus.SUSPENDED
+      );
 
-            let { businessKey, cascade } = request.data;
-            const workflowInstances = await this.getWorkflowDefinitionByKey(businessKey, jwt, srvUrl, WorkflowStatus.RUNNING);
+      if (instances.length === 0) {
+        LOG.warn(`No suspended workflow instances found with businessKey: ${businessKey}`);
+        return;
+      }
 
-            LOG.debug('Query Response Status:', workflowInstances);
+      await this.workflowInstanceClient.updateMultipleWorkflowStatus(
+        instances,
+        WorkflowStatus.RUNNING,
+        cascade
+      );
+    });
 
-            if (workflowInstances.length === 0) {
-                LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
-                return;
-            }
+    this.on('*', async (req: any) => {
+      await handleProcessRoutingForEvent(this, req);
+    });
 
-            await this.patchWorkflowInstanceStatus(workflowInstances, WorkflowStatus.SUSPENDED, jwt, srvUrl, cascade);
-        });
+    return super.init();
+  }
 
-        this.on('resume', async (request: any) => {
-            const credentials = await getServiceCredentials(PROCESS_SERVICE);
-            const srvUrl = credentials?.endpoints.api;
-            const jwt = await this.getToken(cds.context?.tenant, request);
+  private async getToken(tenant: string | undefined): Promise<string> {
+    const tenantId = tenant ?? 'single-tenant';
+    const cachedToken = this.tokenCache.get(tenantId);
 
-            let { businessKey, cascade } = request.data;
-
-            const workflowInstances = await this.getWorkflowDefinitionByKey(businessKey, jwt, srvUrl, WorkflowStatus.SUSPENDED);
-            LOG.debug('Query Response Status:', workflowInstances);
-
-            if (workflowInstances.length === 0) {
-                LOG.warn(`No suspended workflow instances found with businessKey: ${businessKey}`);
-                return;
-            }
-
-            await this.patchWorkflowInstanceStatus(workflowInstances, WorkflowStatus.RUNNING, jwt, srvUrl, cascade);
-
-            return;
-        });
-
-        this.on('*', async (req: any) => {
-            await handleProcessRoutingForEvent(this, req);
-        });
-
-        return super.init();
+    if (cachedToken) {
+      LOG.trace(`Using cached token for tenant: ${tenantId}`);
+      return cachedToken;
     }
 
-    async patchWorkflowInstanceStatus(workflowInstances: any[], status: string, jwt: string, srvUrl: string, cascade: boolean) {
-        const updatePromises = workflowInstances.map(async (instance) => {
-            try {
-                const resumeResponse = await fetch(`${srvUrl}${BASE_PATH}/v1/workflow-instances/${instance.id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${jwt}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status: status, cascade: cascade })
-                });
-
-                if (resumeResponse.ok) {
-                    LOG.debug(`Successfully updated workflow instance ${instance.id} to status ${status}`);
-                    return { id: instance.id, success: true };
-                } else {
-                    const errorBody = await resumeResponse.text();
-                    LOG.error(`Failed to update workflow instance ${instance.id} to status ${status}. Status: ${resumeResponse.status}, Body: ${errorBody}`);
-                    return { id: instance.id, success: false, error: errorBody };
-                }
-            } catch (error) {
-                LOG.error(`Error updating workflow instance ${instance.id} to status ${status}:`, error);
-                return { id: instance.id, success: false, error: String(error) };
-            }
-        });
-
-        const resumeResults = await Promise.all(updatePromises);
-        LOG.info(`Updated ${resumeResults.filter(r => r.success).length} out of ${workflowInstances.length} workflow instances to status ${status}`);
+    try {
+      const { jwt, expires_in } = await this.tokenProvider.fetchToken(tenant);
+      this.tokenCache.set?.(tenantId, jwt, expires_in);
+      LOG.debug(`Token fetched and cached for tenant: ${tenantId}`);
+      return jwt;
+    } catch (error) {
+      LOG.error("Error fetching token for Process Service:", error);
+      throw new Error("Error during token fetching");
     }
-
-    async getWorkflowDefinitionByKey(businessKey: string, jwt: string, srvUrl: string, status: string | string[]) {
-
-        let queryUrl = `${srvUrl}${BASE_PATH}/v1/workflow-instances?businessKey=${businessKey}`;
-
-        if (Array.isArray(status)) {
-            status.forEach(s => {
-                queryUrl += `&status=${s}`;
-            });
-        } else {
-            queryUrl += `&status=${status}`;
-        }
-
-        const queryResponse = await fetch(queryUrl, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${jwt}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!queryResponse.ok) {
-            const body = await queryResponse.text();
-            LOG.error(`Failed to retrieve workflow instances. Status: ${queryResponse.status}, Body: ${body}`);
-            throw new Error(`Unexpected error during retrieving workflow instances with businessKey: ${businessKey} Status: ${queryResponse.status}`);
-        }
-
-        return await queryResponse.json();
-
-    }
-
-    async getToken(tenant: string | undefined, request: cds.Request): Promise<string> {
-        const tenantId = tenant ?? 'single-tenant';
-        const cachedToken = this.tokenCache.get(tenantId);
-
-        if (cachedToken) {
-            LOG.trace(`Using cached token for tenant: ${tenantId}`);
-            return cachedToken;
-        }
-
-        try {
-            const { jwt, expires_in } = await getServiceToken(
-                PROCESS_SERVICE
-            );
-            this.tokenCache.set?.(tenantId, jwt, expires_in);
-            LOG.debug(`Token fetched and cached for tenant: ${tenantId}`);
-            return jwt;
-        } catch (error) {
-            LOG.error("Error fetching token for Process Service:", error);
-            throw new Error("Error during token fetching");
-        }
-    }
+  }
 }
 
 module.exports = { ProcessService };
