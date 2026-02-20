@@ -10,9 +10,9 @@ import {
   createWorkflowInstanceClient,
   WorkflowStatus
 } from "../lib/api";
+import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from "../lib";
 
-const LOG = cds.log("process");
-const PROCESS_SERVICE = 'ProcessService';
+const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 class ProcessService extends cds.ApplicationService {
   private workflowInstanceClient!: IWorkflowInstanceClient;
@@ -31,12 +31,12 @@ class ProcessService extends cds.ApplicationService {
       () => this.getToken(cds.context?.tenant)
     );
 
-    this.on('start', async (request: any) => {
+    this.on('start', async (request: cds.Request) => {
       const { definitionId, context } = request.data;
       return await this.workflowInstanceClient.startWorkflow(definitionId, context);
     });
 
-    this.on('cancel', async (request: any) => {
+    this.on('cancel', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
@@ -56,7 +56,7 @@ class ProcessService extends cds.ApplicationService {
       );
     });
 
-    this.on('suspend', async (request: any) => {
+    this.on('suspend', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
@@ -76,7 +76,7 @@ class ProcessService extends cds.ApplicationService {
       );
     });
 
-    this.on('resume', async (request: any) => {
+    this.on('resume', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(

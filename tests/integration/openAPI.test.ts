@@ -1,12 +1,9 @@
 import cds from '@sap/cds';
 import { getServiceCredentials, getServiceToken } from '../../lib/auth';
-import fs from 'fs';
-import path from 'path';
-
-const PROCESS_SERVICE = 'ProcessService';
+import { PROCESS_SERVICE } from '../../lib';
 
 test('should create query request', async () => {
-    const processService = await cds.connect.to('ProcessService');
+    const processService = await cds.connect.to(PROCESS_SERVICE);
     expect(processService).toBeDefined();
 });
 

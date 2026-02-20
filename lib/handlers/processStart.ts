@@ -4,10 +4,10 @@ import {
   fetchEntity,
   getElementAnnotations,
 } from "./utils"
-import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_IF, PROCESS_INPUT, LOG_MESSAGES } from "./../constants"
+import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_IF, PROCESS_INPUT, LOG_MESSAGES, PROCESS_SERVICE, PROCESS_LOGGER_PREFIX } from "./../constants"
 
 import cds from "@sap/cds"
-const LOG = cds.log("process");
+const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 type ProcessStartInput = {
   sourceElement: string
@@ -28,7 +28,7 @@ export function getColumnsForProcessStart(
   req: cds.Request
 ): column_expr[] | string[] {
   const startSpecs = initStartSpecs(target, req)
-  if(startSpecs.inputs.length === 0) {
+  if (startSpecs.inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
     return ['*']
   } else {
@@ -40,7 +40,7 @@ export async function handleProcessStart(
   req: cds.Request,
 ) {
 
-  if(req.event === 'DELETE' && ((req as DeleteRequest)._Process === undefined || (req as DeleteRequest)._Process?.length === 0)) {
+  if (req.event === 'DELETE' && ((req as DeleteRequest)._Process === undefined || (req as DeleteRequest)._Process?.length === 0)) {
     LOG.debug(LOG_MESSAGES.PROCESS_NOT_STARTED);
     return;
   }
@@ -52,7 +52,7 @@ export async function handleProcessStart(
 
   // if startSpecs.input = [] --> no input defined, fetch entire row
   let columns: column_expr[] | string[] = [];
-  if(startSpecs.inputs.length === 0) {
+  if (startSpecs.inputs.length === 0) {
     columns = ['*'];
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
   } else {
@@ -74,23 +74,23 @@ export async function handleProcessStart(
     return req.reject({ status: 500, message: 'PROCESS_START_FETCH_FAILED' });
   }
 
-  if(!row) {
-      LOG.debug(LOG_MESSAGES.PROCESS_NOT_STARTED);
-      return
+  if (!row) {
+    LOG.debug(LOG_MESSAGES.PROCESS_NOT_STARTED);
+    return
   }
 
   let businessKey;
   try {
-    businessKey = concatenateBusinessKey(target as cds.entity, {...row, ...req.data});
+    businessKey = concatenateBusinessKey(target as cds.entity, { ...row, ...req.data });
   } catch (error) {
     LOG.error('PROCESS_START_INVALID_KEY', error);
     return req.reject({ status: 400, message: 'PROCESS_START_INVALID_KEY' });
   }
 
-  const context = {...row, "businesskey": businessKey};
+  const context = { ...row, "businesskey": businessKey };
 
   try {
-    const processService = await cds.connect.to("ProcessService")
+    const processService = await cds.connect.to(PROCESS_SERVICE)
     const outboxedService = cds.outboxed(processService);
     await outboxedService.emit("start", {
       definitionId: startSpecs.id!,
@@ -108,12 +108,12 @@ function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
     id: target[PROCESS_START_ID] as string,
     on: target[PROCESS_START_ON] as string,
     inputs: [],
-    startExpr: target[PROCESS_START_IF] ? (target[PROCESS_START_IF]as any).xpr as expr : undefined,
+    startExpr: target[PROCESS_START_IF] ? (target[PROCESS_START_IF] as any).xpr as expr : undefined,
   }
   const elementAnnotations = getElementAnnotations(target as cds.entity)
   const entityName = (target as cds.entity).name;
   startSpecs.inputs = getInputElements(elementAnnotations, new Set([entityName]), [entityName], req);
-  
+
   return startSpecs
 }
 
@@ -130,21 +130,21 @@ function getInputElements(
         // For associations, recursively get input elements from the associated entity
         // If the associated entity has no annotated elements, use empty array to signal "expand all"
         let associatedInputElements: ProcessStartInput[] | undefined = undefined;
-        
+
         if (associatedElements) {
           const associatedEntityName = associatedElements.name || elementName;
-          
+
           // Check for cycle: if we've already visited this entity, throw an error
           if (visitedEntities.has(associatedEntityName)) {
             LOG.error('PROCESS_START_CYCLE_DETECTED', associatedEntityName);
             return req.reject({ status: 400, message: 'PROCESS_START_CYCLE_DETECTED', args: [associatedEntityName] });
           }
-          
+
           // Add to visited set and path for this branch
           const newVisited = new Set(visitedEntities);
           newVisited.add(associatedEntityName);
           const newPath = [...currentPath, associatedEntityName];
-          
+
           associatedInputElements = getInputElements(
             getElementAnnotations(associatedElements),
             newVisited,
@@ -152,19 +152,19 @@ function getInputElements(
             req
           );
         }
-        
-        const input: ProcessStartInput = { 
-          sourceElement: elementName, 
-          associatedInputElements 
+
+        const input: ProcessStartInput = {
+          sourceElement: elementName,
+          associatedInputElements
         }
 
-        if(typeof value === 'boolean' || (value === 'true' || value === 'false')) {
+        if (typeof value === 'boolean' || (value === 'true' || value === 'false')) {
           input.targetVariable = undefined;
         } else {
           input.targetVariable = value;
         }
 
-        inputs.push(input)  
+        inputs.push(input)
         break
 
     }

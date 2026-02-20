@@ -1,12 +1,13 @@
 import cds from '@sap/cds';
 import { localWorkflowStore } from '../lib/api/local-workflow-store';
 import { WorkflowStatus } from '../lib/api/workflow-client';
+import { PROCESS_LOGGER_PREFIX } from '../lib';
 
-const LOG = cds.log("process");
+const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 class ProcessService extends cds.ApplicationService {
     async init() {
-        this.on('start', async (req: any) => {
+        this.on('start', async (req: cds.Request) => {
             const { definitionId, context } = req.data;
             const businessKey = context?.businesskey ?? context?.businessKey;
 
@@ -25,7 +26,7 @@ class ProcessService extends cds.ApplicationService {
             return result;
         });
 
-        this.on('cancel', async (req: any) => {
+        this.on('cancel', async (req: cds.Request) => {
             const { businessKey, cascade } = req.data;
 
             LOG.debug("==============================================================");
@@ -58,7 +59,7 @@ class ProcessService extends cds.ApplicationService {
             };
         });
 
-        this.on('suspend', async (req: any) => {
+        this.on('suspend', async (req: cds.Request) => {
             const { businessKey, cascade } = req.data;
 
             LOG.debug("==============================================================");
@@ -91,7 +92,7 @@ class ProcessService extends cds.ApplicationService {
             };
         });
 
-        this.on('resume', async (req: any) => {
+        this.on('resume', async (req: cds.Request) => {
             const { businessKey, cascade } = req.data;
 
             LOG.debug("==============================================================");

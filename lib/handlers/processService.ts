@@ -1,7 +1,7 @@
 import cds from '@sap/cds';
-import { PROCESS_PREFIX } from '../constants';
+import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, PROCESS_SERVICE } from '../constants';
 
-const LOG = cds.log('process');
+const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 export function registerProcessServiceHandlers(service: cds.Service): void {
   const definitionId = service.definition?.[PROCESS_PREFIX] as string | undefined;
@@ -28,7 +28,7 @@ function registerStartHandler(service: cds.Service, definitionId: string): void 
     if (!inputs) {
       return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INPUTS' });
     }
-    const processService = await cds.connect.to('ProcessService');
+    const processService = await cds.connect.to(PROCESS_SERVICE);
 
     // revisit - check outbox
     await processService.emit('start', {
@@ -47,7 +47,7 @@ function registerSuspendHandler(service: cds.Service, definitionId: string): voi
       return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
     }
 
-    const processService = await cds.connect.to('ProcessService');
+    const processService = await cds.connect.to(PROCESS_SERVICE);
 
     // revisit - check outbox
     await processService.emit('suspend', {
@@ -68,7 +68,7 @@ function registerResumeHandler(service: cds.Service, definitionId: string): void
       return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
     }
 
-    const processService = await cds.connect.to('ProcessService');
+    const processService = await cds.connect.to(PROCESS_SERVICE);
 
     // revisit - check outbox
     await processService.emit('resume', {
@@ -89,7 +89,7 @@ function registerCancelHandler(service: cds.Service, definitionId: string): void
       return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
     }
 
-    const processService = await cds.connect.to('ProcessService');
+    const processService = await cds.connect.to(PROCESS_SERVICE);
 
     // revisit - check outbox
     await processService.emit('cancel', {

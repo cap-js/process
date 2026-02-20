@@ -10,8 +10,9 @@ import {
   DataType,
   JsonSchema
 } from './api';
+import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from './constants';
 
-const LOG = cds.log('process');
+const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // ============================================================================
 //  TYPES
@@ -79,7 +80,7 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
 }
 
 async function createApiClient(): Promise<IProcessApiClient> {
-  const credentials = getServiceCredentials('ProcessService');
+  const credentials = getServiceCredentials(PROCESS_SERVICE);
   if (!credentials) {
     throw new Error(cds.i18n.messages.at('IMPORT_NO_CREDENTIALS'));
   }
@@ -91,7 +92,7 @@ async function createApiClient(): Promise<IProcessApiClient> {
 
   LOG.info('Creating API client...');
   return createProcessApiClient(apiUrl, async () => {
-    const tokenInfo = await getServiceToken('ProcessService');
+    const tokenInfo = await getServiceToken(PROCESS_SERVICE);
     return tokenInfo.jwt;
   });
 }
@@ -121,12 +122,12 @@ function getModelPathFromFilePath(filePath: string): string {
   // Resolve to absolute, then make relative to cds.root
   const absolutePath = path.resolve(filePath);
   let relativePath = path.relative(cds.root, absolutePath);
-  
+
   // Remove .json extension
   if (relativePath.endsWith('.json')) {
     relativePath = relativePath.slice(0, -5);
   }
-  
+
   // Normalize path separators
   return relativePath.replace(/\\/g, '/');
 }
@@ -289,7 +290,7 @@ function buildTypeFromSchema(
   return { kind: 'type', name: typeName, elements };
 }
 
-function mapSchemaPropertyToElement(propName: string, schema: any, isRequired: boolean, ctx: SchemaMapContext): csn.CsnElement {
+function mapSchemaPropertyToElement(propName: string, schema: JsonSchema, isRequired: boolean, ctx: SchemaMapContext): csn.CsnElement {
   const notNull = isRequired || undefined;
 
   // Reference to another type
@@ -333,7 +334,7 @@ function mapSchemaPropertyToElement(propName: string, schema: any, isRequired: b
   return { type: csn.CdsBuiltinType.String, notNull };
 }
 
-function buildArrayItemsSpec(itemsSchema: any, ctx: SchemaMapContext): csn.CsnTypeSpec {
+function buildArrayItemsSpec(itemsSchema: JsonSchema, ctx: SchemaMapContext): csn.CsnTypeSpec {
   // Reference
   if (itemsSchema?.$ref) {
     return { type: resolveTypeReference(itemsSchema, ctx.serviceName) };
@@ -356,7 +357,7 @@ function buildArrayItemsSpec(itemsSchema: any, ctx: SchemaMapContext): csn.CsnTy
     const required = new Set(itemsSchema.required ?? []);
     const elements: Record<string, csn.CsnElement> = {};
 
-    for (const [name, schema] of Object.entries(itemsSchema.properties ?? {})) {
+    for (const [name, schema] of Object.entries(itemsSchema.properties ?? {}) as [string, JsonSchema][]) {
       const safeName = sanitizeName(name);
       elements[safeName] = mapSchemaPropertyToElement(safeName, schema, required.has(name), {
         parentTypeName: fqn(ctx.serviceName, `${baseName(ctx.parentTypeName)}_Item`),
@@ -376,8 +377,9 @@ function buildArrayItemsSpec(itemsSchema: any, ctx: SchemaMapContext): csn.CsnTy
   return { type: csn.CdsBuiltinType.String };
 }
 
-function resolveTypeReference(schema: { $ref: string; refName?: string }, serviceName: string): string {
+function resolveTypeReference(schema: { $ref?: string; refName?: string }, serviceName: string): string {
   const ref = schema.$ref;
+  if (!ref) throw new Error(cds.i18n.messages.at('IMPORT_INVALID_REF', [serviceName, schema.refName ?? 'unknown']));
 
   // Internal reference: #/definitions/date
   if (ref.startsWith('#/')) {

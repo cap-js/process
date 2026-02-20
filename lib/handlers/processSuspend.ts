@@ -1,6 +1,6 @@
 import cds, { DeleteRequest, expr, Target } from "@sap/cds";
 import { concatenateBusinessKey, fetchEntity } from "./utils";
-import { PROCESS_SUSPEND_ON, PROCESS_SUSPEND_CASCADE, PROCESS_SUSPEND_IF, LOG_MESSAGES } from "./../constants";
+import { PROCESS_SUSPEND_ON, PROCESS_SUSPEND_CASCADE, PROCESS_SUSPEND_IF, LOG_MESSAGES, PROCESS_SERVICE, PROCESS_LOGGER_PREFIX } from "./../constants";
 
 type ProcessSuspendSpec = {
     on?: string,
@@ -8,18 +8,18 @@ type ProcessSuspendSpec = {
     suspendExpr: expr | undefined
 }
 
-const LOG = cds.log("process");
+const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 export async function handleProcessSuspend(req: cds.Request) {
 
-    if(req.event === 'DELETE' && ((req as DeleteRequest)._Process === undefined || (req as DeleteRequest)._Process?.length === 0)) {
+    if (req.event === 'DELETE' && ((req as DeleteRequest)._Process === undefined || (req as DeleteRequest)._Process?.length === 0)) {
         LOG.debug(LOG_MESSAGES.PROCESS_NOT_SUSPENDED);
         return;
     }
 
     const target = req.target as Target;
     const data = (req as DeleteRequest)._Process ?? req.data
-    
+
     // init specification
     const suspendSpecs = initSuspendSpecs(target);
 
@@ -29,7 +29,7 @@ export async function handleProcessSuspend(req: cds.Request) {
         row = req.event === 'DELETE' ? data : await fetchEntity(
             data,
             req,
-            suspendSpecs.suspendExpr    
+            suspendSpecs.suspendExpr
         );
     } catch (error) {
         LOG.error('PROCESS_SUSPEND_FETCH_FAILED', error);
@@ -37,7 +37,7 @@ export async function handleProcessSuspend(req: cds.Request) {
     }
 
     // check suspend condition or if event is delete
-    if(!row) {
+    if (!row) {
         LOG.debug(LOG_MESSAGES.PROCESS_NOT_SUSPENDED);
         return;
     }
@@ -45,19 +45,19 @@ export async function handleProcessSuspend(req: cds.Request) {
     // get business Key
     let businessKey;
     try {
-        businessKey = concatenateBusinessKey(target as cds.entity, {...row, ...req.data});
+        businessKey = concatenateBusinessKey(target as cds.entity, { ...row, ...req.data });
     } catch (error) {
         LOG.error('PROCESS_SUSPEND_INVALID_KEY', error);
         return req.reject({ status: 400, message: 'PROCESS_SUSPEND_INVALID_KEY' });
     }
 
-    if(!businessKey) {
+    if (!businessKey) {
         return req.reject({ status: 400, message: 'PROCESS_SUSPEND_EMPTY_KEY' });
     }
-    
+
     // suspend process
     try {
-        const processService = await cds.connect.to("ProcessService");
+        const processService = await cds.connect.to(PROCESS_SERVICE);
         const outboxedService = cds.outboxed(processService);
         await outboxedService.emit("suspend", {
             businessKey: businessKey,
@@ -75,5 +75,5 @@ function initSuspendSpecs(target: Target): ProcessSuspendSpec {
         cascade: target[PROCESS_SUSPEND_CASCADE] ?? false,
         suspendExpr: target[PROCESS_SUSPEND_IF] ? (target[PROCESS_SUSPEND_IF]as any).xpr as expr : undefined,
     }
-    return suspendSpecs; 
+    return suspendSpecs;
 }

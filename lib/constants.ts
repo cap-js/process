@@ -6,7 +6,7 @@ export const PROCESS_SERVICE = 'ProcessService' as const;
 /**
  * Process Service Logger
  */
-export const PROCESS_LOGGER_PREFIX = 'ProcessService:' as const;
+export const PROCESS_LOGGER_PREFIX = 'process' as const;
 
 /**
  * Process Start Annotations

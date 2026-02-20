@@ -1,7 +1,7 @@
 import { DeleteRequest, expr, Target } from "@sap/cds";
 import cds from "@sap/cds"
 import { concatenateBusinessKey, fetchEntity } from "./utils";
-import { PROCESS_CANCEL_ON, PROCESS_CANCEL_CASCADE, PROCESS_CANCEL_IF, LOG_MESSAGES } from "./../constants";
+import { PROCESS_CANCEL_ON, PROCESS_CANCEL_CASCADE, PROCESS_CANCEL_IF, LOG_MESSAGES, PROCESS_SERVICE } from "./../constants";
 
 type ProcessCancelSpec = {
     on?: string,
@@ -14,14 +14,14 @@ const LOG = cds.log("process");
 export async function handleProcessCancel(
     req: cds.Request
 ) {
-    if(req.event === 'DELETE' && ((req as DeleteRequest)._Process === undefined || (req as DeleteRequest)._Process?.length === 0)) {
+    if (req.event === 'DELETE' && ((req as DeleteRequest)._Process === undefined || (req as DeleteRequest)._Process?.length === 0)) {
         LOG.debug(LOG_MESSAGES.PROCESS_NOT_CANCELLED);
         return;
     }
-    
+
     const target = req.target as Target;
     const data = (req as DeleteRequest)._Process ?? req.data
-      
+
     // init specification
     const cancelSpecs = initCancelSpecs(target);
 
@@ -31,16 +31,16 @@ export async function handleProcessCancel(
         row = req.event === 'DELETE' ? data : await fetchEntity(
             data,
             req,
-            cancelSpecs.cancelExpr    
+            cancelSpecs.cancelExpr
         );
     } catch (error) {
         LOG.error('PROCESS_CANCEL_FETCH_FAILED', error);
         return req.reject({ status: 500, message: 'PROCESS_CANCEL_FETCH_FAILED' });
     }
-    
+
 
     // when row is undefined, cancel condition not met
-    if(!row) {
+    if (!row) {
         LOG.debug(LOG_MESSAGES.PROCESS_NOT_CANCELLED);
         return
     }
@@ -48,19 +48,19 @@ export async function handleProcessCancel(
     // get business Key
     let businessKey;
     try {
-        businessKey = concatenateBusinessKey(target as cds.entity, {...row, ...req.data})
+        businessKey = concatenateBusinessKey(target as cds.entity, { ...row, ...req.data })
     } catch (error) {
         LOG.error('PROCESS_CANCEL_INVALID_KEY', error);
         return req.reject({ status: 400, message: 'PROCESS_CANCEL_INVALID_KEY' });
     }
 
-    if(!businessKey) {
+    if (!businessKey) {
         return req.reject({ status: 400, message: 'PROCESS_CANCEL_EMPTY_KEY' });
     }
 
     // cancel process
     try {
-        const processService = await cds.connect.to("ProcessService")
+        const processService = await cds.connect.to(PROCESS_SERVICE)
         const outboxedService = cds.outboxed(processService);
         await outboxedService.emit("cancel", {
             businessKey: businessKey,
@@ -73,7 +73,7 @@ export async function handleProcessCancel(
 
 }
 
-function initCancelSpecs(target: Target): ProcessCancelSpec { 
+function initCancelSpecs(target: Target): ProcessCancelSpec {
     const cancelSpecs: ProcessCancelSpec = {
         on: target[PROCESS_CANCEL_ON] as string,
         cascade: target[PROCESS_CANCEL_CASCADE] ?? false,

@@ -1,6 +1,14 @@
 import { XsuaaService } from '@sap/xssec';
 import cds from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX } from '../constants';
+import { ProcessServiceCredentials } from './credentials';
+
+interface UaaCredentials {
+  url: string;
+  clientid: string;
+  clientsecret: string;
+}
+
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -20,7 +28,7 @@ export interface ITokenProvider {
 // ============ XSUAA Implementation ============
 
 async function fetchXsuaaToken(
-  uaaCredentials: any,
+  uaaCredentials: UaaCredentials,
   tenantId?: string
 ): Promise<TokenResult> {
   const xsuaaService = new XsuaaService(uaaCredentials);
@@ -38,7 +46,7 @@ async function fetchXsuaaToken(
 
 // ============ Factory ============
 
-export function createXsuaaTokenProvider(credentials: any): ITokenProvider {
+export function createXsuaaTokenProvider(credentials: ProcessServiceCredentials): ITokenProvider {
   if (!credentials?.uaa) {
     throw new Error(cds.i18n.messages.at('AUTH_MISSING_UAA_CREDENTIALS'));
   }

@@ -40,10 +40,10 @@ export interface Dependency {
 }
 
 export interface JsonSchema {
-  type?: string;
-  properties?: Record<string, any>;
+  type?: 'string' | 'boolean' | 'number' | 'integer' | 'object' | 'array';
+  properties?: Record<string, JsonSchema>;
   required?: string[];
-  items?: any;
+  items?: JsonSchema;
   $ref?: string;
   refName?: string;
 }

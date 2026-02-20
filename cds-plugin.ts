@@ -1,23 +1,26 @@
 import cds, { Results, Target } from "@sap/cds"
-import { 
-  addDeletedEntityToRequest, 
-  handleProcessCancel, 
-  handleProcessResume, 
-  handleProcessStart, 
-  handleProcessSuspend, 
+import {
+  addDeletedEntityToRequest,
+  handleProcessCancel,
+  handleProcessResume,
+  handleProcessStart,
+  handleProcessSuspend,
   ProcessValidationPlugin,
-  registerProcessServiceHandlers, 
+  registerProcessServiceHandlers,
   PROCESS_START_ID,
   PROCESS_START_ON,
   PROCESS_CANCEL_ON,
   PROCESS_SUSPEND_ON,
   PROCESS_RESUME_ON,
-  PROCESS_PREFIX, } from "./lib/index"
+  PROCESS_PREFIX,
+  PROCESS_LOGGER_PREFIX,
+} from "./lib/index"
 import { importProcess } from "./lib/processImport"
 
-const LOG = cds.log("process");
+const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // Register build plugin for annotation validation during cds build
+// @ts-ignore
 cds.build?.register?.('process-validation', ProcessValidationPlugin)
 
 // Register import handler for: cds import --from process
