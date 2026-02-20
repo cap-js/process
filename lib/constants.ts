@@ -66,9 +66,10 @@ export const PROCESS_DEFINITION_ID = '@Process.DefinitionId' as const;
  */
 
 export const LOG_MESSAGES = {
-    PROCESS_NOT_STARTED: 'Not starting process as start condition(s) are not met.',
-    NO_PROCESS_INPUTS_DEFINED: 'No process start input annotations defined, fetching entire entity row for process start context.',
-    PROCESS_NOT_SUSPENDED: 'Not suspending process as suspend condition(s) are not met.',
-    PROCESS_NOT_RESUMED: 'Not resuming process as resume condition(s) are not met.',
-    PROCESS_NOT_CANCELLED: 'Not canceling process as cancel condition(s) are not met.'
+  PROCESS_NOT_STARTED: 'Not starting process as start condition(s) are not met.',
+  NO_PROCESS_INPUTS_DEFINED:
+    'No process start input annotations defined, fetching entire entity row for process start context.',
+  PROCESS_NOT_SUSPENDED: 'Not suspending process as suspend condition(s) are not met.',
+  PROCESS_NOT_RESUMED: 'Not resuming process as resume condition(s) are not met.',
+  PROCESS_NOT_CANCELLED: 'Not canceling process as cancel condition(s) are not met.',
 } as const;

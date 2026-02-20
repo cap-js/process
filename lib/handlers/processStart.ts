@@ -1,54 +1,59 @@
-import { column_expr, DeleteRequest, expr, Target } from "@sap/cds"
+import { column_expr, expr, Target } from '@sap/cds';
 import {
-  concatenateBusinessKey,
-  fetchEntity,
+  ElementAnnotation,
+  emitProcessEvent,
+  EntityRow,
+  getBusinessKeyOrReject,
   getElementAnnotations,
-} from "./utils"
-import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_IF, PROCESS_INPUT, LOG_MESSAGES, PROCESS_SERVICE, PROCESS_LOGGER_PREFIX } from "./../constants"
+  isDeleteWithoutProcess,
+  ProcessDeleteRequest,
+  resolveEntityRowOrReject,
+} from './utils';
+import {
+  PROCESS_START_ID,
+  PROCESS_START_ON,
+  PROCESS_START_IF,
+  PROCESS_INPUT,
+  LOG_MESSAGES,
+  PROCESS_LOGGER_PREFIX,
+} from './../constants';
 
-import cds from "@sap/cds"
+import cds from '@sap/cds';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 type ProcessStartInput = {
-  sourceElement: string
-  targetVariable?: string
-  associatedInputElements?: ProcessStartInput[]
-}
-
+  sourceElement: string;
+  targetVariable?: string;
+  associatedInputElements?: ProcessStartInput[];
+};
 
 export type ProcessStartSpec = {
-  id?: string
-  on?: string
-  inputs: ProcessStartInput[]
-  startExpr: expr | undefined
-}
+  id?: string;
+  on?: string;
+  inputs: ProcessStartInput[];
+  conditionExpr: expr | undefined;
+};
 
 export function getColumnsForProcessStart(
   target: Target,
-  req: cds.Request
+  req: cds.Request,
 ): column_expr[] | string[] {
-  const startSpecs = initStartSpecs(target, req)
+  const startSpecs = initStartSpecs(target, req);
   if (startSpecs.inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
-    return ['*']
+    return ['*'];
   } else {
     return convertToColumnsExpr(startSpecs.inputs);
   }
-};
+}
 
-export async function handleProcessStart(
-  req: cds.Request,
-) {
-
-  if (req.event === 'DELETE' && ((req as DeleteRequest)._Process === undefined || (req as DeleteRequest)._Process?.length === 0)) {
-    LOG.debug(LOG_MESSAGES.PROCESS_NOT_STARTED);
-    return;
-  }
+export async function handleProcessStart(req: cds.Request): Promise<void> {
+  if (isDeleteWithoutProcess(req, LOG_MESSAGES.PROCESS_NOT_STARTED)) return;
 
   const target = req.target as Target;
-  const data = (req as DeleteRequest)._Process ?? req.data
+  const data = ((req as ProcessDeleteRequest)._Process ?? req.data) as EntityRow;
 
-  const startSpecs = initStartSpecs(target, req)
+  const startSpecs = initStartSpecs(target, req);
 
   // if startSpecs.input = [] --> no input defined, fetch entire row
   let columns: column_expr[] | string[] = [];
@@ -59,48 +64,32 @@ export async function handleProcessStart(
     columns = convertToColumnsExpr(startSpecs.inputs);
   }
 
+  // fetch entity
+  const row = await resolveEntityRowOrReject(
+    req,
+    data,
+    startSpecs.conditionExpr,
+    'PROCESS_START_FETCH_FAILED',
+    LOG_MESSAGES.PROCESS_NOT_STARTED,
+    columns,
+  );
+  if (!row) return;
 
-  // fetch entity new when event is not delete, otherwise use data object
-  let row;
-  try {
-    row = req.event === 'DELETE' ? data : await fetchEntity(
-      data,
-      req,
-      startSpecs.startExpr,
-      columns
-    );
-  } catch (error) {
-    LOG.error('PROCESS_START_FETCH_FAILED', error);
-    return req.reject({ status: 500, message: 'PROCESS_START_FETCH_FAILED' });
-  }
+  // get business key
+  const businessKey = getBusinessKeyOrReject(
+    target as cds.entity,
+    row,
+    req,
+    'PROCESS_START_INVALID_KEY',
+    'PROCESS_START_EMPTY_KEY',
+  );
+  if (!businessKey) return;
 
-  if (!row) {
-    LOG.debug(LOG_MESSAGES.PROCESS_NOT_STARTED);
-    return
-  }
+  const context = { ...row, businesskey: businessKey };
 
-  let businessKey;
-  try {
-    businessKey = concatenateBusinessKey(target as cds.entity, { ...row, ...req.data });
-  } catch (error) {
-    LOG.error('PROCESS_START_INVALID_KEY', error);
-    return req.reject({ status: 400, message: 'PROCESS_START_INVALID_KEY' });
-  }
-
-  const context = { ...row, "businesskey": businessKey };
-
-  try {
-    const processService = await cds.connect.to(PROCESS_SERVICE)
-    const outboxedService = cds.outboxed(processService);
-    await outboxedService.emit("start", {
-      definitionId: startSpecs.id!,
-      context: context,
-    })
-  } catch (error) {
-    LOG.error('PROCESS_START_FAILED', startSpecs.id, error);
-    return req.reject({ status: 500, message: 'PROCESS_START_FAILED', args: [startSpecs.id] });
-  }
-
+  // emit process start
+  const payload = { definitionId: startSpecs.id!, context };
+  await emitProcessEvent('start', req, payload, 'PROCESS_START_FAILED', startSpecs.id!);
 }
 
 function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
@@ -108,36 +97,52 @@ function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
     id: target[PROCESS_START_ID] as string,
     on: target[PROCESS_START_ON] as string,
     inputs: [],
-    startExpr: target[PROCESS_START_IF] ? (target[PROCESS_START_IF] as any).xpr as expr : undefined,
-  }
-  const elementAnnotations = getElementAnnotations(target as cds.entity)
+    conditionExpr: target[PROCESS_START_IF]
+      ? ((target[PROCESS_START_IF] as any).xpr as expr)
+      : undefined,
+  };
+  const elementAnnotations = getElementAnnotations(target as cds.entity);
   const entityName = (target as cds.entity).name;
-  startSpecs.inputs = getInputElements(elementAnnotations, new Set([entityName]), [entityName], req);
+  startSpecs.inputs = getInputElements(
+    elementAnnotations,
+    new Set([entityName]),
+    [entityName],
+    req,
+  );
 
-  return startSpecs
+  return startSpecs;
 }
 
 function getInputElements(
-  elementAnnotations: [string, string, string, any][],
+  elementAnnotations: ElementAnnotation[],
   visitedEntities: Set<string> = new Set(),
   currentPath: string[] = [],
-  req: cds.Request
+  req: cds.Request,
 ): ProcessStartInput[] {
   const inputs: ProcessStartInput[] = [];
-  for (const [elementName, key, value, associatedElements] of elementAnnotations) {
-    switch (key) {
+  for (const {
+    elementName,
+    annotationKey,
+    annotationValue,
+    associatedTarget,
+  } of elementAnnotations) {
+    switch (annotationKey) {
       case PROCESS_INPUT:
         // For associations, recursively get input elements from the associated entity
         // If the associated entity has no annotated elements, use empty array to signal "expand all"
         let associatedInputElements: ProcessStartInput[] | undefined = undefined;
 
-        if (associatedElements) {
-          const associatedEntityName = associatedElements.name || elementName;
+        if (associatedTarget) {
+          const associatedEntityName = associatedTarget.name || elementName;
 
           // Check for cycle: if we've already visited this entity, throw an error
           if (visitedEntities.has(associatedEntityName)) {
             LOG.error('PROCESS_START_CYCLE_DETECTED', associatedEntityName);
-            return req.reject({ status: 400, message: 'PROCESS_START_CYCLE_DETECTED', args: [associatedEntityName] });
+            return req.reject({
+              status: 400,
+              message: 'PROCESS_START_CYCLE_DETECTED',
+              args: [associatedEntityName],
+            });
           }
 
           // Add to visited set and path for this branch
@@ -146,27 +151,30 @@ function getInputElements(
           const newPath = [...currentPath, associatedEntityName];
 
           associatedInputElements = getInputElements(
-            getElementAnnotations(associatedElements),
+            getElementAnnotations(associatedTarget),
             newVisited,
             newPath,
-            req
+            req,
           );
         }
 
         const input: ProcessStartInput = {
           sourceElement: elementName,
-          associatedInputElements
-        }
+          associatedInputElements,
+        };
 
-        if (typeof value === 'boolean' || (value === 'true' || value === 'false')) {
+        if (
+          typeof annotationValue === 'boolean' ||
+          annotationValue === 'true' ||
+          annotationValue === 'false'
+        ) {
           input.targetVariable = undefined;
         } else {
-          input.targetVariable = value;
+          input.targetVariable = annotationValue;
         }
 
-        inputs.push(input)
-        break
-
+        inputs.push(input);
+        break;
     }
   }
   return inputs;

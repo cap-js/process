@@ -37,7 +37,7 @@ export interface ValidationResult {
  * Compiles a CDS model and runs the ProcessValidationPlugin against it.
  * This directly invokes the plugin's build method with a mocked interface,
  * allowing us to test validation logic without running the full cds build pipeline.
- * 
+ *
  * Note: Requires jest-setup.js to have set up the cds.build mock before this runs.
  */
 export async function validateModel(cdsSource: string): Promise<ValidationResult> {
@@ -64,7 +64,7 @@ export async function validateModel(cdsSource: string): Promise<ValidationResult
 
   // Mock pushMessage to capture validation output
   plugin.pushMessage = (msg: string, severity: number | undefined) => {
-    const severityName = severity !== undefined ? (SEVERITY_MAP[severity] || 'INFO') : 'INFO';
+    const severityName = severity !== undefined ? SEVERITY_MAP[severity] || 'INFO' : 'INFO';
     messages.push({ msg, severity: severityName });
     pluginMessages.push({ message: msg, severity: severity ?? SEVERITY.INFO });
   };
@@ -82,8 +82,8 @@ export async function validateModel(cdsSource: string): Promise<ValidationResult
 
   return {
     messages,
-    errors: messages.filter(m => m.severity === 'ERROR'),
-    warnings: messages.filter(m => m.severity === 'WARNING'),
+    errors: messages.filter((m) => m.severity === 'ERROR'),
+    warnings: messages.filter((m) => m.severity === 'WARNING'),
     buildSucceeded,
     buildError,
   };
@@ -99,18 +99,18 @@ export function wrapEntity(entityDef: string, serviceName = 'TestService'): stri
 
 /**
  * Creates a CDS model with a process definition for input validation tests.
- * 
+ *
  * The process definition needs:
  * 1. An entity with @build.process annotation pointing to the process ID
  * 2. A nested type named ProcessInputs containing the input fields
- * 
+ *
  * The validation code looks for `${processDef.name}.ProcessInputs`
  */
 export function withProcessDefinition(
-  entityDef: string, 
+  entityDef: string,
   processDefName: string,
   processInputs: string,
-  otherTypes?: string
+  otherTypes?: string,
 ): string {
   return `
     // Process definition entity with nested ProcessInputs type
