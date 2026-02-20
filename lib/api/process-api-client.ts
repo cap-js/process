@@ -63,13 +63,15 @@ async function fetchJson<T>(url: string, jwt: string): Promise<T> {
 
   const response = await fetch(url, {
     method: 'GET',
-    headers: { Authorization: `Bearer ${jwt}` }
+    headers: { Authorization: `Bearer ${jwt}` },
   });
 
   if (!response.ok) {
     const body = await response.text();
     LOG.error(`API request failed. Status: ${response.status}, Body: ${body}`);
-    throw new Error(cds.i18n.messages.at('API_REQUEST_FAILED', [response.status, response.statusText]));
+    throw new Error(
+      cds.i18n.messages.at('API_REQUEST_FAILED', [response.status, response.statusText]),
+    );
   }
 
   return response.json() as Promise<T>;
@@ -79,7 +81,7 @@ export async function fetchProcessHeader(
   serviceUrl: string,
   jwt: string,
   projectId: string,
-  processId: string
+  processId: string,
 ): Promise<ProcessHeader> {
   const url = `${serviceUrl}${BASE_PATH}/projects/${encodeURIComponent(projectId)}/artifacts/${encodeURIComponent(processId)}`;
   return fetchJson<ProcessHeader>(url, jwt);
@@ -89,7 +91,7 @@ export async function fetchArtifact(
   serviceUrl: string,
   jwt: string,
   projectId: string,
-  artifactUid: string
+  artifactUid: string,
 ): Promise<DataType> {
   const url = `${serviceUrl}${BASE_PATH}/projects/${encodeURIComponent(projectId)}/artifacts/${encodeURIComponent(artifactUid)}`;
   return fetchJson<DataType>(url, jwt);
@@ -99,7 +101,7 @@ export async function fetchAllDataTypes(
   serviceUrl: string,
   jwt: string,
   projectId: string,
-  dependencies: Dependency[]
+  dependencies: Dependency[],
 ): Promise<DataType[]> {
   const result: DataType[] = [];
   const fetched = new Set<string>();
@@ -125,8 +127,8 @@ export async function fetchAllDataTypes(
 
         // Queue nested dependencies
         artifact.dependencies
-          ?.filter(d => !fetched.has(d.artifactUid))
-          .forEach(d => queue.push(d));
+          ?.filter((d) => !fetched.has(d.artifactUid))
+          .forEach((d) => queue.push(d));
       }
     } catch (error) {
       LOG.warn(`Could not fetch artifact ${dep.artifactUid}: ${error}`);
@@ -140,7 +142,7 @@ export async function fetchAllDataTypes(
 
 export function createProcessApiClient(
   serviceUrl: string,
-  getToken: () => Promise<string>
+  getToken: () => Promise<string>,
 ): IProcessApiClient {
   return {
     fetchProcessHeader: async (projectId, processId) => {
@@ -156,6 +158,6 @@ export function createProcessApiClient(
     fetchAllDataTypes: async (projectId, dependencies) => {
       const jwt = await getToken();
       return fetchAllDataTypes(serviceUrl, jwt, projectId, dependencies);
-    }
+    },
   };
 }

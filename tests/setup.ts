@@ -1,3 +1,3 @@
 module.exports = async () => {
-  process.env.CDS_TYPESCRIPT = "true";
+  process.env.CDS_TYPESCRIPT = 'true';
 };

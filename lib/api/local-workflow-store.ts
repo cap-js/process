@@ -3,7 +3,7 @@ import {
   WorkflowStatus,
   WorkflowInstance,
   StartWorkflowResult,
-  UpdateStatusResult
+  UpdateStatusResult,
 } from './workflow-client';
 
 export interface LocalWorkflowInstance extends WorkflowInstance {
@@ -35,45 +35,42 @@ export class LocalWorkflowStore {
       attributes: {},
       outputs: {},
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.instances.push(instance);
 
     return {
       id: instance.id,
-      success: true
+      success: true,
     };
   }
 
   getInstancesByBusinessKey(
     businessKey: string,
-    status?: WorkflowStatus | WorkflowStatus[]
+    status?: WorkflowStatus | WorkflowStatus[],
   ): LocalWorkflowInstance[] {
-    let filtered = this.instances.filter(i => i.businessKey === businessKey);
+    let filtered = this.instances.filter((i) => i.businessKey === businessKey);
 
     if (status) {
       const statuses = Array.isArray(status) ? status : [status];
-      filtered = filtered.filter(i => statuses.includes(i.status));
+      filtered = filtered.filter((i) => statuses.includes(i.status));
     }
 
     return filtered;
   }
 
   getInstance(instanceId: string): LocalWorkflowInstance | undefined {
-    return this.instances.find(i => i.id === instanceId);
+    return this.instances.find((i) => i.id === instanceId);
   }
 
-  updateStatus(
-    instanceId: string,
-    status: WorkflowStatus
-  ): UpdateStatusResult {
-    const instance = this.instances.find(i => i.id === instanceId);
+  updateStatus(instanceId: string, status: WorkflowStatus): UpdateStatusResult {
+    const instance = this.instances.find((i) => i.id === instanceId);
 
     if (!instance) {
       return {
         id: instanceId,
-        success: false
+        success: false,
       };
     }
 
@@ -82,24 +79,21 @@ export class LocalWorkflowStore {
 
     return {
       id: instanceId,
-      success: true
+      success: true,
     };
   }
 
-  updateMultipleStatus(
-    instanceIds: string[],
-    status: WorkflowStatus
-  ): UpdateStatusResult[] {
-    return instanceIds.map(id => this.updateStatus(id, status));
+  updateMultipleStatus(instanceIds: string[], status: WorkflowStatus): UpdateStatusResult[] {
+    return instanceIds.map((id) => this.updateStatus(id, status));
   }
 
   getAttributes(instanceId: string): Record<string, unknown> | undefined {
-    const instance = this.instances.find(i => i.id === instanceId);
+    const instance = this.instances.find((i) => i.id === instanceId);
     return instance?.attributes;
   }
 
   getOutputs(instanceId: string): Record<string, unknown> | undefined {
-    const instance = this.instances.find(i => i.id === instanceId);
+    const instance = this.instances.find((i) => i.id === instanceId);
     return instance?.outputs;
   }
 

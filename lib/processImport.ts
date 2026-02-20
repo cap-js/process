@@ -8,7 +8,7 @@ import {
   IProcessApiClient,
   ProcessHeader,
   DataType,
-  JsonSchema
+  JsonSchema,
 } from './api';
 import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from './constants';
 
@@ -35,7 +35,10 @@ interface SchemaMapContext {
 
 let dataTypeCache = new Map<string, DataType>();
 
-export async function importProcess(jsonFile: string, options: ImportOptions = {}): Promise<csn.CsnModel> {
+export async function importProcess(
+  jsonFile: string,
+  options: ImportOptions = {},
+): Promise<csn.CsnModel> {
   dataTypeCache = new Map();
 
   if (options.name) {
@@ -65,8 +68,11 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
 
   if (processHeader.dependencies?.length) {
     LOG.info(`Fetching ${processHeader.dependencies.length} dependent data types...`);
-    processHeader.dataTypes = await apiClient.fetchAllDataTypes(projectId, processHeader.dependencies);
-    processHeader.dataTypes.forEach(dt => dataTypeCache.set(dt.uid, dt));
+    processHeader.dataTypes = await apiClient.fetchAllDataTypes(
+      projectId,
+      processHeader.dependencies,
+    );
+    processHeader.dataTypes.forEach((dt) => dataTypeCache.set(dt.uid, dt));
   }
 
   const outputPath = path.join(cds.root, 'srv', 'external', `${processName}.json`);
@@ -136,7 +142,7 @@ function loadProcessHeader(filePath: string): ProcessHeader {
   const content = fs.readFileSync(path.resolve(filePath), 'utf-8');
   const header = JSON.parse(content) as ProcessHeader;
 
-  header.dataTypes?.forEach(dt => dataTypeCache.set(dt.uid, dt));
+  header.dataTypes?.forEach((dt) => dataTypeCache.set(dt.uid, dt));
   return header;
 }
 
@@ -157,7 +163,7 @@ function buildCsnModel(process: ProcessHeader): csn.CsnModel {
   return {
     $version: '2.0',
     definitions,
-    meta: { creator: 'cds-import-process' }
+    meta: { creator: 'cds-import-process' },
   };
 }
 
@@ -171,11 +177,15 @@ function createServiceDefinition(serviceName: string, process: ProcessHeader): c
     name: serviceName,
     doc: 'DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT.',
     '@protocol': 'none',
-    '@build.process': `${process.projectId}.${process.identifier}`
+    '@build.process': `${process.projectId}.${process.identifier}`,
   };
 }
 
-function addDataTypeDefinition(dataType: DataType, serviceName: string, definitions: Record<string, csn.CsnDefinition>): void {
+function addDataTypeDefinition(
+  dataType: DataType,
+  serviceName: string,
+  definitions: Record<string, csn.CsnDefinition>,
+): void {
   const typeName = fqn(serviceName, sanitizeName(dataType.name));
 
   if (definitions[typeName]) return;
@@ -190,15 +200,34 @@ function addDataTypeDefinition(dataType: DataType, serviceName: string, definiti
   LOG.debug(`Generated type: ${typeName}`);
 }
 
-function addProcessTypes(process: ProcessHeader, serviceName: string, definitions: Record<string, csn.CsnDefinition>): void {
+function addProcessTypes(
+  process: ProcessHeader,
+  serviceName: string,
+  definitions: Record<string, csn.CsnDefinition>,
+): void {
   const inputsName = fqn(serviceName, 'ProcessInputs');
   const outputsName = fqn(serviceName, 'ProcessOutputs');
   const attributesName = fqn(serviceName, 'ProcessAttributes');
   const instanceName = fqn(serviceName, 'ProcessInstance');
 
-  definitions[inputsName] = buildTypeFromSchema(inputsName, ensureObjectSchema(process.header?.inputs), serviceName, definitions);
-  definitions[outputsName] = buildTypeFromSchema(outputsName, ensureObjectSchema(process.header?.outputs), serviceName, definitions);
-  definitions[attributesName] = buildTypeFromSchema(attributesName, ensureObjectSchema(process.header?.processAttributes), serviceName, definitions);
+  definitions[inputsName] = buildTypeFromSchema(
+    inputsName,
+    ensureObjectSchema(process.header?.inputs),
+    serviceName,
+    definitions,
+  );
+  definitions[outputsName] = buildTypeFromSchema(
+    outputsName,
+    ensureObjectSchema(process.header?.outputs),
+    serviceName,
+    definitions,
+  );
+  definitions[attributesName] = buildTypeFromSchema(
+    attributesName,
+    ensureObjectSchema(process.header?.processAttributes),
+    serviceName,
+    definitions,
+  );
 
   definitions[instanceName] = {
     kind: 'type',
@@ -208,8 +237,8 @@ function addProcessTypes(process: ProcessHeader, serviceName: string, definition
       definitionVersion: { type: csn.CdsBuiltinType.String },
       id: { type: csn.CdsBuiltinType.String },
       startedAt: { type: csn.CdsBuiltinType.String },
-      startedBy: { type: csn.CdsBuiltinType.String }
-    }
+      startedBy: { type: csn.CdsBuiltinType.String },
+    },
   };
 }
 
@@ -217,7 +246,10 @@ function addProcessTypes(process: ProcessHeader, serviceName: string, definition
 //  CSN BUILDERS: ACTIONS
 // ============================================================================
 
-function addProcessActions(serviceName: string, definitions: Record<string, csn.CsnDefinition>): void {
+function addProcessActions(
+  serviceName: string,
+  definitions: Record<string, csn.CsnDefinition>,
+): void {
   const inputsType = fqn(serviceName, 'ProcessInputs');
   const outputsType = fqn(serviceName, 'ProcessOutputs');
   const attributesType = fqn(serviceName, 'ProcessAttributes');
@@ -228,9 +260,9 @@ function addProcessActions(serviceName: string, definitions: Record<string, csn.
     kind: 'action',
     name: fqn(serviceName, 'start'),
     params: {
-      inputs: { type: inputsType, notNull: true }
+      inputs: { type: inputsType, notNull: true },
     },
-    returns: { type: instanceType }
+    returns: { type: instanceType },
   };
 
   // Query functions
@@ -238,18 +270,18 @@ function addProcessActions(serviceName: string, definitions: Record<string, csn.
     kind: 'function',
     name: fqn(serviceName, 'getAttributes'),
     params: {
-      processInstanceId: { type: csn.CdsBuiltinType.String, notNull: true }
+      processInstanceId: { type: csn.CdsBuiltinType.String, notNull: true },
     },
-    returns: { type: attributesType }
+    returns: { type: attributesType },
   };
 
   definitions[fqn(serviceName, 'getOutputs')] = {
     kind: 'function',
     name: fqn(serviceName, 'getOutputs'),
     params: {
-      processInstanceId: { type: csn.CdsBuiltinType.String, notNull: true }
+      processInstanceId: { type: csn.CdsBuiltinType.String, notNull: true },
     },
-    returns: { type: outputsType }
+    returns: { type: outputsType },
   };
 
   // Lifecycle actions
@@ -259,8 +291,8 @@ function addProcessActions(serviceName: string, definitions: Record<string, csn.
       name: fqn(serviceName, action),
       params: {
         businessKey: { type: csn.CdsBuiltinType.String, notNull: true },
-        cascade: { type: csn.CdsBuiltinType.Boolean }
-      }
+        cascade: { type: csn.CdsBuiltinType.Boolean },
+      },
     };
   }
 }
@@ -273,7 +305,7 @@ function buildTypeFromSchema(
   typeName: string,
   schema: JsonSchema,
   serviceName: string,
-  definitions: Record<string, csn.CsnDefinition>
+  definitions: Record<string, csn.CsnDefinition>,
 ): csn.CsnType {
   const required = new Set(schema.required ?? []);
   const elements: Record<string, csn.CsnElement> = {};
@@ -283,14 +315,19 @@ function buildTypeFromSchema(
     elements[safeName] = mapSchemaPropertyToElement(safeName, propSchema, required.has(propName), {
       parentTypeName: typeName,
       serviceName,
-      definitions
+      definitions,
     });
   }
 
   return { kind: 'type', name: typeName, elements };
 }
 
-function mapSchemaPropertyToElement(propName: string, schema: JsonSchema, isRequired: boolean, ctx: SchemaMapContext): csn.CsnElement {
+function mapSchemaPropertyToElement(
+  propName: string,
+  schema: JsonSchema,
+  isRequired: boolean,
+  ctx: SchemaMapContext,
+): csn.CsnElement {
   const notNull = isRequired || undefined;
 
   // Reference to another type
@@ -312,20 +349,34 @@ function mapSchemaPropertyToElement(propName: string, schema: JsonSchema, isRequ
 
   // Nested object
   if (schema.type === 'object') {
-    const nestedName = fqn(ctx.serviceName, sanitizeName(`${baseName(ctx.parentTypeName)}_${propName}`));
-    ctx.definitions[nestedName] = buildTypeFromSchema(nestedName, ensureObjectSchema(schema), ctx.serviceName, ctx.definitions);
+    const nestedName = fqn(
+      ctx.serviceName,
+      sanitizeName(`${baseName(ctx.parentTypeName)}_${propName}`),
+    );
+    ctx.definitions[nestedName] = buildTypeFromSchema(
+      nestedName,
+      ensureObjectSchema(schema),
+      ctx.serviceName,
+      ctx.definitions,
+    );
     return { type: nestedName, notNull };
   }
 
   // Array
   if (schema.type === 'array') {
-    const arrayName = fqn(ctx.serviceName, sanitizeName(`${baseName(ctx.parentTypeName)}_${propName}_Array`));
-    if (!schema.items) throw new Error(cds.i18n.messages.at('IMPORT_ARRAY_NO_ITEMS', [ctx.parentTypeName, propName]));
+    const arrayName = fqn(
+      ctx.serviceName,
+      sanitizeName(`${baseName(ctx.parentTypeName)}_${propName}_Array`),
+    );
+    if (!schema.items)
+      throw new Error(
+        cds.i18n.messages.at('IMPORT_ARRAY_NO_ITEMS', [ctx.parentTypeName, propName]),
+      );
 
     ctx.definitions[arrayName] = {
       kind: 'type',
       name: arrayName,
-      items: buildArrayItemsSpec(schema.items, { ...ctx, parentTypeName: arrayName })
+      items: buildArrayItemsSpec(schema.items, { ...ctx, parentTypeName: arrayName }),
     };
     return { type: arrayName, notNull };
   }
@@ -357,12 +408,15 @@ function buildArrayItemsSpec(itemsSchema: JsonSchema, ctx: SchemaMapContext): cs
     const required = new Set(itemsSchema.required ?? []);
     const elements: Record<string, csn.CsnElement> = {};
 
-    for (const [name, schema] of Object.entries(itemsSchema.properties ?? {}) as [string, JsonSchema][]) {
+    for (const [name, schema] of Object.entries(itemsSchema.properties ?? {}) as [
+      string,
+      JsonSchema,
+    ][]) {
       const safeName = sanitizeName(name);
       elements[safeName] = mapSchemaPropertyToElement(safeName, schema, required.has(name), {
         parentTypeName: fqn(ctx.serviceName, `${baseName(ctx.parentTypeName)}_Item`),
         serviceName: ctx.serviceName,
-        definitions: ctx.definitions
+        definitions: ctx.definitions,
       });
     }
     return { elements };
@@ -370,16 +424,23 @@ function buildArrayItemsSpec(itemsSchema: JsonSchema, ctx: SchemaMapContext): cs
 
   // Nested array
   if (itemsSchema.type === 'array') {
-    if (!itemsSchema.items) throw new Error(cds.i18n.messages.at('IMPORT_NESTED_ARRAY_NO_ITEMS', [ctx.parentTypeName]));
+    if (!itemsSchema.items)
+      throw new Error(cds.i18n.messages.at('IMPORT_NESTED_ARRAY_NO_ITEMS', [ctx.parentTypeName]));
     return { items: buildArrayItemsSpec(itemsSchema.items, ctx) };
   }
 
   return { type: csn.CdsBuiltinType.String };
 }
 
-function resolveTypeReference(schema: { $ref?: string; refName?: string }, serviceName: string): string {
+function resolveTypeReference(
+  schema: { $ref?: string; refName?: string },
+  serviceName: string,
+): string {
   const ref = schema.$ref;
-  if (!ref) throw new Error(cds.i18n.messages.at('IMPORT_INVALID_REF', [serviceName, schema.refName ?? 'unknown']));
+  if (!ref)
+    throw new Error(
+      cds.i18n.messages.at('IMPORT_INVALID_REF', [serviceName, schema.refName ?? 'unknown']),
+    );
 
   // Internal reference: #/definitions/date
   if (ref.startsWith('#/')) {
@@ -411,10 +472,14 @@ function resolveTypeReference(schema: { $ref?: string; refName?: string }, servi
 
 function mapDateFormatToCdsType(format?: string): csn.CdsBuiltinType {
   switch (format) {
-    case 'date': return csn.CdsBuiltinType.Date;
-    case 'time': return csn.CdsBuiltinType.Time;
-    case 'dateTime': return csn.CdsBuiltinType.Timestamp;
-    default: return csn.CdsBuiltinType.String;
+    case 'date':
+      return csn.CdsBuiltinType.Date;
+    case 'time':
+      return csn.CdsBuiltinType.Time;
+    case 'dateTime':
+      return csn.CdsBuiltinType.Timestamp;
+    default:
+      return csn.CdsBuiltinType.String;
   }
 }
 

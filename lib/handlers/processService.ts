@@ -7,7 +7,9 @@ export function registerProcessServiceHandlers(service: cds.Service): void {
   const definitionId = service.definition?.[PROCESS_PREFIX] as string | undefined;
 
   if (!definitionId) {
-    LOG.warn(`No definitionID found for service ${service.name}. Process service handlers will not be registered.`);
+    LOG.warn(
+      `No definitionID found for service ${service.name}. Process service handlers will not be registered.`,
+    );
     return;
   }
 
@@ -33,7 +35,7 @@ function registerStartHandler(service: cds.Service, definitionId: string): void 
     // revisit - check outbox
     await processService.emit('start', {
       definitionId,
-      context: inputs
+      context: inputs,
     });
   });
 }
@@ -52,7 +54,7 @@ function registerSuspendHandler(service: cds.Service, definitionId: string): voi
     // revisit - check outbox
     await processService.emit('suspend', {
       businessKey,
-      cascade: cascade ?? false
+      cascade: cascade ?? false,
     });
 
     LOG.debug(`Process suspended: businessKey=${businessKey}`);
@@ -73,7 +75,7 @@ function registerResumeHandler(service: cds.Service, definitionId: string): void
     // revisit - check outbox
     await processService.emit('resume', {
       businessKey,
-      cascade: cascade ?? false
+      cascade: cascade ?? false,
     });
 
     LOG.debug(`Process resumed: businessKey=${businessKey}`);
@@ -94,7 +96,7 @@ function registerCancelHandler(service: cds.Service, definitionId: string): void
     // revisit - check outbox
     await processService.emit('cancel', {
       businessKey,
-      cascade: cascade ?? false
+      cascade: cascade ?? false,
     });
 
     LOG.debug(`Process cancelled: businessKey=${businessKey}`);

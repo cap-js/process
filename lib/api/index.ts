@@ -10,7 +10,7 @@ export {
   createProcessApiClient,
   fetchProcessHeader,
   fetchArtifact,
-  fetchAllDataTypes
+  fetchAllDataTypes,
 } from './process-api-client';
 
 // Workflow Instance Client - for workflow instance operations
@@ -24,12 +24,12 @@ export {
   startWorkflow,
   getWorkflowsByBusinessKey,
   updateWorkflowStatus,
-  updateMultipleWorkflowStatus
+  updateMultipleWorkflowStatus,
 } from './workflow-client';
 
 // Local Workflow Store - for local development
 export {
   LocalWorkflowStore,
   LocalWorkflowInstance,
-  localWorkflowStore
+  localWorkflowStore,
 } from './local-workflow-store';

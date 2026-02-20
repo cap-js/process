@@ -1,16 +1,12 @@
-import cds from "@sap/cds";
+import cds from '@sap/cds';
 import {
   getServiceCredentials,
   TokenCache,
   ITokenProvider,
-  createXsuaaTokenProvider
-} from "../lib/auth";
-import {
-  IWorkflowInstanceClient,
-  createWorkflowInstanceClient,
-  WorkflowStatus
-} from "../lib/api";
-import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from "../lib";
+  createXsuaaTokenProvider,
+} from '../lib/auth';
+import { IWorkflowInstanceClient, createWorkflowInstanceClient, WorkflowStatus } from '../lib/api';
+import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from '../lib';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -26,9 +22,8 @@ class ProcessService extends cds.ApplicationService {
 
     this.tokenProvider = createXsuaaTokenProvider(credentials);
 
-    this.workflowInstanceClient = createWorkflowInstanceClient(
-      credentials?.endpoints.api,
-      () => this.getToken(cds.context?.tenant)
+    this.workflowInstanceClient = createWorkflowInstanceClient(credentials?.endpoints.api, () =>
+      this.getToken(cds.context?.tenant),
     );
 
     this.on('start', async (request: cds.Request) => {
@@ -39,10 +34,10 @@ class ProcessService extends cds.ApplicationService {
     this.on('cancel', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
 
-      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
-        businessKey,
-        [WorkflowStatus.RUNNING, WorkflowStatus.SUSPENDED]
-      );
+      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
+        WorkflowStatus.RUNNING,
+        WorkflowStatus.SUSPENDED,
+      ]);
 
       if (instances.length === 0) {
         LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
@@ -52,7 +47,7 @@ class ProcessService extends cds.ApplicationService {
       await this.workflowInstanceClient.updateMultipleWorkflowStatus(
         instances,
         WorkflowStatus.CANCELED,
-        cascade
+        cascade,
       );
     });
 
@@ -61,7 +56,7 @@ class ProcessService extends cds.ApplicationService {
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
         businessKey,
-        WorkflowStatus.RUNNING
+        WorkflowStatus.RUNNING,
       );
 
       if (instances.length === 0) {
@@ -72,7 +67,7 @@ class ProcessService extends cds.ApplicationService {
       await this.workflowInstanceClient.updateMultipleWorkflowStatus(
         instances,
         WorkflowStatus.SUSPENDED,
-        cascade
+        cascade,
       );
     });
 
@@ -81,7 +76,7 @@ class ProcessService extends cds.ApplicationService {
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
         businessKey,
-        WorkflowStatus.SUSPENDED
+        WorkflowStatus.SUSPENDED,
       );
 
       if (instances.length === 0) {
@@ -92,7 +87,7 @@ class ProcessService extends cds.ApplicationService {
       await this.workflowInstanceClient.updateMultipleWorkflowStatus(
         instances,
         WorkflowStatus.RUNNING,
-        cascade
+        cascade,
       );
     });
     return super.init();
@@ -113,7 +108,7 @@ class ProcessService extends cds.ApplicationService {
       LOG.debug(`Token fetched and cached for tenant: ${tenantId}`);
       return jwt;
     } catch (error) {
-      LOG.error("Error fetching token for Process Service:", error);
+      LOG.error('Error fetching token for Process Service:', error);
       throw new Error(cds.i18n.messages.at('AUTH_TOKEN_FETCH_FAILED'));
     }
   }

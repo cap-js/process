@@ -4,11 +4,7 @@ import cds from '@sap/cds';
 
 export { getServiceCredentials } from './credentials';
 export { TokenCache } from './token-cache';
-export { 
-  ITokenProvider, 
-  TokenResult, 
-  createXsuaaTokenProvider 
-} from './token-provider';
+export { ITokenProvider, TokenResult, createXsuaaTokenProvider } from './token-provider';
 
 import { getServiceCredentials } from './credentials';
 import { createXsuaaTokenProvider, TokenResult } from './token-provider';

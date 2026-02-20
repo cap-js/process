@@ -9,7 +9,6 @@ interface UaaCredentials {
   clientsecret: string;
 }
 
-
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // ============ Types ============
@@ -29,11 +28,11 @@ export interface ITokenProvider {
 
 async function fetchXsuaaToken(
   uaaCredentials: UaaCredentials,
-  tenantId?: string
+  tenantId?: string,
 ): Promise<TokenResult> {
   const xsuaaService = new XsuaaService(uaaCredentials);
   const { access_token: jwt, expires_in } = await xsuaaService.fetchClientCredentialsToken({
-    ...(tenantId && { 'zid': tenantId })
+    ...(tenantId && { zid: tenantId }),
   });
 
   if (!jwt) {
@@ -52,6 +51,6 @@ export function createXsuaaTokenProvider(credentials: ProcessServiceCredentials)
   }
 
   return {
-    fetchToken: (tenantId?: string) => fetchXsuaaToken(credentials.uaa, tenantId)
+    fetchToken: (tenantId?: string) => fetchXsuaaToken(credentials.uaa, tenantId),
   };
 }

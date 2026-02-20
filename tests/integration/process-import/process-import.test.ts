@@ -12,7 +12,7 @@ function getDefinitions(csn: any): Record<string, any> {
 /**
  * Integration tests for process-import functionality.
  * Tests local JSON import (cloud import cannot be tested without credentials).
- * 
+ *
  * These tests use a temporary directory to avoid modifying real project files.
  */
 describe('Process Import Integration Tests', () => {
@@ -35,11 +35,11 @@ describe('Process Import Integration Tests', () => {
 
     const packageJson = {
       name: 'test-project',
-      version: '1.0.0'
+      version: '1.0.0',
     };
     await fs.promises.writeFile(
       path.join(tempDir, 'package.json'),
-      JSON.stringify(packageJson, null, 2)
+      JSON.stringify(packageJson, null, 2),
     );
 
     (cds as any).root = tempDir;
@@ -106,7 +106,9 @@ describe('Process Import Integration Tests', () => {
       it('should generate ProcessInstance type', async () => {
         const csn = await importProcess(simpleProcessPath);
         const definitions = getDefinitions(csn);
-        const instanceType = definitions['test.project.SimpleProcessService.ProcessInstance'] as any;
+        const instanceType = definitions[
+          'test.project.SimpleProcessService.ProcessInstance'
+        ] as any;
 
         expect(instanceType).toBeDefined();
         expect(instanceType.kind).toBe('type');
@@ -333,7 +335,7 @@ describe('Process Import Integration Tests', () => {
       expect(packageJson.cds.requires['test.project.SimpleProcessService']).toBeDefined();
       expect(packageJson.cds.requires['test.project.SimpleProcessService'].kind).toBe('external');
       expect(packageJson.cds.requires['test.project.SimpleProcessService'].model).toBe(
-        'srv/external/test.project.simpleProcess'
+        'srv/external/test.project.simpleProcess',
       );
     });
 
@@ -347,7 +349,7 @@ describe('Process Import Integration Tests', () => {
       const packageJson = JSON.parse(await fs.promises.readFile(packageJsonPath, 'utf8'));
 
       expect(packageJson.cds.requires['test.project.SimpleProcessService'].model).toBe(
-        'srv/external/my.custom.path'
+        'srv/external/my.custom.path',
       );
     });
 
@@ -358,13 +360,13 @@ describe('Process Import Integration Tests', () => {
         dependencies: { '@sap/cds': '^7.0.0' },
         cds: {
           requires: {
-            'ExistingService': { kind: 'external', model: 'srv/existing' }
-          }
-        }
+            ExistingService: { kind: 'external', model: 'srv/existing' },
+          },
+        },
       };
       await fs.promises.writeFile(
         path.join(tempDir, 'package.json'),
-        JSON.stringify(existingPackageJson, null, 2)
+        JSON.stringify(existingPackageJson, null, 2),
       );
 
       const targetPath = path.join(tempDir, 'srv', 'external', 'test.json');
@@ -373,7 +375,7 @@ describe('Process Import Integration Tests', () => {
       await importProcess(targetPath);
 
       const packageJson = JSON.parse(
-        await fs.promises.readFile(path.join(tempDir, 'package.json'), 'utf8')
+        await fs.promises.readFile(path.join(tempDir, 'package.json'), 'utf8'),
       );
 
       expect(packageJson.name).toBe('test-project');
@@ -386,7 +388,7 @@ describe('Process Import Integration Tests', () => {
       const packageJson = { name: 'test-project', version: '1.0.0' };
       await fs.promises.writeFile(
         path.join(tempDir, 'package.json'),
-        JSON.stringify(packageJson, null, 2)
+        JSON.stringify(packageJson, null, 2),
       );
 
       const targetPath = path.join(tempDir, 'srv', 'external', 'test.json');
@@ -395,7 +397,7 @@ describe('Process Import Integration Tests', () => {
       await importProcess(targetPath);
 
       const updatedPackageJson = JSON.parse(
-        await fs.promises.readFile(path.join(tempDir, 'package.json'), 'utf8')
+        await fs.promises.readFile(path.join(tempDir, 'package.json'), 'utf8'),
       );
 
       expect(updatedPackageJson.cds).toBeDefined();
@@ -413,10 +415,10 @@ describe('Process Import Integration Tests', () => {
         header: {
           inputs: { type: 'object', properties: {}, required: [] },
           outputs: { type: 'object', properties: {}, required: [] },
-          processAttributes: { type: 'object', properties: {}, required: [] }
+          processAttributes: { type: 'object', properties: {}, required: [] },
         },
         identifier: 'emptyProcess',
-        projectId: 'test.empty'
+        projectId: 'test.empty',
       };
 
       const targetPath = path.join(tempDir, 'srv', 'external', 'empty.json');
@@ -437,10 +439,10 @@ describe('Process Import Integration Tests', () => {
         name: 'Minimal Process',
         type: 'bpi.process',
         header: {
-          inputs: { type: 'object', properties: { id: { type: 'string' } }, required: [] }
+          inputs: { type: 'object', properties: { id: { type: 'string' } }, required: [] },
         },
         identifier: 'minimalProcess',
-        projectId: 'test.minimal'
+        projectId: 'test.minimal',
       };
 
       const targetPath = path.join(tempDir, 'srv', 'external', 'minimal.json');
@@ -466,15 +468,15 @@ describe('Process Import Integration Tests', () => {
             properties: {
               'my-field': { type: 'string' },
               '123startsWithNumber': { type: 'string' },
-              'field.with.dots': { type: 'string' }
+              'field.with.dots': { type: 'string' },
             },
-            required: []
+            required: [],
           },
           outputs: { type: 'object', properties: {}, required: [] },
-          processAttributes: { type: 'object', properties: {}, required: [] }
+          processAttributes: { type: 'object', properties: {}, required: [] },
         },
         identifier: 'specialProcess',
-        projectId: 'test.special'
+        projectId: 'test.special',
       };
 
       const targetPath = path.join(tempDir, 'srv', 'external', 'special.json');
