@@ -1,6 +1,6 @@
 import cds, { DeleteRequest, expr, Target } from "@sap/cds";
-import { concatenateBusinessKey, fetchEntity } from "./handler";
-import { PROCESS_SUSPEND_ON, PROCESS_SUSPEND_CASCADE, PROCESS_SUSPEND_IF, LOG_MESSAGES } from "./constants";
+import { concatenateBusinessKey, fetchEntity } from "./utils";
+import { PROCESS_SUSPEND_ON, PROCESS_SUSPEND_CASCADE, PROCESS_SUSPEND_IF, LOG_MESSAGES } from "./../constants";
 
 type ProcessSuspendSpec = {
     on?: string,

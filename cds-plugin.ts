@@ -1,13 +1,12 @@
 import cds, { Results, Target } from "@sap/cds"
-import { handleProcessStart } from "./lib/processStartHandler"
-import { handleProcessCancel } from "./lib/processCancelHandler"
-import { handleProcessSuspend } from "./lib/processSuspendHandler"
-import { handleProcessResume } from "./lib/processResumeHandler"
-import { addDeletedEntityToRequest } from "./lib/srv-before-utils"
-import { ProcessValidationPlugin } from "./lib/build/build-plugin"
-import { importProcess } from "./lib/processImport"
-import { registerProcessServiceHandlers } from "./lib/processServiceHandler"
-import {
+import { 
+  addDeletedEntityToRequest, 
+  handleProcessCancel, 
+  handleProcessResume, 
+  handleProcessStart, 
+  handleProcessSuspend, 
+  ProcessValidationPlugin,
+  registerProcessServiceHandlers, 
   PROCESS_START_ID,
   PROCESS_START_ON,
   PROCESS_CANCEL_ON,
@@ -16,8 +15,8 @@ import {
   PROCESS_SUSPEND_CASCADE,
   PROCESS_RESUME_ON,
   PROCESS_RESUME_CASCADE,
-  PROCESS_PREFIX,
-} from "./lib/constants"
+  PROCESS_PREFIX, } from "./lib/index"
+import { importProcess } from "./lib/processImport"
 
 const LOG = cds.log("process");
 

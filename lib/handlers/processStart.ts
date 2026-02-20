@@ -3,8 +3,8 @@ import {
   concatenateBusinessKey,
   fetchEntity,
   getElementAnnotations,
-} from "./handler"
-import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_IF, PROCESS_INPUT, LOG_MESSAGES } from "./constants"
+} from "./utils"
+import { PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_IF, PROCESS_INPUT, LOG_MESSAGES } from "./../constants"
 
 import cds from "@sap/cds"
 const LOG = cds.log("process");

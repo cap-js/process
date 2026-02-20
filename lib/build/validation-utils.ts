@@ -1,8 +1,8 @@
 import cds from "@sap/cds"
 import { CsnCardinality, CsnDefinition, CsnElement, CsnEntity } from "../../types/csn-extensions";
 import { PROCESS_DEFINITION_ID, PROCESS_INPUT } from "../constants";
-import { ProcessValidationPlugin } from "./build-plugin";
-import { ERROR_CYCLE_DETECTED } from "./build-constants";
+import { ProcessValidationPlugin } from "./plugin";
+import { ERROR_CYCLE_DETECTED } from "./constants";
 const Plugin = cds.build?.Plugin
 const ERROR = Plugin?.ERROR
 

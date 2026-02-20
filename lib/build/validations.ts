@@ -1,8 +1,8 @@
 import cds from "@sap/cds"
-import { ProcessValidationPlugin } from "./build-plugin";
+import { ProcessValidationPlugin } from "./plugin";
 import { CsnDefinition, CsnEntity } from "../../types/csn-extensions";
 import { PROCESS_START_ID, PROCESS_START_ON } from "../constants";
-import { ElementType, getElementNamesAndTypes, getProcessDefInputsAndTypes } from "./build-validation-utils";
+import { ElementType, getElementNamesAndTypes, getProcessDefInputsAndTypes } from "./validation-utils";
 import {
   WARNING_UNKNOWN_ANNOTATION,
   ERROR_ANNOTATION_MUST_BE_STRING,
@@ -20,7 +20,7 @@ import {
   ERROR_ATTRIBUTE_NOT_IN_PROCESS_DEF,
   WARNING_NO_PROCESS_DEFINITION,
   ERROR_START_BUSINESSKEY_INPUT_MISSING,
-} from "./build-constants";
+} from "./constants";
 const Plugin = cds.build?.Plugin
 const ERROR = Plugin?.ERROR
 const WARNING = Plugin?.WARNING

@@ -1,6 +1,6 @@
 import cds, { DeleteRequest, expr, Target } from "@sap/cds";
-import { concatenateBusinessKey, fetchEntity } from "./handler";
-import { PROCESS_RESUME_ON, PROCESS_RESUME_CASCADE, PROCESS_RESUME_IF, LOG_MESSAGES } from "./constants";
+import { concatenateBusinessKey, fetchEntity } from "./utils";
+import { PROCESS_RESUME_ON, PROCESS_RESUME_CASCADE, PROCESS_RESUME_IF, LOG_MESSAGES } from "./../constants";
 
 type ProcessResumeSpec = {
     on?: string,

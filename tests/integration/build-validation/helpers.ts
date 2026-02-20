@@ -1,5 +1,5 @@
 import cds from '@sap/cds';
-import { ProcessValidationPlugin } from '../../../lib/build/build-plugin';
+import { ProcessValidationPlugin } from '../../../lib/build/plugin';
 
 /**
  * Severity constants matching cds.build.Plugin

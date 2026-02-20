@@ -1,5 +1,6 @@
-import cds, { column_expr, expr, Results } from '@sap/cds';
-import { BUILD_PREFIX } from './constants';
+import cds, { column_expr, DeleteRequest, expr, Results } from '@sap/cds';
+import { BUILD_PREFIX, PROCESS_CANCEL_ON, PROCESS_RESUME_ON, PROCESS_START_ON, PROCESS_SUSPEND_ON } from '../constants';
+import { getColumnsForProcessStart } from './processStart';
 const { SELECT } = cds.ql; 
 
 export function getKeyFieldsForEntity(entity: cds.entity): string[] {
@@ -92,4 +93,33 @@ function buildWhereClause(keyFields: string[], results: Results, condition: expr
         where = {xpr: parts};
     }
     return where;
+}
+
+export async function addDeletedEntityToRequest(target: any, req: cds.Request, areStartAnnotationsDefined: boolean) {
+    let columns: column_expr[] | string[] = [];
+    if(areStartAnnotationsDefined) {
+        columns = await getColumnsForProcessStart(target, req);
+    } else {
+        columns = getKeyFieldsForEntity(target as cds.entity);
+    }
+    
+    let where = (req as any).query.DELETE.from.ref[0]?.where ?? req.query.DELETE!.where;
+
+    const onAnnotations = [PROCESS_CANCEL_ON, PROCESS_START_ON, PROCESS_SUSPEND_ON, PROCESS_RESUME_ON];
+    let annotationIf;
+    for(const annotationKey of onAnnotations) {
+        if(target[annotationKey] && target[annotationKey] === 'DELETE') {
+            annotationIf = target[annotationKey.replace("on", "if")];
+            if(annotationIf){
+                where = where.length ? [{xpr: where}, 'and', {xpr: annotationIf.xpr}] : annotationIf.xpr;
+            }
+        }
+    }
+
+    if (where) {
+        // Safeguard: use ['*'] if columns array is empty to avoid invalid SQL
+        const selectColumns = columns.length > 0 ? columns : ['*'];
+        const entities = await SELECT.one.from(req.subject).columns(selectColumns).where(where);
+        (req as DeleteRequest)._Process = entities;
+    }
 }

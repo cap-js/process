@@ -1,5 +1,5 @@
 import cds from '@sap/cds';
-import { PROCESS_PREFIX } from './constants';
+import { PROCESS_PREFIX } from '../constants';
 
 const LOG = cds.log('process');
 

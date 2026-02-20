@@ -1,7 +1,7 @@
 import { DeleteRequest, expr, Target } from "@sap/cds";
 import cds from "@sap/cds"
-import { concatenateBusinessKey, fetchEntity } from "./handler";
-import { PROCESS_CANCEL_ON, PROCESS_CANCEL_CASCADE, PROCESS_CANCEL_IF, LOG_MESSAGES } from "./constants";
+import { concatenateBusinessKey, fetchEntity } from "./utils";
+import { PROCESS_CANCEL_ON, PROCESS_CANCEL_CASCADE, PROCESS_CANCEL_IF, LOG_MESSAGES } from "./../constants";
 
 type ProcessCancelSpec = {
     on?: string,

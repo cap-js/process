@@ -1,4 +1,5 @@
 import cds from "@sap/cds"
+import { getProcessDefinitions, validateAllowedAnnotations, validateCascadeAnnotation, validateIdAnnotation, validateInputTypes, validateOnAnnotation, validateRequiredGenericAnnotations, validateRequiredStartAnnotations, validateIfAnnotation } from "./index"
 import {
   PROCESS_START_ID,
   PROCESS_START_ON,
@@ -19,8 +20,6 @@ import {
   PROCESS_START,
 } from "../constants"
 import { CsnDefinition } from "../../types/csn-extensions"
-import { validateAllowedAnnotations, validateCascadeAnnotation, validateIdAnnotation, validateInputTypes, validateOnAnnotation, validateRequiredGenericAnnotations, validateRequiredStartAnnotations, validateIfAnnotation } from "./build-validations"
-import { getProcessDefinitions } from "./build-validation-utils"
 
 const LOG = cds.log("process-build")
 
