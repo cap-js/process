@@ -11,7 +11,7 @@ import {
   ERROR_START_ON_REQUIRES_ID,
   ERROR_START_ID_REQUIRES_ON,
   ERROR_START_ID_MUST_BE_STRING,
-  ERROR_ANNOTATION_REQUIRES_OTHER,
+  ERROR_ON_REQUIRED,
   WARNING_TYPE_MISMATCH,
   WARNING_ARRAY_MISMATCH,
   ERROR_MISSING_MANDATORY_PROCESS_INPUT,
@@ -81,13 +81,11 @@ export function validateRequiredStartAnnotations(hasOn: boolean, hasId: boolean,
 
 }
 
-export function validateRequiredGenericAnnotations(hasOn: boolean, hasCascade: boolean, def: any, entityName: string, annotationOn: string, annotationCascade: string, buildPlugin: ProcessValidationPlugin) {
-  if (hasOn && !hasCascade) {
-      buildPlugin.pushMessage(ERROR_ANNOTATION_REQUIRES_OTHER(entityName, annotationOn, annotationCascade), ERROR)
-    }
-    if (hasCascade && !hasOn) {
-      buildPlugin.pushMessage(ERROR_ANNOTATION_REQUIRES_OTHER(entityName, annotationCascade, annotationOn), ERROR)
-    }
+export function validateRequiredGenericAnnotations(hasOn: boolean, hasAnyAnnotationWithPrefix: boolean, entityName: string, annotationOn: string, annotationPrefix: string, buildPlugin: ProcessValidationPlugin) {
+  // If any annotation with this prefix is defined, .on is required
+  if (hasAnyAnnotationWithPrefix && !hasOn) {
+    buildPlugin.pushMessage(ERROR_ON_REQUIRED(entityName, annotationPrefix, annotationOn), ERROR)
+  }
 }
 
 export function validateInputTypes(buildPlugin: ProcessValidationPlugin, entityName: string, def: CsnDefinition, processDef: CsnDefinition, allDefinitions: Record<string, CsnDefinition> | undefined) {

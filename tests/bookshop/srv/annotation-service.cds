@@ -454,6 +454,101 @@ service AnnotationService {
     }
 
   // ============================================
+  // DEFAULT CASCADE TESTS (cascade omitted, should default to false)
+  // ============================================
+
+  // Cancel on CREATE without cascade (should default to false)
+  @build.process.cancel: {
+    on: 'CREATE',
+  }
+  entity CancelOnCreateDefaultCascade as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Cancel on UPDATE without cascade (should default to false)
+  @build.process.cancel: {
+    on: 'UPDATE',
+  }
+  entity CancelOnUpdateDefaultCascade as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Cancel on DELETE without cascade (should default to false)
+  @build.process.cancel: {
+    on: 'DELETE',
+  }
+  entity CancelOnDeleteDefaultCascade as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Suspend on CREATE without cascade (should default to false)
+  @build.process.suspend: {
+    on: 'CREATE',
+  }
+  entity SuspendOnCreateDefaultCascade as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Suspend on UPDATE without cascade (should default to false)
+  @build.process.suspend: {
+    on: 'UPDATE',
+  }
+  entity SuspendOnUpdateDefaultCascade as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Resume on CREATE without cascade (should default to false)
+  @build.process.resume: {
+    on: 'CREATE',
+  }
+  entity ResumeOnCreateDefaultCascade as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Resume on UPDATE without cascade (should default to false)
+  @build.process.resume: {
+    on: 'UPDATE',
+  }
+  entity ResumeOnUpdateDefaultCascade as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // ============================================
   // COMBINATION ENTITIES - Real-world scenarios
   // ============================================
 

@@ -76,7 +76,7 @@ export async function handleProcessCancel(
 function initCancelSpecs(target: Target): ProcessCancelSpec { 
     const cancelSpecs: ProcessCancelSpec = {
         on: target[PROCESS_CANCEL_ON] as string,
-        cascade: target[PROCESS_CANCEL_CASCADE],
+        cascade: target[PROCESS_CANCEL_CASCADE] ?? false,
         cancelExpr: target[PROCESS_CANCEL_IF] ? (target[PROCESS_CANCEL_IF]as any).xpr as expr : undefined,
     }
     return cancelSpecs;

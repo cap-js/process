@@ -738,4 +738,150 @@ describe("Integration tests for Process Annotations (Isolated)", () => {
             });
         });
     });
+
+    // ================================================
+    // DEFAULT CASCADE TESTS (cascade omitted, should default to false)
+    // ================================================
+    describe("Default cascade behavior (cascade annotation omitted)", () => {
+        
+        describe("Cancel with default cascade", () => {
+            
+            it("should cancel process on CREATE with cascade defaulting to false", async () => {
+                const car = createTestCar();
+
+                const response = await POST("/odata/v4/annotation/CancelOnCreateDefaultCascade", car);
+
+                expect(response.status).toBe(201);
+                expect(response.data.ID).toBe(car.ID);
+
+                expect(foundMessages.length).toBe(1);
+                expect(foundMessages[0].data).toEqual({
+                    businessKey: car.ID,
+                    cascade: false
+                });
+            });
+
+            it("should cancel process on UPDATE with cascade defaulting to false", async () => {
+                const car = createTestCar();
+
+                // First create the entity
+                const createResponse = await POST("/odata/v4/annotation/CancelOnUpdateDefaultCascade", car);
+                expect(createResponse.status).toBe(201);
+                foundMessages = [];
+
+                // Update the entity
+                const updateResponse = await PATCH(`/odata/v4/annotation/CancelOnUpdateDefaultCascade('${car.ID}')`, {
+                    mileage: 200
+                });
+
+                expect(updateResponse.status).toBe(200);
+
+                expect(foundMessages.length).toBe(1);
+                expect(foundMessages[0].data).toEqual({
+                    businessKey: car.ID,
+                    cascade: false
+                });
+            });
+
+            it("should cancel process on DELETE with cascade defaulting to false", async () => {
+                const car = createTestCar();
+
+                // First create the entity
+                const createResponse = await POST("/odata/v4/annotation/CancelOnDeleteDefaultCascade", car);
+                expect(createResponse.status).toBe(201);
+                foundMessages = [];
+
+                // Delete the entity
+                const deleteResponse = await DELETE(`/odata/v4/annotation/CancelOnDeleteDefaultCascade('${car.ID}')`);
+
+                expect(deleteResponse.status).toBe(204);
+
+                expect(foundMessages.length).toBe(1);
+                expect(foundMessages[0].data).toEqual({
+                    businessKey: car.ID,
+                    cascade: false
+                });
+            });
+        });
+
+        describe("Suspend with default cascade", () => {
+            
+            it("should suspend process on CREATE with cascade defaulting to false", async () => {
+                const car = createTestCar();
+
+                const response = await POST("/odata/v4/annotation/SuspendOnCreateDefaultCascade", car);
+
+                expect(response.status).toBe(201);
+                expect(response.data.ID).toBe(car.ID);
+
+                expect(foundMessages.length).toBe(1);
+                expect(foundMessages[0].data).toEqual({
+                    businessKey: car.ID,
+                    cascade: false
+                });
+            });
+
+            it("should suspend process on UPDATE with cascade defaulting to false", async () => {
+                const car = createTestCar();
+
+                // First create the entity
+                const createResponse = await POST("/odata/v4/annotation/SuspendOnUpdateDefaultCascade", car);
+                expect(createResponse.status).toBe(201);
+                foundMessages = [];
+
+                // Update the entity
+                const updateResponse = await PATCH(`/odata/v4/annotation/SuspendOnUpdateDefaultCascade('${car.ID}')`, {
+                    mileage: 200
+                });
+
+                expect(updateResponse.status).toBe(200);
+
+                expect(foundMessages.length).toBe(1);
+                expect(foundMessages[0].data).toEqual({
+                    businessKey: car.ID,
+                    cascade: false
+                });
+            });
+        });
+
+        describe("Resume with default cascade", () => {
+            
+            it("should resume process on CREATE with cascade defaulting to false", async () => {
+                const car = createTestCar();
+
+                const response = await POST("/odata/v4/annotation/ResumeOnCreateDefaultCascade", car);
+
+                expect(response.status).toBe(201);
+                expect(response.data.ID).toBe(car.ID);
+
+                expect(foundMessages.length).toBe(1);
+                expect(foundMessages[0].data).toEqual({
+                    businessKey: car.ID,
+                    cascade: false
+                });
+            });
+
+            it("should resume process on UPDATE with cascade defaulting to false", async () => {
+                const car = createTestCar();
+
+                // First create the entity
+                const createResponse = await POST("/odata/v4/annotation/ResumeOnUpdateDefaultCascade", car);
+                expect(createResponse.status).toBe(201);
+                foundMessages = [];
+
+                // Update the entity
+                const updateResponse = await PATCH(`/odata/v4/annotation/ResumeOnUpdateDefaultCascade('${car.ID}')`, {
+                    mileage: 200
+                });
+
+                expect(updateResponse.status).toBe(200);
+
+                expect(foundMessages.length).toBe(1);
+                expect(foundMessages[0].data).toEqual({
+                    businessKey: car.ID,
+                    cascade: false
+                });
+            });
+        });
+    });
 });

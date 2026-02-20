@@ -154,9 +154,11 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     const hasOn = def[annotationOn] !== undefined
     const hasCascade = def[annotationCascade] !== undefined
     const hasIf = def[annotationIf] !== undefined
+    
+    const hasAnyAnnotationWithPrefix = Object.keys(def).some(key => key.startsWith(annotationPrefix + '.'))
 
-    // required fields
-    validateRequiredGenericAnnotations(hasOn, hasCascade, def, entityName, annotationOn, annotationCascade, this);
+    // required fields - .on is required if any annotation with this prefix is defined
+    validateRequiredGenericAnnotations(hasOn, hasAnyAnnotationWithPrefix, entityName, annotationOn, annotationPrefix, this);
 
     if (hasOn) {
       validateOnAnnotation(def, entityName, annotationOn, this);

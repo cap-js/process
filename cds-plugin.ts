@@ -10,11 +10,8 @@ import {
   PROCESS_START_ID,
   PROCESS_START_ON,
   PROCESS_CANCEL_ON,
-  PROCESS_CANCEL_CASCADE,
   PROCESS_SUSPEND_ON,
-  PROCESS_SUSPEND_CASCADE,
   PROCESS_RESUME_ON,
-  PROCESS_RESUME_CASCADE,
   PROCESS_PREFIX, } from "./lib/index"
 import { importProcess } from "./lib/processImport"
 
@@ -67,7 +64,7 @@ cds.on("serving", async (service: cds.Service) => {
 })
 
 function areCancelAnnotationsDefined(target: Target, event: string): boolean {
-  return !!(target[PROCESS_CANCEL_ON] && (typeof target[PROCESS_CANCEL_CASCADE] === "boolean") && target[PROCESS_CANCEL_ON] === event)
+  return !!(target[PROCESS_CANCEL_ON] && target[PROCESS_CANCEL_ON] === event)
 }
 
 function areStartAnnotationsDefined(target: Target, event: string): boolean {
@@ -75,11 +72,11 @@ function areStartAnnotationsDefined(target: Target, event: string): boolean {
 }
 
 function areSuspendAnnotationsDefined(target: Target, event: string): boolean {
-  return !!(target[PROCESS_SUSPEND_ON] && (typeof target[PROCESS_SUSPEND_CASCADE] === "boolean") && target[PROCESS_SUSPEND_ON] === event);
+  return !!(target[PROCESS_SUSPEND_ON] && target[PROCESS_SUSPEND_ON] === event);
 }
 
 function areResumeAnnotationsDefined(target: Target, event: string): boolean {
-  return !!(target[PROCESS_RESUME_ON] && (typeof target[PROCESS_RESUME_CASCADE] === "boolean") && target[PROCESS_RESUME_ON] === event);
+  return !!(target[PROCESS_RESUME_ON] && target[PROCESS_RESUME_ON] === event);
 }
 
 

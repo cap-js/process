@@ -17,6 +17,7 @@ export const MSG_KEY = {
   ERROR_START_ID_MUST_BE_STRING: 'BUILD_ERROR_START_ID_MUST_BE_STRING',
   WARNING_NO_PROCESS_DEFINITION: 'BUILD_WARNING_NO_PROCESS_DEFINITION',
   ERROR_ANNOTATION_REQUIRES_OTHER: 'BUILD_ERROR_ANNOTATION_REQUIRES_OTHER',
+  ERROR_ON_REQUIRED: 'BUILD_ERROR_ON_REQUIRED',
   ERROR_CASCADE_MUST_BE_BOOLEAN: 'BUILD_ERROR_CASCADE_MUST_BE_BOOLEAN',
   ERROR_START_BUSINESSKEY_INPUT_MISSING: 'BUILD_ERROR_START_BUSINESSKEY_INPUT_MISSING',
   ERROR_ATTRIBUTE_NOT_IN_PROCESS_DEF: 'BUILD_ERROR_ATTRIBUTE_NOT_IN_PROCESS_DEF',
@@ -84,6 +85,11 @@ export const WARNING_NO_PROCESS_DEFINITION = (entityName: string, annotationId: 
 export const ERROR_ANNOTATION_REQUIRES_OTHER = (entityName: string, annotation: string, requiredAnnotation: string): string => {
   const fallback = `${entityName}: ${annotation} requires ${requiredAnnotation}`;
   return cds.i18n.messages.at(MSG_KEY.ERROR_ANNOTATION_REQUIRES_OTHER, [entityName, annotation, requiredAnnotation]) ?? fallback;
+};
+
+export const ERROR_ON_REQUIRED = (entityName: string, annotationPrefix: string, annotationOn: string): string => {
+  const fallback = `${entityName}: ${annotationPrefix} requires ${annotationOn} to be defined`;
+  return cds.i18n.messages.at(MSG_KEY.ERROR_ON_REQUIRED, [entityName, annotationPrefix, annotationOn]) ?? fallback;
 };
 
 export const ERROR_CASCADE_MUST_BE_BOOLEAN = (entityName: string, annotationCascade: string): string => {

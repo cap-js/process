@@ -62,7 +62,7 @@ describe('Build Validation: Required Annotations', () => {
                     expect(result.buildSucceeded).toBe(true);
                 });
 
-                it('should ERROR when on is present but cascade is missing', async () => {
+                it('should PASS when on is present but cascade is missing (cascade defaults to false)', async () => {
                     const cdsSource = wrapEntity(`
                         ${annotationBase}: { on: 'DELETE' }
                         entity MissingCascade { key ID: UUID; }
@@ -70,13 +70,8 @@ describe('Build Validation: Required Annotations', () => {
 
                     const result = await validateModel(cdsSource);
 
-                    expect(result.errors.length).toBeGreaterThan(0);
-                    expect(result.errors.some(e =>
-                        e.msg.includes(annotationOn) &&
-                        e.msg.includes('requires') &&
-                        e.msg.includes(annotationCascade)
-                    )).toBe(true);
-                    expect(result.buildSucceeded).toBe(false);
+                    expect(result.errors).toHaveLength(0);
+                    expect(result.buildSucceeded).toBe(true);
                 });
 
                 it('should ERROR when cascade is present but on is missing', async () => {
@@ -89,7 +84,7 @@ describe('Build Validation: Required Annotations', () => {
 
                     expect(result.errors.length).toBeGreaterThan(0);
                     expect(result.errors.some(e =>
-                        e.msg.includes(annotationCascade) &&
+                        e.msg.includes(annotationBase) &&
                         e.msg.includes('requires') &&
                         e.msg.includes(annotationOn)
                     )).toBe(true);
@@ -467,17 +462,17 @@ describe('other validation logic tests', () => {
         {
             annotationBase: PROCESS_CANCEL,
             baseProps: `on: 'DELETE', cascade: true`,
-            invalidProps: `on: 'DELETE'`
+            invalidProps: `cascade: true`
         },
         {
             annotationBase: PROCESS_SUSPEND,
             baseProps: `on: 'DELETE', cascade: true`,
-            invalidProps: `on: 'DELETE'`
+            invalidProps: `cascade: true`
         },
         {
             annotationBase: PROCESS_RESUME,
             baseProps: `on: 'DELETE', cascade: true`,
-            invalidProps: `on: 'DELETE'`
+            invalidProps: `cascade: true`
         },
     ];
 
@@ -517,7 +512,7 @@ describe('other validation logic tests', () => {
 
                 const result = await validateModel(cdsSource);
 
-                // Only InvalidEntity should have errors (missing cascade)
+                // Only InvalidEntity should have errors (missing required annotation)
                 expect(result.errors.some(e => e.msg.includes('InvalidEntity'))).toBe(true);
                 expect(result.errors.some(e => e.msg.includes('ValidEntity1'))).toBe(false);
                 expect(result.errors.some(e => e.msg.includes('ValidEntity2'))).toBe(false);

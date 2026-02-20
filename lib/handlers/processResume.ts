@@ -73,7 +73,7 @@ export async function handleProcessResume(req: cds.Request) {
 function initResumeSpecs(target: Target): ProcessResumeSpec {
     const resumeSpecs: ProcessResumeSpec = {
         on: target[PROCESS_RESUME_ON] as string,
-        cascade: target[PROCESS_RESUME_CASCADE],
+        cascade: target[PROCESS_RESUME_CASCADE] ?? false,
         resumeExpr: target[PROCESS_RESUME_IF] ? (target[PROCESS_RESUME_IF]as any).xpr as expr : undefined,
     }
     return resumeSpecs;

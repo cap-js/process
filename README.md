@@ -35,7 +35,7 @@ service MyService {
 
 - `@build.process.<cancel|resume|suspend>` -- Cancel/Suspend/Resume any processes bound to the entity (using entityKey as businessKey in SBPA)
   - `@build.process.<cancel|resume|suspend>.on`
-  - `@build.process.<cancel|resume|suspend>.cascade` -- boolean
+  - `@build.process.<cancel|resume|suspend>.cascade` -- boolean (optional, defaults to false)
   - `@build.process.<cancel|resume|suspend>.if` -- only starting process if expression is true
     - example: `@build.process.suspend.if: (weight > 10)`
 
@@ -45,8 +45,8 @@ Example:
 service MyService {
 
     @build.process.<cancel|suspend|resume>: {
-        on: 'CREATE | UPDATE | DELETE | boundAction',
-        cascade: true | false,
+        on: 'CREATE | UPDATE | DELETE | boundAction',
+        cascade: true | false,  // optional, defaults to false
         when: (<expression>)
     }
     entity MyProjection as projection on MyEntity {
@@ -101,11 +101,10 @@ When both `@build.process.start.id` and `@build.process.start.on` are present an
 
 ### Required Annotations (Errors)
 
-- `@build.process.<cancel|suspend|resume>.on` and `@build.process.<cancel|suspend|resume>.cascade` are mutually required — if one is present, the other must also be present
-- `@build.process.<cancel|suspend|resume>.on` must be a string representing either:
+- `@build.process.<cancel|suspend|resume>.on` is required for cancel/suspend/resume operations and must be a string representing either:
   - A CRUD operation: `CREATE`, `READ`, `UPDATE`, or `DELETE`
   - A bound action defined on the entity
-- `@build.process.<cancel|suspend|resume>.cascade` must be a boolean
+- `@build.process.<cancel|suspend|resume>.cascade` is optional (defaults to false); if provided, must be a boolean
 - `@build.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
 
 ### Warnings

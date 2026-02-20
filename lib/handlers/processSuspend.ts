@@ -72,7 +72,7 @@ export async function handleProcessSuspend(req: cds.Request) {
 function initSuspendSpecs(target: Target): ProcessSuspendSpec {
     const suspendSpecs: ProcessSuspendSpec = {
         on: target[PROCESS_SUSPEND_ON] as string,
-        cascade: target[PROCESS_SUSPEND_CASCADE],
+        cascade: target[PROCESS_SUSPEND_CASCADE] ?? false,
         suspendExpr: target[PROCESS_SUSPEND_IF] ? (target[PROCESS_SUSPEND_IF]as any).xpr as expr : undefined,
     }
     return suspendSpecs; 
