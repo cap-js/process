@@ -1,5 +1,4 @@
 declare module '@sap/cds' {
-
   interface RemoteEndpoints {
     api: string;
   }
@@ -80,5 +79,4 @@ declare module '@sap/cds' {
   interface DeleteRequest extends cds.Request {
     _Process?: cds.entity[];
   }
-
 }

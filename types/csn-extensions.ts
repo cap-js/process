@@ -1,7 +1,7 @@
 /**
-* Strongly Typed CSN (Core Schema Notation) Model in TypeScript
-* Based on https://cap.cloud.sap/docs/cds/csn
-*/
+ * Strongly Typed CSN (Core Schema Notation) Model in TypeScript
+ * Based on https://cap.cloud.sap/docs/cds/csn
+ */
 
 //
 // ──────────────────────────────────────────────────────────────
@@ -61,13 +61,7 @@ export type CsnDefinition =
 export interface CsnBaseDefinition extends CsnAnnotations {
   name?: string;
   doc?: string;
-  kind:
-    | 'entity'
-    | 'type'
-    | 'service'
-    | 'action'
-    | 'function'
-    | 'annotation';
+  kind: 'entity' | 'type' | 'service' | 'action' | 'function' | 'annotation';
 }
 //
 // ──────────────────────────────────────────────────────────────

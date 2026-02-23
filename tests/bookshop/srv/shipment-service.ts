@@ -1,7 +1,6 @@
 import cds from '@sap/cds';
 import ShipmentHandlerService from '#cds-models/eu12/bpm-horizon-walkme/sdshipmentprocessor/ShipmentHandlerService';
 class ShipmentService extends cds.ApplicationService {
-
   async init() {
     // Example: Start a process
     this.on('startShipment', async (req: cds.Request) => {
@@ -15,13 +14,15 @@ class ShipmentService extends cds.ApplicationService {
         businesskey: shipmentID,
         startingShipment: {
           identifier: shipment.ID,
-          items: [{
-            identifier: 'item_1',
-            title: 'Laptop',
-            quantity: 1,
-            price: 1200.00
-          }]
-        }
+          items: [
+            {
+              identifier: 'item_1',
+              title: 'Laptop',
+              quantity: 1,
+              price: 1200.0,
+            },
+          ],
+        },
       });
 
       return processInstance;
@@ -36,12 +37,12 @@ class ShipmentService extends cds.ApplicationService {
       if (newStatus === 'SUSPENDED') {
         await processService.suspend({
           businessKey: shipmentID,
-          cascade: false
+          cascade: false,
         });
       } else if (newStatus === 'RESUMED') {
         await processService.resume({
           businessKey: shipmentID,
-          cascade: false
+          cascade: false,
         });
       }
 
@@ -57,7 +58,7 @@ class ShipmentService extends cds.ApplicationService {
 
       await processService.cancel({
         businessKey: shipmentID,
-        cascade: false
+        cascade: false,
       });
 
       const shipment = await SELECT.one.from('Shipments').where({ ID: shipmentID });

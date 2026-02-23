@@ -6,7 +6,7 @@ service AnnotationService {
     id: 'shipmentProcess',
     on: 'CREATE',
   }
-  entity Shipments                  as
+  entity Shipments                     as
     projection on my.Shipments {
       ID,
       status,
@@ -19,7 +19,7 @@ service AnnotationService {
       totalValue,
     }
 
-  entity ShipmentItems              as
+  entity ShipmentItems                 as
     projection on my.ShipmentItems {
       ID,
       shipment : Association to Shipments
@@ -67,7 +67,7 @@ service AnnotationService {
     cascade: false,
     if: (mileage > 1000)
   }
-  entity CarWhen                    as
+  entity CarWhen                       as
     projection on my.Car {
       ID,
       model,
@@ -80,7 +80,7 @@ service AnnotationService {
     id: 'carProcess',
     on: 'DELETE',
   }
-  entity CarOnDel                   as
+  entity CarOnDel                      as
     projection on my.Car {
       ID,
       model,
@@ -98,7 +98,7 @@ service AnnotationService {
     id: 'startOnCreateProcess',
     on: 'CREATE',
   }
-  entity StartOnCreate              as
+  entity StartOnCreate                 as
     projection on my.Car {
       ID,
       model,
@@ -113,7 +113,7 @@ service AnnotationService {
     on: 'CREATE',
     if: (mileage > 500)
   }
-  entity StartOnCreateWhen          as
+  entity StartOnCreateWhen             as
     projection on my.Car {
       ID,
       model,
@@ -127,7 +127,7 @@ service AnnotationService {
     id: 'startOnUpdateProcess',
     on: 'UPDATE',
   }
-  entity StartOnUpdate              as
+  entity StartOnUpdate                 as
     projection on my.Car {
       ID,
       model,
@@ -142,7 +142,7 @@ service AnnotationService {
     on: 'UPDATE',
     if: (mileage > 500)
   }
-  entity StartOnUpdateWhen          as
+  entity StartOnUpdateWhen             as
     projection on my.Car {
       ID,
       model,
@@ -156,7 +156,7 @@ service AnnotationService {
     id: 'startOnDeleteProcess',
     on: 'DELETE',
   }
-  entity StartOnDelete              as
+  entity StartOnDelete                 as
     projection on my.Car {
       ID,
       model,
@@ -171,7 +171,7 @@ service AnnotationService {
     on: 'DELETE',
     if: (mileage > 500)
   }
-  entity StartOnDeleteWhen          as
+  entity StartOnDeleteWhen             as
     projection on my.Car {
       ID,
       model,
@@ -189,7 +189,7 @@ service AnnotationService {
     on: 'CREATE',
     cascade: false,
   }
-  entity CancelOnCreate             as
+  entity CancelOnCreate                as
     projection on my.Car {
       ID,
       model,
@@ -204,7 +204,7 @@ service AnnotationService {
     cascade: true,
     if: (mileage > 500)
   }
-  entity CancelOnCreateWhen         as
+  entity CancelOnCreateWhen            as
     projection on my.Car {
       ID,
       model,
@@ -218,7 +218,7 @@ service AnnotationService {
     on: 'UPDATE',
     cascade: false,
   }
-  entity CancelOnUpdate             as
+  entity CancelOnUpdate                as
     projection on my.Car {
       ID,
       model,
@@ -233,7 +233,7 @@ service AnnotationService {
     cascade: true,
     if: (mileage > 500)
   }
-  entity CancelOnUpdateWhen         as
+  entity CancelOnUpdateWhen            as
     projection on my.Car {
       ID,
       model,
@@ -247,7 +247,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: false,
   }
-  entity CancelOnDelete             as
+  entity CancelOnDelete                as
     projection on my.Car {
       ID,
       model,
@@ -262,7 +262,7 @@ service AnnotationService {
     cascade: true,
     if: (mileage > 500)
   }
-  entity CancelOnDeleteWhen         as
+  entity CancelOnDeleteWhen            as
     projection on my.Car {
       ID,
       model,
@@ -280,7 +280,7 @@ service AnnotationService {
     on: 'CREATE',
     cascade: false,
   }
-  entity SuspendOnCreate            as
+  entity SuspendOnCreate               as
     projection on my.Car {
       ID,
       model,
@@ -295,7 +295,7 @@ service AnnotationService {
     cascade: true,
     if: (mileage > 500)
   }
-  entity SuspendOnCreateWhen        as
+  entity SuspendOnCreateWhen           as
     projection on my.Car {
       ID,
       model,
@@ -309,7 +309,7 @@ service AnnotationService {
     on: 'UPDATE',
     cascade: false,
   }
-  entity SuspendOnUpdate            as
+  entity SuspendOnUpdate               as
     projection on my.Car {
       ID,
       model,
@@ -324,7 +324,7 @@ service AnnotationService {
     cascade: true,
     if: (mileage > 500)
   }
-  entity SuspendOnUpdateWhen        as
+  entity SuspendOnUpdateWhen           as
     projection on my.Car {
       ID,
       model,
@@ -338,7 +338,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: false,
   }
-  entity SuspendOnDelete            as
+  entity SuspendOnDelete               as
     projection on my.Car {
       ID,
       model,
@@ -353,7 +353,7 @@ service AnnotationService {
     cascade: true,
     if: (mileage > 500)
   }
-  entity SuspendOnDeleteWhen        as
+  entity SuspendOnDeleteWhen           as
     projection on my.Car {
       ID,
       model,
@@ -371,7 +371,7 @@ service AnnotationService {
     on: 'CREATE',
     cascade: false,
   }
-  entity ResumeOnCreate             as
+  entity ResumeOnCreate                as
     projection on my.Car {
       ID,
       model,
@@ -386,7 +386,7 @@ service AnnotationService {
     cascade: true,
     if: (mileage > 500)
   }
-  entity ResumeOnCreateWhen         as
+  entity ResumeOnCreateWhen            as
     projection on my.Car {
       ID,
       model,
@@ -400,7 +400,7 @@ service AnnotationService {
     on: 'UPDATE',
     cascade: false,
   }
-  entity ResumeOnUpdate             as
+  entity ResumeOnUpdate                as
     projection on my.Car {
       ID,
       model,
@@ -415,7 +415,7 @@ service AnnotationService {
     cascade: true,
     if: (mileage > 500)
   }
-  entity ResumeOnUpdateWhen         as
+  entity ResumeOnUpdateWhen            as
     projection on my.Car {
       ID,
       model,
@@ -429,7 +429,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: false,
   }
-  entity ResumeOnDelete             as
+  entity ResumeOnDelete                as
     projection on my.Car {
       ID,
       model,
@@ -444,7 +444,7 @@ service AnnotationService {
     cascade: true,
     if: (mileage > 500)
   }
-  entity ResumeOnDeleteWhen         as
+  entity ResumeOnDeleteWhen            as
     projection on my.Car {
       ID,
       model,
@@ -458,10 +458,8 @@ service AnnotationService {
   // ============================================
 
   // Cancel on CREATE without cascade (should default to false)
-  @build.process.cancel: {
-    on: 'CREATE',
-  }
-  entity CancelOnCreateDefaultCascade as
+  @build.process.cancel: {on: 'CREATE', }
+  entity CancelOnCreateDefaultCascade  as
     projection on my.Car {
       ID,
       model,
@@ -471,10 +469,8 @@ service AnnotationService {
     }
 
   // Cancel on UPDATE without cascade (should default to false)
-  @build.process.cancel: {
-    on: 'UPDATE',
-  }
-  entity CancelOnUpdateDefaultCascade as
+  @build.process.cancel: {on: 'UPDATE', }
+  entity CancelOnUpdateDefaultCascade  as
     projection on my.Car {
       ID,
       model,
@@ -484,10 +480,8 @@ service AnnotationService {
     }
 
   // Cancel on DELETE without cascade (should default to false)
-  @build.process.cancel: {
-    on: 'DELETE',
-  }
-  entity CancelOnDeleteDefaultCascade as
+  @build.process.cancel: {on: 'DELETE', }
+  entity CancelOnDeleteDefaultCascade  as
     projection on my.Car {
       ID,
       model,
@@ -497,9 +491,7 @@ service AnnotationService {
     }
 
   // Suspend on CREATE without cascade (should default to false)
-  @build.process.suspend: {
-    on: 'CREATE',
-  }
+  @build.process.suspend: {on: 'CREATE', }
   entity SuspendOnCreateDefaultCascade as
     projection on my.Car {
       ID,
@@ -510,9 +502,7 @@ service AnnotationService {
     }
 
   // Suspend on UPDATE without cascade (should default to false)
-  @build.process.suspend: {
-    on: 'UPDATE',
-  }
+  @build.process.suspend: {on: 'UPDATE', }
   entity SuspendOnUpdateDefaultCascade as
     projection on my.Car {
       ID,
@@ -523,10 +513,8 @@ service AnnotationService {
     }
 
   // Resume on CREATE without cascade (should default to false)
-  @build.process.resume: {
-    on: 'CREATE',
-  }
-  entity ResumeOnCreateDefaultCascade as
+  @build.process.resume: {on: 'CREATE', }
+  entity ResumeOnCreateDefaultCascade  as
     projection on my.Car {
       ID,
       model,
@@ -536,10 +524,8 @@ service AnnotationService {
     }
 
   // Resume on UPDATE without cascade (should default to false)
-  @build.process.resume: {
-    on: 'UPDATE',
-  }
-  entity ResumeOnUpdateDefaultCascade as
+  @build.process.resume: {on: 'UPDATE', }
+  entity ResumeOnUpdateDefaultCascade  as
     projection on my.Car {
       ID,
       model,
@@ -565,7 +551,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: true,
   }
-  entity BasicLifecycle             as
+  entity BasicLifecycle                as
     projection on my.Car {
       ID,
       model,
@@ -588,7 +574,7 @@ service AnnotationService {
     cascade: false,
     if: (mileage > 1000)
   }
-  entity StatusBasedCancel          as
+  entity StatusBasedCancel             as
     projection on my.Car {
       ID,
       model,
@@ -617,7 +603,7 @@ service AnnotationService {
     cascade: false,
     if: (mileage <= 500)
   }
-  entity SuspendResumeWorkflow      as
+  entity SuspendResumeWorkflow         as
     projection on my.Car {
       ID,
       model,
@@ -649,7 +635,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: true,
   }
-  entity FullLifecycle              as
+  entity FullLifecycle                 as
     projection on my.Car {
       ID,
       model,
@@ -673,7 +659,7 @@ service AnnotationService {
     cascade: false,
     if: (mileage > 1500)
   }
-  entity ConditionalStartCancel     as
+  entity ConditionalStartCancel        as
     projection on my.Car {
       ID,
       model,
@@ -702,7 +688,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: true,
   }
-  entity ExternalWorkflowManagement as
+  entity ExternalWorkflowManagement    as
     projection on my.Car {
       ID,
       model,
@@ -724,7 +710,7 @@ service AnnotationService {
     id: 'startNoInputProcess',
     on: 'CREATE',
   }
-  entity StartNoInput               as
+  entity StartNoInput                  as
     projection on my.Shipments {
       ID,
       status,
