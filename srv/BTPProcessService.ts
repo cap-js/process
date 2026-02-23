@@ -28,7 +28,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('start', async (request: cds.Request) => {
       const { definitionId, context } = request.data;
-      return await this.workflowInstanceClient.startWorkflow(definitionId, context);
+      await this.workflowInstanceClient.startWorkflow(definitionId, context);
     });
 
     this.on('cancel', async (request: cds.Request) => {

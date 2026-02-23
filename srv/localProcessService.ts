@@ -23,7 +23,7 @@ class ProcessService extends cds.ApplicationService {
         context,
       });
 
-      return result;
+      return;
     });
 
     this.on('cancel', async (req: cds.Request) => {
@@ -41,10 +41,7 @@ class ProcessService extends cds.ApplicationService {
 
       if (instances.length === 0) {
         LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
-        return {
-          success: false,
-          message: `No running instances found for businessKey: ${businessKey}`,
-        };
+        return;
       }
 
       const results = localWorkflowStore.updateMultipleStatus(
@@ -57,11 +54,7 @@ class ProcessService extends cds.ApplicationService {
         `Cancelled ${successCount}/${instances.length} workflow instance(s) for businessKey: ${businessKey}`,
       );
 
-      return {
-        success: results.every((r) => r.success),
-        message: `Cancelled ${successCount} workflow instance(s).`,
-        results,
-      };
+      return;
     });
 
     this.on('suspend', async (req: cds.Request) => {
@@ -79,10 +72,7 @@ class ProcessService extends cds.ApplicationService {
 
       if (instances.length === 0) {
         LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
-        return {
-          success: false,
-          message: `No running instances found for businessKey: ${businessKey}`,
-        };
+        return;
       }
 
       const results = localWorkflowStore.updateMultipleStatus(
@@ -95,11 +85,7 @@ class ProcessService extends cds.ApplicationService {
         `Suspended ${successCount}/${instances.length} workflow instance(s) for businessKey: ${businessKey}`,
       );
 
-      return {
-        success: results.every((r) => r.success),
-        message: `Suspended ${successCount} workflow instance(s).`,
-        results,
-      };
+      return;
     });
 
     this.on('resume', async (req: cds.Request) => {
@@ -117,10 +103,7 @@ class ProcessService extends cds.ApplicationService {
 
       if (instances.length === 0) {
         LOG.warn(`No suspended workflow instances found with businessKey: ${businessKey}`);
-        return {
-          success: false,
-          message: `No suspended instances found for businessKey: ${businessKey}`,
-        };
+        return;
       }
 
       const results = localWorkflowStore.updateMultipleStatus(
@@ -133,11 +116,7 @@ class ProcessService extends cds.ApplicationService {
         `Resumed ${successCount}/${instances.length} workflow instance(s) for businessKey: ${businessKey}`,
       );
 
-      return {
-        success: results.every((r) => r.success),
-        message: `Resumed ${successCount} workflow instance(s).`,
-        results,
-      };
+      return;
     });
 
     return super.init();

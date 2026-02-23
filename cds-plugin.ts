@@ -1,4 +1,4 @@
-import cds, { Results, Target } from "@sap/cds"
+import cds, { Results, Target } from '@sap/cds';
 import {
   addDeletedEntityToRequest,
   handleProcessCancel,
@@ -13,48 +13,46 @@ import {
   PROCESS_SUSPEND_ON,
   PROCESS_RESUME_ON,
   PROCESS_PREFIX,
-  PROCESS_LOGGER_PREFIX,
-} from "./lib/index"
-import { importProcess } from "./lib/processImport"
-
-const LOG = cds.log(PROCESS_LOGGER_PREFIX);
+} from './lib/index';
+import { importProcess } from './lib/processImport';
 
 // Register build plugin for annotation validation during cds build
 // @ts-ignore
-cds.build?.register?.('process-validation', ProcessValidationPlugin)
+cds.build?.register?.('process-validation', ProcessValidationPlugin);
 
 // Register import handler for: cds import --from process
 // @ts-ignore
-cds.import ??= {}
+cds.import ??= {};
 // @ts-ignore
-cds.import.from ??= {}
+cds.import.from ??= {};
 // @ts-ignore
 cds.import.from.process = importProcess;
 
-cds.on("serving", async (service: cds.Service) => {
-  if (service instanceof cds.ApplicationService == false) return
+cds.on('serving', async (service: cds.Service) => {
+  if (service instanceof cds.ApplicationService == false) return;
 
-  service.before("DELETE", async (req: cds.Request) => {
+  service.before('DELETE', async (req: cds.Request) => {
+    const target = req.target as Target;
 
-    const target = req.target as Target
-
-    if (areCancelAnnotationsDefined(target, req.event) || areSuspendAnnotationsDefined(target, req.event) || areStartAnnotationsDefined(target, req.event) || areResumeAnnotationsDefined(target, req.event)) {
+    if (
+      areCancelAnnotationsDefined(target, req.event) ||
+      areSuspendAnnotationsDefined(target, req.event) ||
+      areStartAnnotationsDefined(target, req.event) ||
+      areResumeAnnotationsDefined(target, req.event)
+    ) {
       await addDeletedEntityToRequest(target, req, areStartAnnotationsDefined(target, req.event));
     }
   });
 
-  service.after("*", async (each: Results, req: cds.Request) => {
-
-    const target = req.target as Target
-    if (!target) return
+  service.after('*', async (each: Results, req: cds.Request) => {
+    const target = req.target as Target;
+    if (!target) return;
 
     if (areStartAnnotationsDefined(target, req.event)) {
       await handleProcessStart(req);
-
     }
     if (areCancelAnnotationsDefined(target, req.event)) {
       await handleProcessCancel(req);
-
     }
     if (areSuspendAnnotationsDefined(target, req.event)) {
       await handleProcessSuspend(req);
@@ -63,15 +61,19 @@ cds.on("serving", async (service: cds.Service) => {
     if (areResumeAnnotationsDefined(target, req.event)) {
       await handleProcessResume(req);
     }
-  })
-})
+  });
+});
 
 function areCancelAnnotationsDefined(target: Target, event: string): boolean {
-  return !!(target[PROCESS_CANCEL_ON] && target[PROCESS_CANCEL_ON] === event)
+  return !!(target[PROCESS_CANCEL_ON] && target[PROCESS_CANCEL_ON] === event);
 }
 
 function areStartAnnotationsDefined(target: Target, event: string): boolean {
-  return !!(target[PROCESS_START_ID] && target[PROCESS_START_ON] && target[PROCESS_START_ON] === event);
+  return !!(
+    target[PROCESS_START_ID] &&
+    target[PROCESS_START_ON] &&
+    target[PROCESS_START_ON] === event
+  );
 }
 
 function areSuspendAnnotationsDefined(target: Target, event: string): boolean {
@@ -82,10 +84,11 @@ function areResumeAnnotationsDefined(target: Target, event: string): boolean {
   return !!(target[PROCESS_RESUME_ON] && target[PROCESS_RESUME_ON] === event);
 }
 
-
-cds.on("served", async (services) => {
-  const processServices = Object.values(services).filter(service => service.definition?.[PROCESS_PREFIX]);
+cds.on('served', async (services) => {
+  const processServices = Object.values(services).filter(
+    (service) => service.definition?.[PROCESS_PREFIX],
+  );
   for (const service of processServices) {
     registerProcessServiceHandlers(service);
   }
-})
+});
