@@ -262,7 +262,6 @@ function addProcessActions(
     params: {
       inputs: { type: inputsType, notNull: true },
     },
-    returns: { type: instanceType },
   };
 
   // Query functions
