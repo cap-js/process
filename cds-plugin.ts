@@ -51,6 +51,7 @@ cds.on('serving', async (service: cds.Service) => {
   });
 
   service.after('*', async (each: Results, req: cds.Request) => {
+    if (!req.target) return;
     const cacheKey = `${req.target.name}:${req.event}`;
     const cached = annotationCache.get(cacheKey);
 
@@ -65,13 +66,13 @@ cds.on('serving', async (service: cds.Service) => {
 
 function buildeAnnotationCache(service: cds.Service) {
   const cache = new Map<string, EntityEventCache>();
-  for (const entity of service.entities) {
+  for (const entity of Object.values(service.entities)) {
     const events = ['UPDATE', 'CREATE', 'DELETE'];
     for (const event of events) {
-      const hasStart = !!(entity[PROCESS_START_ON] == event && entity[PROCESS_START_ID]);
+      const hasStart = !!(entity[PROCESS_START_ON] === event && entity[PROCESS_START_ID]);
       const hasCancel = !!(entity[PROCESS_CANCEL_ON] && entity[PROCESS_CANCEL_ON] === event);
       const hasSuspend = !!(entity[PROCESS_SUSPEND_ON] && entity[PROCESS_SUSPEND_ON] === event);
-      const hasResume = !!(entity[PROCESS_SUSPEND_ON] && entity[PROCESS_SUSPEND_ON] === event);
+      const hasResume = !!(entity[PROCESS_RESUME_ON] && entity[PROCESS_RESUME_ON] === event);
       if (hasStart || hasCancel || hasSuspend || hasResume) {
         cache.set(`${entity.name}:${event}`, {
           hasStart,
