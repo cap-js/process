@@ -45,10 +45,7 @@
           "description": ""
         }
       },
-      "required": [
-        "startingShipment",
-        "businesskey"
-      ]
+      "required": ["startingShipment", "businesskey"]
     },
     "outputs": {
       "title": "outputs",
@@ -140,10 +137,7 @@
           "status": {
             "type": "string",
             "uid": "777ca51a-2e5a-4bbc-b3bc-50b2a7d48bf1",
-            "enum": [
-              "SUCCESS",
-              "FAILED"
-            ]
+            "enum": ["SUCCESS", "FAILED"]
           },
           "itemProcessResults": {
             "uid": "891237b4-1ced-4de8-9012-638159c03a76",

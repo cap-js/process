@@ -4,10 +4,10 @@ const config = {
   setupFilesAfterEnv: ['./tests/integration/build-validation/jest-setup.js'],
   testEnvironment: 'node',
   testTimeout: 60000,
-  testMatch: ["**/*.test.ts"],
+  testMatch: ['**/*.test.ts'],
   forceExit: true,
   detectOpenHandles: true,
-  extensionsToTreatAsEsm: ['.ts']
-}
+  extensionsToTreatAsEsm: ['.ts'],
+};
 
 module.exports = config;
