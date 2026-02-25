@@ -11,7 +11,8 @@
     "cds-build": "cds-tsx build",
     "cds-typer": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models",
     "watch": "cds-tsx watch",
-    "lint": "npx eslint ."
+    "lint": "npx eslint .",
+    "prettier:check": "npx -y prettier@3 --check ."
   },
   "keywords": [],
   "author": "",
