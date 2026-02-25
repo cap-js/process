@@ -49,7 +49,7 @@ class ProcessService extends cds.ApplicationService {
       );
 
       const successCount = results.filter((r) => r.success).length;
-      LOG.info(
+      LOG.debug(
         `Cancelled ${successCount}/${instances.length} workflow instance(s) for businessKey: ${businessKey}`,
       );
 
@@ -80,7 +80,7 @@ class ProcessService extends cds.ApplicationService {
       );
 
       const successCount = results.filter((r) => r.success).length;
-      LOG.info(
+      LOG.debug(
         `Suspended ${successCount}/${instances.length} workflow instance(s) for businessKey: ${businessKey}`,
       );
 
@@ -111,7 +111,7 @@ class ProcessService extends cds.ApplicationService {
       );
 
       const successCount = results.filter((r) => r.success).length;
-      LOG.info(
+      LOG.debug(
         `Resumed ${successCount}/${instances.length} workflow instance(s) for businessKey: ${businessKey}`,
       );
 

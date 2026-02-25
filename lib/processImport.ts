@@ -62,12 +62,12 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
   const [projectId, processId] = splitAtLastDot(processName);
   const apiClient = await createApiClient();
 
-  LOG.info('Retrieving process header...');
+  LOG.debug('Retrieving process header...');
   const processHeader = await apiClient.fetchProcessHeader(projectId, processId);
   processHeader.projectId = projectId;
 
   if (processHeader.dependencies?.length) {
-    LOG.info(`Fetching ${processHeader.dependencies.length} dependent data types...`);
+    LOG.debug(`Fetching ${processHeader.dependencies.length} dependent data types...`);
     processHeader.dataTypes = await apiClient.fetchAllDataTypes(
       projectId,
       processHeader.dependencies,
@@ -96,7 +96,7 @@ async function createApiClient(): Promise<IProcessApiClient> {
     throw new Error(cds.i18n.messages.at('IMPORT_NO_API_URL'));
   }
 
-  LOG.info('Creating API client...');
+  LOG.debug('Creating API client...');
   return createProcessApiClient(apiUrl, async () => {
     const tokenInfo = await getServiceToken(PROCESS_SERVICE);
     return tokenInfo.jwt;
@@ -148,7 +148,7 @@ function loadProcessHeader(filePath: string): ProcessHeader {
 
 function buildCsnModel(process: ProcessHeader): csn.CsnModel {
   const serviceName = `${process.projectId}.${capitalize(process.identifier)}Service`;
-  LOG.info(`Service name: ${serviceName}`);
+  LOG.debug(`Service name: ${serviceName}`);
 
   const definitions: Record<string, csn.CsnDefinition> = {};
 
@@ -515,7 +515,7 @@ async function addServiceToPackageJson(serviceName: string, modelPath: string): 
     pkg.cds.requires[serviceName] = { kind: 'external', model: modelPath };
 
     await fs.promises.writeFile(packagePath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-    LOG.info(`Added ${serviceName} to package.json`);
+    LOG.debug(`Added ${serviceName} to package.json`);
   } catch (error) {
     LOG.warn(`Could not update package.json: ${error}`);
   }
