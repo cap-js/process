@@ -209,6 +209,7 @@ function addProcessTypes(
   const outputsName = fqn(serviceName, 'ProcessOutputs');
   const attributesName = fqn(serviceName, 'ProcessAttributes');
   const instanceName = fqn(serviceName, 'ProcessInstance');
+  const instancesName = fqn(serviceName, 'ProcessInstances');
 
   definitions[inputsName] = buildTypeFromSchema(
     inputsName,
@@ -240,6 +241,12 @@ function addProcessTypes(
       startedBy: { type: csn.CdsBuiltinType.String },
     },
   };
+
+  definitions[instancesName] = {
+    kind: 'type',
+    name: instancesName,
+    items: { type: instanceName },
+  };
 }
 
 // ============================================================================
@@ -254,6 +261,7 @@ function addProcessActions(
   const outputsType = fqn(serviceName, 'ProcessOutputs');
   const attributesType = fqn(serviceName, 'ProcessAttributes');
   const instanceType = fqn(serviceName, 'ProcessInstance');
+  const instancesType = fqn(serviceName, 'ProcessInstances');
 
   // Start action
   definitions[fqn(serviceName, 'start')] = {
@@ -282,6 +290,15 @@ function addProcessActions(
       processInstanceId: { type: csn.CdsBuiltinType.String, notNull: true },
     },
     returns: { type: outputsType },
+  };
+
+  definitions[fqn(serviceName, 'getInstancesByBusinessKey')] = {
+    kind: 'function',
+    name: fqn(serviceName, 'getInstancesByBusinessKey'),
+    params: {
+      businessKey: { type: csn.CdsBuiltinType.String, notNull: true },
+    },
+    returns: { type: instancesType},
   };
 
   // Lifecycle actions

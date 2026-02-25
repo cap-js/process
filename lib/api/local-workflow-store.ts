@@ -32,8 +32,15 @@ export class LocalWorkflowStore {
       businessKey,
       status: WorkflowStatus.RUNNING,
       context,
-      attributes: {},
-      outputs: {},
+      attributes: {
+        priority: 'high',
+        department: 'logistics',
+        totalAmmount: 123.45,
+      },
+      outputs: {
+        processedBy: 'system-admin',
+        completionStatus: 'success',
+      },
       createdAt: new Date(),
       updatedAt: new Date(),
     };

@@ -119,6 +119,67 @@ class ProcessService extends cds.ApplicationService {
       return;
     });
 
+    this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
+      const { businessKey } = req.data;
+
+      LOG.debug('==============================================================');
+      LOG.debug(`Get instances by businessKey: ${businessKey}`);
+      LOG.debug('==============================================================');
+
+      if (!businessKey) {
+        return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
+      }
+
+      const instances = localWorkflowStore.getInstancesByBusinessKey(businessKey);
+
+      LOG.info(`Found ${instances.length} workflow instance(s) for businessKey: ${businessKey}`);
+      return instances;
+    });
+
+    this.on('getAttributes', async (req: cds.Request) => {
+      const { processInstanceId } = req.data;
+
+      LOG.debug('==============================================================');
+      LOG.debug(`Get attributes for instance: ${processInstanceId}`);
+      LOG.debug('==============================================================');
+
+      if (!processInstanceId) {
+        return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
+      }
+
+      const attributes = localWorkflowStore.getAttributes(processInstanceId);
+
+      if (attributes === undefined) {
+        LOG.warn(`Workflow instance not found: ${processInstanceId}`);
+        return req.reject({ status: 404, message: 'WORKFLOW_INSTANCE_NOT_FOUND' });
+      }
+
+      LOG.info(`Retrieved attributes for instance: ${processInstanceId}`);
+      return attributes;
+    });
+
+    this.on('getOutputs', async (req: cds.Request) => {
+      const { processInstanceId } = req.data;
+
+      LOG.debug('==============================================================');
+      LOG.debug(`Get outputs for instance: ${processInstanceId}`);
+      LOG.debug('==============================================================');
+
+      if (!processInstanceId) {
+        return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
+      }
+
+      const outputs = localWorkflowStore.getOutputs(processInstanceId);
+
+      if (outputs === undefined) {
+        LOG.warn(`Workflow instance not found: ${processInstanceId}`);
+        return req.reject({ status: 404, message: 'WORKFLOW_INSTANCE_NOT_FOUND' });
+      }
+
+      LOG.info(`Retrieved outputs for instance: ${processInstanceId}`);
+      return outputs;
+    });
+
     return super.init();
   }
 }
