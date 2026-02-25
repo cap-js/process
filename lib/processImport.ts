@@ -308,13 +308,22 @@ function buildTypeFromSchema(
   const required = new Set(schema.required ?? []);
   const elements: Record<string, csn.CsnElement> = {};
 
-  for (const [propName, propSchema] of Object.entries(schema.properties ?? {})) {
-    const safeName = sanitizeName(propName);
-    elements[safeName] = mapSchemaPropertyToElement(safeName, propSchema, required.has(propName), {
-      parentTypeName: typeName,
-      serviceName,
-      definitions,
-    });
+  const properties = schema.properties ?? {};
+  for (const propName in properties) {
+    if (Object.hasOwn(properties, propName)) {
+      const propSchema = properties[propName];
+      const safeName = sanitizeName(propName);
+      elements[safeName] = mapSchemaPropertyToElement(
+        safeName,
+        propSchema,
+        required.has(propName),
+        {
+          parentTypeName: typeName,
+          serviceName,
+          definitions,
+        },
+      );
+    }
   }
 
   return { kind: 'type', name: typeName, elements };
@@ -406,16 +415,18 @@ function buildArrayItemsSpec(itemsSchema: JsonSchema, ctx: SchemaMapContext): cs
     const required = new Set(itemsSchema.required ?? []);
     const elements: Record<string, csn.CsnElement> = {};
 
-    for (const [name, schema] of Object.entries(itemsSchema.properties ?? {}) as [
-      string,
-      JsonSchema,
-    ][]) {
-      const safeName = sanitizeName(name);
-      elements[safeName] = mapSchemaPropertyToElement(safeName, schema, required.has(name), {
-        parentTypeName: fqn(ctx.serviceName, `${baseName(ctx.parentTypeName)}_Item`),
-        serviceName: ctx.serviceName,
-        definitions: ctx.definitions,
-      });
+    const properties = itemsSchema.properties ?? {};
+
+    for (const name in properties) {
+      if (Object.hasOwn(properties, name)) {
+        const schema = properties[name];
+        const safeName = sanitizeName(name);
+        elements[safeName] = mapSchemaPropertyToElement(safeName, schema, required.has(name), {
+          parentTypeName: fqn(ctx.serviceName, `${baseName(ctx.parentTypeName)}_Item`),
+          serviceName: ctx.serviceName,
+          definitions: ctx.definitions,
+        });
+      }
     }
     return { elements };
   }

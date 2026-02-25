@@ -87,29 +87,32 @@ export class ProcessValidationPlugin extends BuildPluginBase {
 
     const processDefinitions = getProcessDefinitions(model.definitions);
 
-    for (const [name, def] of Object.entries(model.definitions || {})) {
-      if (def.kind !== 'entity') continue;
+    const definitions = model.definitions ?? {};
+    for (const name in definitions) {
+      if (Object.hasOwn(definitions, name)) {
+        const def = definitions[name];
+        if (def.kind !== 'entity') continue;
 
-      // Validate lifecycle annotations (cancel, suspend, resume) using configuration
-      for (const config of LIFECYCLE_CONFIGS) {
-        this.validateProcessLifecycleAnnotations(
+        // Validate lifecycle annotations (cancel, suspend, resume) using configuration
+        for (const config of LIFECYCLE_CONFIGS) {
+          this.validateProcessLifecycleAnnotations(
+            name,
+            def as CsnEntity,
+            config.annotationOn,
+            config.annotationCascade,
+            config.annotationIf,
+            config.annotationPrefix,
+          );
+        }
+
+        this.validateStartAnnotations(
           name,
           def as CsnEntity,
-          config.annotationOn,
-          config.annotationCascade,
-          config.annotationIf,
-          config.annotationPrefix,
+          processDefinitions,
+          model.definitions || {},
         );
       }
-
-      this.validateStartAnnotations(
-        name,
-        def as CsnEntity,
-        processDefinitions,
-        model.definitions || {},
-      );
     }
-
     for (const message of this.messages) {
       if (message.severity === ERROR) {
         throw new cds.build.BuildError(`Process annotation validation failed.`);
