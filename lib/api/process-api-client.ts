@@ -119,6 +119,8 @@ export async function fetchAllDataTypes(
     fetched.add(dep.artifactUid);
 
     try {
+      // will be handled in separate BLI
+      // eslint-disable-next-line no-await-in-loop
       const artifact = await fetchArtifact(serviceUrl, jwt, projectId, dep.artifactUid);
 
       if (artifact.type === 'datatype' || artifact.type === 'bpi.datatype') {

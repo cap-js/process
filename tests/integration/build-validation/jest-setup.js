@@ -3,6 +3,7 @@
  * This runs BEFORE any test file imports, ensuring cds.build mock is available
  * when the ProcessValidationPlugin is imported.
  */
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const cds = require('@sap/cds');
 
 // Severity constants matching cds.build.Plugin

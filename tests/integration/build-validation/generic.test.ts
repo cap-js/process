@@ -8,7 +8,6 @@ import {
   PROCESS_RESUME_IF,
   PROCESS_RESUME_ON,
   PROCESS_START,
-  PROCESS_START_ID,
   PROCESS_START_IF,
   PROCESS_START_ON,
   PROCESS_SUSPEND,
@@ -45,7 +44,7 @@ describe('Build Validation: Required Annotations', () => {
 
   describe.each(annotationConfigs)(
     'Build Validation: $annotationBase required annotations',
-    ({ annotationBase, annotationOn, annotationCascade }) => {
+    ({ annotationBase, annotationOn }) => {
       describe('Required annotations', () => {
         it('should PASS when both on and cascade are present', async () => {
           const cdsSource = wrapEntity(`
@@ -139,7 +138,7 @@ describe('.on annotation tests ', () => {
 
   describe.each(annotationConfigs)(
     'Build Validation: $annotationOn',
-    ({ annotationBase, annotationOn, baseProps }) => {
+    ({ annotationBase, baseProps }) => {
       describe('Valid events', () => {
         it('should PASS with CRUD events', async () => {
           const cdsSource = wrapEntity(`

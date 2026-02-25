@@ -17,17 +17,16 @@ class ProcessService extends cds.ApplicationService {
       LOG.debug('Context: ', JSON.stringify(context, null, 2));
       LOG.debug('==============================================================');
 
-      const result = localWorkflowStore.startWorkflow({
+      localWorkflowStore.startWorkflow({
         definitionId,
         businessKey,
         context,
       });
-
       return;
     });
 
     this.on('cancel', async (req: cds.Request) => {
-      const { businessKey, cascade } = req.data;
+      const { businessKey } = req.data;
 
       LOG.debug('==============================================================');
       LOG.debug(`Process cancel for ${businessKey} initiated`);
@@ -58,7 +57,7 @@ class ProcessService extends cds.ApplicationService {
     });
 
     this.on('suspend', async (req: cds.Request) => {
-      const { businessKey, cascade } = req.data;
+      const { businessKey } = req.data;
 
       LOG.debug('==============================================================');
       LOG.debug(`Process suspend for ${businessKey} initiated`);
@@ -89,7 +88,7 @@ class ProcessService extends cds.ApplicationService {
     });
 
     this.on('resume', async (req: cds.Request) => {
-      const { businessKey, cascade } = req.data;
+      const { businessKey } = req.data;
 
       LOG.debug('==============================================================');
       LOG.debug(`Process resume for ${businessKey} initiated`);

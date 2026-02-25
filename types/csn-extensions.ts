@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Strongly Typed CSN (Core Schema Notation) Model in TypeScript
  * Based on https://cap.cloud.sap/docs/cds/csn
