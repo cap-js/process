@@ -57,30 +57,50 @@ cds.on('serving', async (service: cds.Service) => {
 
     if (!cached) return; // Fast exit - no annotations
 
-    if (cached.hasStart) await handleProcessStart(req);
-    if (cached.hasCancel) await handleProcessCancel(req);
-    if (cached.hasSuspend) await handleProcessSuspend(req);
-    if (cached.hasResume) await handleProcessResume(req);
+    if (cached.hasStart) {
+      await handleProcessStart(req);
+    }
+    if (cached.hasCancel) {
+      await handleProcessCancel(req);
+    }
+    if (cached.hasSuspend) {
+      await handleProcessSuspend(req);
+    }
+    if (cached.hasResume) {
+      await handleProcessResume(req);
+    }
   });
 });
 
 function buildeAnnotationCache(service: cds.Service) {
   const cache = new Map<string, EntityEventCache>();
   for (const entity of Object.values(service.entities)) {
-    const events = ['UPDATE', 'CREATE', 'DELETE'];
+    // Get the actual events from annotations (could be any event, not just CRUD)
+    const startEvent = entity[PROCESS_START_ON];
+    const cancelEvent = entity[PROCESS_CANCEL_ON];
+    const suspendEvent = entity[PROCESS_SUSPEND_ON];
+    const resumeEvent = entity[PROCESS_RESUME_ON];
+
+    // Collect unique events that have annotations
+    const events = new Set<string>();
+    if (startEvent) events.add(startEvent);
+    if (cancelEvent) events.add(cancelEvent);
+    if (suspendEvent) events.add(suspendEvent);
+    if (resumeEvent) events.add(resumeEvent);
+
     for (const event of events) {
-      const hasStart = !!(entity[PROCESS_START_ON] === event && entity[PROCESS_START_ID]);
-      const hasCancel = !!(entity[PROCESS_CANCEL_ON] && entity[PROCESS_CANCEL_ON] === event);
-      const hasSuspend = !!(entity[PROCESS_SUSPEND_ON] && entity[PROCESS_SUSPEND_ON] === event);
-      const hasResume = !!(entity[PROCESS_RESUME_ON] && entity[PROCESS_RESUME_ON] === event);
-      if (hasStart || hasCancel || hasSuspend || hasResume) {
-        cache.set(`${entity.name}:${event}`, {
-          hasStart,
-          hasCancel,
-          hasSuspend,
-          hasResume,
-        });
-      }
+      const hasStart = !!(startEvent === event && entity[PROCESS_START_ID]);
+      const hasCancel = !!(cancelEvent === event);
+      const hasSuspend = !!(suspendEvent === event);
+      const hasResume = !!(resumeEvent === event);
+
+      const cacheKey = `${entity.name}:${event}`;
+      cache.set(cacheKey, {
+        hasStart,
+        hasCancel,
+        hasSuspend,
+        hasResume,
+      });
     }
   }
   return cache;
