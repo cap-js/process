@@ -1,5 +1,6 @@
 import cds from '@sap/cds';
-import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, PROCESS_SERVICE } from '../constants';
+import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX } from '../constants';
+import { emitProcessEvent, ProcessLifecyclePayload, ProcessStartPayload } from './utils';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -30,13 +31,9 @@ function registerStartHandler(service: cds.Service, definitionId: string): void 
     if (!inputs) {
       return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INPUTS' });
     }
-    const processService = await cds.connect.to(PROCESS_SERVICE);
+    const payload: ProcessStartPayload = { definitionId, context: inputs };
 
-    // revisit - check outbox
-    await processService.emit('start', {
-      definitionId,
-      context: inputs,
-    });
+    await emitProcessEvent('start', req, payload, 'PROCESS_START_FAILED', definitionId);
   });
 }
 
@@ -49,13 +46,9 @@ function registerSuspendHandler(service: cds.Service, definitionId: string): voi
       return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
     }
 
-    const processService = await cds.connect.to(PROCESS_SERVICE);
+    const payload: ProcessLifecyclePayload = { businessKey, cascade: cascade ?? false };
 
-    // revisit - check outbox
-    await processService.emit('suspend', {
-      businessKey,
-      cascade: cascade ?? false,
-    });
+    await emitProcessEvent('suspend', req, payload, 'PROCESS_SUSPEND_FAILED', businessKey);
 
     LOG.debug(`Process suspended: businessKey=${businessKey}`);
   });
@@ -70,13 +63,9 @@ function registerResumeHandler(service: cds.Service, definitionId: string): void
       return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
     }
 
-    const processService = await cds.connect.to(PROCESS_SERVICE);
+    const payload: ProcessLifecyclePayload = { businessKey, cascade: cascade ?? false };
 
-    // revisit - check outbox
-    await processService.emit('resume', {
-      businessKey,
-      cascade: cascade ?? false,
-    });
+    await emitProcessEvent('resume', req, payload, 'PROCESS_RESUME_FAILED', businessKey);
 
     LOG.debug(`Process resumed: businessKey=${businessKey}`);
   });
@@ -91,13 +80,8 @@ function registerCancelHandler(service: cds.Service, definitionId: string): void
       return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
     }
 
-    const processService = await cds.connect.to(PROCESS_SERVICE);
-
-    // revisit - check outbox
-    await processService.emit('cancel', {
-      businessKey,
-      cascade: cascade ?? false,
-    });
+    const payload: ProcessLifecyclePayload = { businessKey, cascade: cascade ?? false };
+    await emitProcessEvent('cancel', req, payload, 'PROCESS_CANCEL_FAILED', businessKey);
 
     LOG.debug(`Process cancelled: businessKey=${businessKey}`);
   });

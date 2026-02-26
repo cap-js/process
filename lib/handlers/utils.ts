@@ -335,8 +335,8 @@ export async function emitProcessEvent(
 ): Promise<void> {
   try {
     const processService = await cds.connect.to(PROCESS_SERVICE);
-    const outboxedService = cds.outboxed(processService);
-    await outboxedService.emit(event, payload);
+    const queuedProcessService = cds.queued(processService);
+    await queuedProcessService.emit(event, payload);
   } catch (error) {
     LOG.error(processEventFailedMsg, msgArgs, error);
     req.reject({ status: 500, message: processEventFailedMsg, args: [msgArgs] });
