@@ -44,6 +44,7 @@ export class CachingTokenProvider {
     try {
       return await fetchPromise;
     } finally {
+      LOG.debug(`Deleting fetch promise from pending fetches for tenant: ${cacheKey}`);
       this.pendingFetches.delete(cacheKey);
     }
   }
