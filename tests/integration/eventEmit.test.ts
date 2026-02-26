@@ -2,7 +2,7 @@ import cds from '@sap/cds';
 import * as path from 'path';
 
 const app = path.join(__dirname, '../bookshop/');
-const { test, GET, POST } = cds.test(app);
+const { test, POST } = cds.test(app);
 
 describe('ProcessService Event Emit Integration Tests', () => {
   beforeEach(async () => {

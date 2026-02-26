@@ -98,7 +98,7 @@ function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
     on: target[PROCESS_START_ON] as string,
     inputs: [],
     conditionExpr: target[PROCESS_START_IF]
-      ? ((target[PROCESS_START_IF] as any).xpr as expr)
+      ? ((target[PROCESS_START_IF] as unknown as { xpr: expr }).xpr as expr)
       : undefined,
   };
   const elementAnnotations = getElementAnnotations(target as cds.entity);
@@ -127,7 +127,7 @@ function getInputElements(
     associatedTarget,
   } of elementAnnotations) {
     switch (annotationKey) {
-      case PROCESS_INPUT:
+      case PROCESS_INPUT: {
         // For associations, recursively get input elements from the associated entity
         // If the associated entity has no annotated elements, use empty array to signal "expand all"
         let associatedInputElements: ProcessStartInput[] | undefined = undefined;
@@ -175,6 +175,7 @@ function getInputElements(
 
         inputs.push(input);
         break;
+      }
     }
   }
   return inputs;

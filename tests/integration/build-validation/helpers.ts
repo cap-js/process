@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import cds from '@sap/cds';
 import { ProcessValidationPlugin } from '../../../lib/build/plugin';
 

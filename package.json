@@ -10,7 +10,10 @@
     "build": "npm run cds-build && npm run cds-typer",
     "cds-build": "cds-tsx build",
     "cds-typer": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models",
-    "watch": "cds-tsx watch"
+    "watch": "cds-tsx watch",
+    "lint": "npx eslint .",
+    "prettier": "npx -y prettier@3 --write .",
+    "prettier:check": "npx -y prettier@3 --check ."
   },
   "keywords": [],
   "author": "",
@@ -66,6 +69,7 @@
     "jest": "^30.2.0",
     "ts-jest": "^29.4.6",
     "tsx": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^8.56.1"
   }
 }
