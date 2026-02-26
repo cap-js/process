@@ -1,4 +1,4 @@
-import cds, { Results, Target } from '@sap/cds';
+import cds, { Results } from '@sap/cds';
 import {
   addDeletedEntityToRequest,
   handleProcessCancel,
@@ -16,6 +16,13 @@ import {
 } from './lib/index';
 import { importProcess } from './lib/processImport';
 
+interface EntityEventCache {
+  hasStart: boolean;
+  hasCancel: boolean;
+  hasSuspend: boolean;
+  hasResume: boolean;
+}
+
 // Register build plugin for annotation validation during cds build
 cds.build?.register?.('process-validation', ProcessValidationPlugin);
 
@@ -30,57 +37,73 @@ cds.import.from.process = importProcess;
 cds.on('serving', async (service: cds.Service) => {
   if (service instanceof cds.ApplicationService == false) return;
 
-  service.before('DELETE', async (req: cds.Request) => {
-    const target = req.target as Target;
+  // cache for entities
+  const annotationCache = buildAnnotationCache(service);
 
-    if (
-      areCancelAnnotationsDefined(target, req.event) ||
-      areSuspendAnnotationsDefined(target, req.event) ||
-      areStartAnnotationsDefined(target, req.event) ||
-      areResumeAnnotationsDefined(target, req.event)
-    ) {
-      await addDeletedEntityToRequest(req, areStartAnnotationsDefined(target, req.event));
+  service.before('DELETE', async (req: cds.Request) => {
+    const cacheKey = `${req.target.name}:${req.event}`;
+    const cached = annotationCache.get(cacheKey);
+
+    if (!cached) return; // Fast exit - no annotations
+    if (cached.hasCancel || cached.hasSuspend || cached.hasStart || cached.hasResume) {
+      await addDeletedEntityToRequest(req, cached.hasStart);
     }
   });
 
   service.after('*', async (each: Results, req: cds.Request) => {
-    const target = req.target as Target;
-    if (!target) return;
+    if (!req.target) return;
+    const cacheKey = `${req.target.name}:${req.event}`;
+    const cached = annotationCache.get(cacheKey);
 
-    if (areStartAnnotationsDefined(target, req.event)) {
+    if (!cached) return; // Fast exit - no annotations
+
+    if (cached.hasStart) {
       await handleProcessStart(req);
     }
-    if (areCancelAnnotationsDefined(target, req.event)) {
+    if (cached.hasCancel) {
       await handleProcessCancel(req);
     }
-    if (areSuspendAnnotationsDefined(target, req.event)) {
+    if (cached.hasSuspend) {
       await handleProcessSuspend(req);
     }
-
-    if (areResumeAnnotationsDefined(target, req.event)) {
+    if (cached.hasResume) {
       await handleProcessResume(req);
     }
   });
 });
 
-function areCancelAnnotationsDefined(target: Target, event: string): boolean {
-  return !!(target[PROCESS_CANCEL_ON] && target[PROCESS_CANCEL_ON] === event);
-}
+function buildAnnotationCache(service: cds.Service) {
+  const cache = new Map<string, EntityEventCache>();
+  for (const entity of Object.values(service.entities)) {
+    // Get the actual events from annotations (could be any event, not just CRUD)
+    const startEvent = entity[PROCESS_START_ON];
+    const cancelEvent = entity[PROCESS_CANCEL_ON];
+    const suspendEvent = entity[PROCESS_SUSPEND_ON];
+    const resumeEvent = entity[PROCESS_RESUME_ON];
 
-function areStartAnnotationsDefined(target: Target, event: string): boolean {
-  return !!(
-    target[PROCESS_START_ID] &&
-    target[PROCESS_START_ON] &&
-    target[PROCESS_START_ON] === event
-  );
-}
+    // Collect unique events that have annotations
+    const events = new Set<string>();
+    if (startEvent) events.add(startEvent);
+    if (cancelEvent) events.add(cancelEvent);
+    if (suspendEvent) events.add(suspendEvent);
+    if (resumeEvent) events.add(resumeEvent);
 
-function areSuspendAnnotationsDefined(target: Target, event: string): boolean {
-  return !!(target[PROCESS_SUSPEND_ON] && target[PROCESS_SUSPEND_ON] === event);
-}
+    for (const event of events) {
+      const hasStart = !!(startEvent === event && entity[PROCESS_START_ID]);
+      const hasCancel = !!(cancelEvent === event);
+      const hasSuspend = !!(suspendEvent === event);
+      const hasResume = !!(resumeEvent === event);
 
-function areResumeAnnotationsDefined(target: Target, event: string): boolean {
-  return !!(target[PROCESS_RESUME_ON] && target[PROCESS_RESUME_ON] === event);
+      const cacheKey = `${entity.name}:${event}`;
+      cache.set(cacheKey, {
+        hasStart,
+        hasCancel,
+        hasSuspend,
+        hasResume,
+      });
+    }
+  }
+  return cache;
 }
 
 cds.on('served', async (services) => {
