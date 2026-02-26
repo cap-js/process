@@ -13,8 +13,8 @@ export function registerProcessServiceHandlers(service: cds.Service): void {
     return;
   }
 
-  LOG.info(`Registering handlers for process service: ${service.name}`);
-  LOG.info(`  ${PROCESS_PREFIX}: ${definitionId}`);
+  LOG.debug(`Registering handlers for process service: ${service.name}`);
+  LOG.debug(`  ${PROCESS_PREFIX}: ${definitionId}`);
 
   registerStartHandler(service, definitionId);
   registerSuspendHandler(service, definitionId);

@@ -62,12 +62,12 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
   const [projectId, processId] = splitAtLastDot(processName);
   const apiClient = await createApiClient();
 
-  LOG.info('Retrieving process header...');
+  LOG.debug('Retrieving process header...');
   const processHeader = await apiClient.fetchProcessHeader(projectId, processId);
   processHeader.projectId = projectId;
 
   if (processHeader.dependencies?.length) {
-    LOG.info(`Fetching ${processHeader.dependencies.length} dependent data types...`);
+    LOG.debug(`Fetching ${processHeader.dependencies.length} dependent data types...`);
     processHeader.dataTypes = await apiClient.fetchAllDataTypes(
       projectId,
       processHeader.dependencies,
@@ -96,7 +96,7 @@ async function createApiClient(): Promise<IProcessApiClient> {
     throw new Error(cds.i18n.messages.at('IMPORT_NO_API_URL'));
   }
 
-  LOG.info('Creating API client...');
+  LOG.debug('Creating API client...');
   return createProcessApiClient(apiUrl, async () => {
     const tokenInfo = await getServiceToken(PROCESS_SERVICE);
     return tokenInfo.jwt;
@@ -148,7 +148,7 @@ function loadProcessHeader(filePath: string): ProcessHeader {
 
 function buildCsnModel(process: ProcessHeader): csn.CsnModel {
   const serviceName = `${process.projectId}.${capitalize(process.identifier)}Service`;
-  LOG.info(`Service name: ${serviceName}`);
+  LOG.debug(`Service name: ${serviceName}`);
 
   const definitions: Record<string, csn.CsnDefinition> = {};
 
@@ -308,13 +308,22 @@ function buildTypeFromSchema(
   const required = new Set(schema.required ?? []);
   const elements: Record<string, csn.CsnElement> = {};
 
-  for (const [propName, propSchema] of Object.entries(schema.properties ?? {})) {
-    const safeName = sanitizeName(propName);
-    elements[safeName] = mapSchemaPropertyToElement(safeName, propSchema, required.has(propName), {
-      parentTypeName: typeName,
-      serviceName,
-      definitions,
-    });
+  const properties = schema.properties ?? {};
+  for (const propName in properties) {
+    if (Object.hasOwn(properties, propName)) {
+      const propSchema = properties[propName];
+      const safeName = sanitizeName(propName);
+      elements[safeName] = mapSchemaPropertyToElement(
+        safeName,
+        propSchema,
+        required.has(propName),
+        {
+          parentTypeName: typeName,
+          serviceName,
+          definitions,
+        },
+      );
+    }
   }
 
   return { kind: 'type', name: typeName, elements };
@@ -406,16 +415,18 @@ function buildArrayItemsSpec(itemsSchema: JsonSchema, ctx: SchemaMapContext): cs
     const required = new Set(itemsSchema.required ?? []);
     const elements: Record<string, csn.CsnElement> = {};
 
-    for (const [name, schema] of Object.entries(itemsSchema.properties ?? {}) as [
-      string,
-      JsonSchema,
-    ][]) {
-      const safeName = sanitizeName(name);
-      elements[safeName] = mapSchemaPropertyToElement(safeName, schema, required.has(name), {
-        parentTypeName: fqn(ctx.serviceName, `${baseName(ctx.parentTypeName)}_Item`),
-        serviceName: ctx.serviceName,
-        definitions: ctx.definitions,
-      });
+    const properties = itemsSchema.properties ?? {};
+
+    for (const name in properties) {
+      if (Object.hasOwn(properties, name)) {
+        const schema = properties[name];
+        const safeName = sanitizeName(name);
+        elements[safeName] = mapSchemaPropertyToElement(safeName, schema, required.has(name), {
+          parentTypeName: fqn(ctx.serviceName, `${baseName(ctx.parentTypeName)}_Item`),
+          serviceName: ctx.serviceName,
+          definitions: ctx.definitions,
+        });
+      }
     }
     return { elements };
   }
@@ -504,7 +515,7 @@ async function addServiceToPackageJson(serviceName: string, modelPath: string): 
     pkg.cds.requires[serviceName] = { kind: 'external', model: modelPath };
 
     await fs.promises.writeFile(packagePath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-    LOG.info(`Added ${serviceName} to package.json`);
+    LOG.debug(`Added ${serviceName} to package.json`);
   } catch (error) {
     LOG.warn(`Could not update package.json: ${error}`);
   }

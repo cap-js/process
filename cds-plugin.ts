@@ -39,7 +39,7 @@ cds.on('serving', async (service: cds.Service) => {
       areStartAnnotationsDefined(target, req.event) ||
       areResumeAnnotationsDefined(target, req.event)
     ) {
-      await addDeletedEntityToRequest(target, req, areStartAnnotationsDefined(target, req.event));
+      await addDeletedEntityToRequest(req, areStartAnnotationsDefined(target, req.event));
     }
   });
 
