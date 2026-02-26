@@ -1,4 +1,4 @@
-import cds, { Results, Target } from '@sap/cds';
+import cds, { Results } from '@sap/cds';
 import {
   addDeletedEntityToRequest,
   handleProcessCancel,
@@ -38,7 +38,7 @@ cds.on('serving', async (service: cds.Service) => {
   if (service instanceof cds.ApplicationService == false) return;
 
   // cache for entities
-  const annotationCache = buildeAnnotationCache(service);
+  const annotationCache = buildAnnotationCache(service);
 
   service.before('DELETE', async (req: cds.Request) => {
     const cacheKey = `${req.target.name}:${req.event}`;
@@ -72,7 +72,7 @@ cds.on('serving', async (service: cds.Service) => {
   });
 });
 
-function buildeAnnotationCache(service: cds.Service) {
+function buildAnnotationCache(service: cds.Service) {
   const cache = new Map<string, EntityEventCache>();
   for (const entity of Object.values(service.entities)) {
     // Get the actual events from annotations (could be any event, not just CRUD)
