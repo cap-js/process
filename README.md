@@ -124,24 +124,24 @@ Import your SBPA process directly from the API:
 **Note:** For remote imports, you must have ProcessService credentials bound. Run with `cds bind --exec` if needed:
 
 ```bash
-cds bind --exec -- cds-tsx import --from process --name eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler
+cds bind --exec -- cds-tsx import --from process --name eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler --no-copy
 ```
 
-If you want to have it as a cds instead of a csn you can add --as cds at the end. If you want to reimport the process use the --force flag at the end.
+If you want to have it as a cds instead of a csn you can add --as cds at the end. If you want to reimport the process use the --force flag at the end. The flag `no-copy` is very important, as otherwise the process will be saved locally on both `./workflows`and `./srv/external` folder which would result in cds runtime issues, as the json is not a valid csn model and cannot be stored in the `.srv/external` directory.
 
 ### From Local JSON File
 
 If you already have a process definition JSON file (e.g., exported or previously fetched), you can generate the CSN model directly from it without needing credentials:
 
 ```bash
-cds import --from process ./srv/external/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler.json
+cds import --from process ./workflows/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler.json --no-copy
 ```
 
 ### What Gets Generated
 
 This will generate:
 
-- A CDS service definition in `./srv/external/`
+- A CDS service definition in `./workflows/`
 - Types via `cds-typer` for full TypeScript support
 - Generic handlers for the actions and functions in the imported service
 

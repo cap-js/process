@@ -75,7 +75,7 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
     processHeader.dataTypes.forEach((dt) => dataTypeCache.set(dt.uid, dt));
   }
 
-  const outputPath = path.join(cds.root, 'srv', 'external', `${processName}.json`);
+  const outputPath = path.join(cds.root, 'workflows', `${processName}.json`);
   await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
   await fs.promises.writeFile(outputPath, JSON.stringify(processHeader, null, 2), 'utf8');
 
@@ -253,7 +253,6 @@ function addProcessActions(
   const inputsType = fqn(serviceName, 'ProcessInputs');
   const outputsType = fqn(serviceName, 'ProcessOutputs');
   const attributesType = fqn(serviceName, 'ProcessAttributes');
-  const instanceType = fqn(serviceName, 'ProcessInstance');
 
   // Start action
   definitions[fqn(serviceName, 'start')] = {
@@ -262,7 +261,6 @@ function addProcessActions(
     params: {
       inputs: { type: inputsType, notNull: true },
     },
-    returns: { type: instanceType },
   };
 
   // Query functions
