@@ -105,36 +105,55 @@ export async function fetchAllDataTypes(
 ): Promise<DataType[]> {
   const result: DataType[] = [];
   const fetched = new Set<string>();
-  const queue = [...dependencies];
 
-  while (queue.length > 0) {
-    const dep = queue.shift()!;
-
-    if (fetched.has(dep.artifactUid)) continue;
-    if (dep.type === 'content') {
-      LOG.debug(`Skipping content dependency: ${dep.artifactUid}`);
-      continue;
+  // Filter initial batch: skip already fetched and content dependencies
+  let currentBatch = dependencies.filter((d) => {
+    if (d.type === 'content') {
+      LOG.debug(`Skipping content dependency: ${d.artifactUid}`);
+      return false;
     }
+    return !fetched.has(d.artifactUid);
+  });
 
-    fetched.add(dep.artifactUid);
+  while (currentBatch.length > 0) {
+    // Mark all in current batch as fetched to avoid duplicates
+    currentBatch.forEach((d) => fetched.add(d.artifactUid));
 
-    try {
-      // will be handled in separate BLI
-      // eslint-disable-next-line no-await-in-loop
-      const artifact = await fetchArtifact(serviceUrl, jwt, projectId, dep.artifactUid);
+    // Fetch all artifacts in this batch in parallel
+    const fetchPromises = currentBatch.map((dep) =>
+      fetchArtifact(serviceUrl, jwt, projectId, dep.artifactUid)
+        .then((artifact) => ({ status: 'fulfilled' as const, artifact, dep }))
+        .catch((error) => ({ status: 'rejected' as const, error, dep })),
+    );
 
+    // eslint-disable-next-line no-await-in-loop -- Intentional: must await batch to collect nested dependencies for next iteration
+    const responses = await Promise.all(fetchPromises);
+
+    // Collect next batch of dependencies from successful fetches
+    const nextBatch: Dependency[] = [];
+
+    for (const response of responses) {
+      if (response.status === 'rejected') {
+        LOG.warn(`Could not fetch artifact ${response.dep.artifactUid}: ${response.error}`);
+        continue;
+      }
+
+      const artifact = response.artifact;
       if (artifact.type === 'datatype' || artifact.type === 'bpi.datatype') {
         LOG.debug(`Fetched data type: ${artifact.name}`);
         result.push(artifact);
 
-        // Queue nested dependencies
+        // Collect nested dependencies for next batch
         artifact.dependencies
-          ?.filter((d) => !fetched.has(d.artifactUid))
-          .forEach((d) => queue.push(d));
+          ?.filter((d) => !fetched.has(d.artifactUid) && d.type !== 'content')
+          .forEach((d) => nextBatch.push(d));
       }
-    } catch (error) {
-      LOG.warn(`Could not fetch artifact ${dep.artifactUid}: ${error}`);
     }
+
+    // Deduplicate next batch and prepare for next iteration
+    currentBatch = nextBatch.filter(
+      (d, i, arr) => arr.findIndex((x) => x.artifactUid === d.artifactUid) === i,
+    );
   }
 
   return result;
