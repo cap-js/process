@@ -3,7 +3,7 @@
 import cds from '@sap/cds';
 
 export { getServiceCredentials } from './credentials';
-export { TokenCache } from './token-cache';
+export { CachingTokenProvider } from './token-cache';
 export { ITokenProvider, TokenResult, createXsuaaTokenProvider } from './token-provider';
 
 import { getServiceCredentials } from './credentials';
