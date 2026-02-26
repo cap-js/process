@@ -253,7 +253,6 @@ function addProcessActions(
   const inputsType = fqn(serviceName, 'ProcessInputs');
   const outputsType = fqn(serviceName, 'ProcessOutputs');
   const attributesType = fqn(serviceName, 'ProcessAttributes');
-  const instanceType = fqn(serviceName, 'ProcessInstance');
 
   // Start action
   definitions[fqn(serviceName, 'start')] = {
