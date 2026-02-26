@@ -1,6 +1,6 @@
 import cds from '@sap/cds';
 import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
-import { PROCESS_INPUT } from '../constants';
+import { PROCESS_INPUT, PROCESS_PREFIX } from '../constants';
 import { ProcessValidationPlugin } from './plugin';
 import { ERROR_CYCLE_DETECTED } from './constants';
 
@@ -318,7 +318,7 @@ export function getProcessDefinitions(
   for (const name in allDefinitions) {
     if (Object.hasOwn(allDefinitions, name)) {
       const def = allDefinitions[name];
-      const processId = def['@build.process'];
+      const processId = def[PROCESS_PREFIX];
       if (processId) {
         def.name = name;
         processMap.set(processId, def);

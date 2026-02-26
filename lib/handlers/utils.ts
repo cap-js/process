@@ -199,10 +199,10 @@ function buildWhereClause(
  * Fetches and attaches entity data to the request for DELETE operations
  */
 export async function addDeletedEntityToRequest(
-  target: Target,
   req: cds.Request,
   areStartAnnotationsDefined: boolean,
 ): Promise<void> {
+  const target = req.target as Target;
   let columns: column_expr[] | string[] = [];
   if (areStartAnnotationsDefined) {
     columns = await getColumnsForProcessStart(target, req);
