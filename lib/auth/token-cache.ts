@@ -51,6 +51,7 @@ export class CachingTokenProvider {
   private getCached(key: string): string | undefined {
     const entry = this.cache.get(key);
     if (!entry) {
+      LOG.debug(`No token found for ${key}.`);
       return undefined;
     }
 
@@ -60,6 +61,7 @@ export class CachingTokenProvider {
       return undefined;
     }
 
+    LOG.debug(`Token retrieved for key: ${key}.`);
     return entry.token;
   }
 
