@@ -74,4 +74,48 @@ describe('ProcessService Event Emit Integration Tests', () => {
       expect(response.status).toBe(200);
     });
   });
+
+  describe('Get Shipment Attributes', () => {
+    it('should get attributes for a shipment workflow', async () => {
+      const createResponse = await POST('/odata/v4/shipment/Shipments', {
+        status: 'PENDING',
+      });
+
+      const shipmentID = createResponse.data.ID;
+
+      // Start the shipment to create a workflow instance
+      await POST('/odata/v4/shipment/startShipment', {
+        shipmentID: shipmentID,
+      });
+
+      const response = await POST('/odata/v4/shipment/getShipmentAttributes', {
+        shipmentID: shipmentID,
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBeDefined();
+    });
+  });
+
+  describe('Get Shipment Outputs', () => {
+    it('should get outputs for a shipment workflow', async () => {
+      const createResponse = await POST('/odata/v4/shipment/Shipments', {
+        status: 'PENDING',
+      });
+
+      const shipmentID = createResponse.data.ID;
+
+      // Start the shipment to create a workflow instance
+      await POST('/odata/v4/shipment/startShipment', {
+        shipmentID: shipmentID,
+      });
+
+      const response = await POST('/odata/v4/shipment/getShipmentOutputs', {
+        shipmentID: shipmentID,
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBeDefined();
+    });
+  });
 });
