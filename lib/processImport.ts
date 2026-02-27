@@ -297,7 +297,7 @@ function addProcessActions(
     params: {
       businessKey: { type: csn.CdsBuiltinType.String, notNull: true },
     },
-    returns: { type: instancesType},
+    returns: { type: instancesType },
   };
 
   // Lifecycle actions

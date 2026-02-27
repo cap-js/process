@@ -276,7 +276,7 @@ export async function getOutputs(
       return {};
     }
 
-    return  JSON.parse(responseText);
+    return JSON.parse(responseText);
   } catch (err) {
     LOG.error(`Failed to get outputs for workflow instance ${instanceId}. Error: ${err}`);
     throw new Error(

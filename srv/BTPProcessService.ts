@@ -98,19 +98,16 @@ class ProcessService extends cds.ApplicationService {
         return request.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
       }
 
-      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
-        businessKey,
-        [
-          WorkflowStatus.RUNNING,
-          WorkflowStatus.SUSPENDED,
-          WorkflowStatus.COMPLETED,
-          WorkflowStatus.ERRONEOUS,
-        ],
-      );
+      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
+        WorkflowStatus.RUNNING,
+        WorkflowStatus.SUSPENDED,
+        WorkflowStatus.COMPLETED,
+        WorkflowStatus.ERRONEOUS,
+      ]);
 
       return instances;
     });
-    
+
     this.on('getAttributes', async (request: cds.Request) => {
       const { processInstanceId } = request.data;
 
