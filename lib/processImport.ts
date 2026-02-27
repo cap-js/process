@@ -237,6 +237,7 @@ function addProcessTypes(
       definitionId: { type: csn.CdsBuiltinType.String },
       definitionVersion: { type: csn.CdsBuiltinType.String },
       id: { type: csn.CdsBuiltinType.String },
+      status: { type: csn.CdsBuiltinType.String },
       startedAt: { type: csn.CdsBuiltinType.String },
       startedBy: { type: csn.CdsBuiltinType.String },
     },

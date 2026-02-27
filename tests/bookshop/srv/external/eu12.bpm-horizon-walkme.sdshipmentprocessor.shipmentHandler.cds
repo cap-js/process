@@ -48,6 +48,7 @@ service ShipmentHandlerService {
     definitionId : String;
     definitionVersion : String;
     id : String;
+    status: String;
     startedAt : String;
     startedBy : String;
   };

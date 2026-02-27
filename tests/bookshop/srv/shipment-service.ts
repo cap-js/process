@@ -19,7 +19,7 @@ class ShipmentService extends cds.ApplicationService {
               identifier: 'item_1',
               title: 'Laptop',
               quantity: 1,
-              price: 1200.0,
+              price: 80.0,
             },
           ],
         },
@@ -31,7 +31,6 @@ class ShipmentService extends cds.ApplicationService {
     // Example: Update shipment status (suspend/resume based on newStatus)
     this.on('updateShipmentStatus', async (req: cds.Request) => {
       const processService = await cds.connect.to(ShipmentHandlerService);
-
       const { shipmentID, newStatus } = req.data;
 
       if (newStatus === 'SUSPENDED') {
@@ -81,12 +80,13 @@ class ShipmentService extends cds.ApplicationService {
 
       // Get attributes for each workflow instance
       for (const instance of instances) {
-        if (!instance.id) continue;
-        const attributes = await processService.getAttributes(instance.id);
-        allAttributes.push({
-          workflowId: instance.id,
-          attributes: attributes,
-        });
+        if (instance.id) {
+          const attributes = await processService.getAttributes(instance.id);
+          allAttributes.push({
+            workflowId: instance.id,
+            attributes: attributes,
+          });
+        }
       }
 
       return JSON.stringify(allAttributes, null, 2);
@@ -108,12 +108,13 @@ class ShipmentService extends cds.ApplicationService {
 
       // Get outputs for each workflow instance
       for (const instance of instances) {
-        if (!instance.id) continue;
-        const outputs = await processService.getOutputs(instance.id);
-        allOutputs.push({
-          workflowId: instance.id,
-          outputs: outputs,
-        });
+        if (instance.id && instance.status == 'COMPLETED') {
+          const outputs = await processService.getOutputs(instance.id);
+          allOutputs.push({
+            workflowId: instance.id,
+            outputs: outputs,
+          });
+        }
       }
 
       return JSON.stringify(allOutputs, null, 2);
