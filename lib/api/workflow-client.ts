@@ -234,7 +234,6 @@ export async function getAttributes(
       LOG.debug(`No attributes available for workflow instance ${instanceId}`);
       return [];
     }
-    const test = JSON.parse(responseText);
     return JSON.parse(responseText);
   } catch (err) {
     LOG.error(`Failed to get attributes for workflow instance ${instanceId}. Error: ${err}`);
