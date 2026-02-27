@@ -4,6 +4,7 @@ import {
   emitProcessEvent,
   EntityRow,
   getBusinessKeyOrReject,
+  getEntityDataFromRequest,
   isDeleteWithoutProcess,
   ProcessDeleteRequest,
   ProcessLifecyclePayload,
@@ -53,7 +54,8 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
     if (isDeleteWithoutProcess(req, config.logMessages.NOT_TRIGGERED)) return;
 
     const target = req.target as Target;
-    const data = ((req as ProcessDeleteRequest)._Process ?? req.data) as EntityRow;
+    const data = ((req as ProcessDeleteRequest)._Process ??
+      getEntityDataFromRequest(req)) as EntityRow;
 
     // Initialize specifications from annotations
     const specs = initSpecs(target, config.annotations);

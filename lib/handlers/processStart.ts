@@ -5,6 +5,7 @@ import {
   EntityRow,
   getBusinessKeyOrReject,
   getElementAnnotations,
+  getEntityDataFromRequest,
   isDeleteWithoutProcess,
   ProcessDeleteRequest,
   resolveEntityRowOrReject,
@@ -51,7 +52,8 @@ export async function handleProcessStart(req: cds.Request): Promise<void> {
   if (isDeleteWithoutProcess(req, LOG_MESSAGES.PROCESS_NOT_STARTED)) return;
 
   const target = req.target as Target;
-  const data = ((req as ProcessDeleteRequest)._Process ?? req.data) as EntityRow;
+  const data = ((req as ProcessDeleteRequest)._Process ??
+    getEntityDataFromRequest(req)) as EntityRow;
 
   const startSpecs = initStartSpecs(target, req);
 

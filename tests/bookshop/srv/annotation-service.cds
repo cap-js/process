@@ -860,4 +860,117 @@ service AnnotationService {
                    @build.process.input;
         cycleAID : UUID @build.process.input;
   }
+
+  // ============================================
+  // CUSTOM EVENT / BOUND ACTION TESTS
+  // Testing process annotations with custom events (bound actions)
+  // ============================================
+
+  // --------------------------------------------
+  // Start process on bound action (no condition)
+  // --------------------------------------------
+  @build.process.start: {
+    id: 'startOnActionProcess',
+    on: 'triggerStart',
+  }
+  entity StartOnAction as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerStart() returns StartOnAction;
+  }
+
+  // --------------------------------------------
+  // Start process on bound action with condition
+  // --------------------------------------------
+  @build.process.start: {
+    id: 'startOnActionWhenProcess',
+    on: 'triggerStartWhen',
+    if: (mileage > 500)
+  }
+  entity StartOnActionWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerStartWhen() returns StartOnActionWhen;
+  }
+
+  // --------------------------------------------
+  // Cancel process on bound action (no condition)
+  // --------------------------------------------
+  @build.process.cancel: {
+    on: 'triggerCancel',
+    cascade: false,
+  }
+  entity CancelOnAction as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerCancel() returns CancelOnAction;
+  }
+
+  // --------------------------------------------
+  // Cancel process on bound action with condition
+  // --------------------------------------------
+  @build.process.cancel: {
+    on: 'triggerCancelWhen',
+    cascade: true,
+    if: (mileage > 500)
+  }
+  entity CancelOnActionWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerCancelWhen() returns CancelOnActionWhen;
+  }
+
+  // --------------------------------------------
+  // Suspend process on bound action (no condition)
+  // --------------------------------------------
+  @build.process.suspend: {
+    on: 'triggerSuspend',
+    cascade: false,
+  }
+  entity SuspendOnAction as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerSuspend() returns SuspendOnAction;
+  }
+
+  // --------------------------------------------
+  // Suspend process on bound action with condition
+  // --------------------------------------------
+  @build.process.suspend: {
+    on: 'triggerSuspendWhen',
+    cascade: true,
+    if: (mileage > 500)
+  }
+  entity SuspendOnActionWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerSuspendWhen() returns SuspendOnActionWhen;
+  }
+
+  // --------------------------------------------
+  // Resume process on bound action (no condition)
+  // --------------------------------------------
+  @build.process.resume: {
+    on: 'triggerResume',
+    cascade: false,
+  }
+  entity ResumeOnAction as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerResume() returns ResumeOnAction;
+  }
+
+  // --------------------------------------------
+  // Resume process on bound action with condition
+  // --------------------------------------------
+  @build.process.resume: {
+    on: 'triggerResumeWhen',
+    cascade: true,
+    if: (mileage > 500)
+  }
+  entity ResumeOnActionWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerResumeWhen() returns ResumeOnActionWhen;
+  }
 }

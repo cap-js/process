@@ -110,6 +110,26 @@ export function concatenateBusinessKey(target: cds.entity, row: EntityRow): stri
 }
 
 /**
+ * Extracts entity data from a CDS request.
+ * For CRUD operations, returns req.data directly.
+ * For bound actions, merges req.params (entity keys) with req.data (action inputs).
+ */
+export function getEntityDataFromRequest(req: cds.Request): EntityRow {
+  const data = (req.data as EntityRow) ?? {};
+  if (req.params && Array.isArray(req.params) && req.params.length > 0) {
+    const paramsData = req.params.reduce((acc: EntityRow, param) => {
+      if (typeof param === 'object' && param !== null) {
+        return { ...acc, ...param };
+      }
+      return acc;
+    }, {});
+    return { ...data, ...paramsData };
+  }
+
+  return data;
+}
+
+/**
  * Extracts element annotations that start with BUILD_PREFIX from a CDS entity
  */
 export function getElementAnnotations(entity: cds.entity): ElementAnnotation[] {
