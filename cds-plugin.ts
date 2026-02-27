@@ -39,7 +39,6 @@ cds.import.from.process = importProcess;
 cds.on('serving', async (service: cds.Service) => {
   if (service instanceof cds.ApplicationService == false) return;
 
-  // cache for entities
   const annotationCache = buildAnnotationCache(service);
 
   service.before('DELETE', async (req: cds.Request) => {
@@ -86,13 +85,11 @@ function expandEvent(event: string | undefined, entity: cds.entity): string[] {
 function buildAnnotationCache(service: cds.Service) {
   const cache = new Map<string, EntityEventCache>();
   for (const entity of Object.values(service.entities)) {
-    // Get the actual events from annotations (could be any event, not just CRUD)
     const startEvent = entity[PROCESS_START_ON];
     const cancelEvent = entity[PROCESS_CANCEL_ON];
     const suspendEvent = entity[PROCESS_SUSPEND_ON];
     const resumeEvent = entity[PROCESS_RESUME_ON];
 
-    // Expand '*' to all CUD events + bound actions, collect unique events
     const events = new Set<string>();
     for (const ev of expandEvent(startEvent, entity)) events.add(ev);
     for (const ev of expandEvent(cancelEvent, entity)) events.add(ev);
@@ -100,7 +97,6 @@ function buildAnnotationCache(service: cds.Service) {
     for (const ev of expandEvent(resumeEvent, entity)) events.add(ev);
 
     for (const event of events) {
-      // Check if annotation matches this event (direct match OR wildcard)
       const matchesEvent = (annotationEvent: string | undefined) =>
         annotationEvent === event || annotationEvent === '*';
 

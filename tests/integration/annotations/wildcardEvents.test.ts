@@ -498,12 +498,9 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
       foundMessages = []; // Reset messages after create
 
       // Update the entity to meet condition
-      const updateResponse = await PATCH(
-        `/odata/v4/annotation/CancelOnWildcardWhen('${car.ID}')`,
-        {
-          mileage: 600, // Now mileage > 500
-        },
-      );
+      const updateResponse = await PATCH(`/odata/v4/annotation/CancelOnWildcardWhen('${car.ID}')`, {
+        mileage: 600, // Now mileage > 500
+      });
       expect(updateResponse.status).toBe(200);
 
       expect(foundMessages.length).toBe(1);
@@ -523,12 +520,9 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
       foundMessages = []; // Reset messages after create
 
       // Update the entity but keep mileage low
-      const updateResponse = await PATCH(
-        `/odata/v4/annotation/CancelOnWildcardWhen('${car.ID}')`,
-        {
-          mileage: 450, // Still mileage <= 500
-        },
-      );
+      const updateResponse = await PATCH(`/odata/v4/annotation/CancelOnWildcardWhen('${car.ID}')`, {
+        mileage: 450, // Still mileage <= 500
+      });
       expect(updateResponse.status).toBe(200);
 
       expect(foundMessages.length).toBe(0);
