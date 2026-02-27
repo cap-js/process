@@ -16,6 +16,8 @@ import {
 } from './lib/index';
 import { importProcess } from './lib/processImport';
 
+const CUD_EVENTS = ['CREATE', 'UPDATE', 'DELETE'];
+
 interface EntityEventCache {
   hasStart: boolean;
   hasCancel: boolean;
@@ -72,6 +74,15 @@ cds.on('serving', async (service: cds.Service) => {
   });
 });
 
+function expandEvent(event: string | undefined, entity: cds.entity): string[] {
+  if (!event) return [];
+  if (event === '*') {
+    const boundActions = entity.actions ? Object.keys(entity.actions) : [];
+    return [...CUD_EVENTS, ...boundActions];
+  }
+  return [event];
+}
+
 function buildAnnotationCache(service: cds.Service) {
   const cache = new Map<string, EntityEventCache>();
   for (const entity of Object.values(service.entities)) {
@@ -81,18 +92,22 @@ function buildAnnotationCache(service: cds.Service) {
     const suspendEvent = entity[PROCESS_SUSPEND_ON];
     const resumeEvent = entity[PROCESS_RESUME_ON];
 
-    // Collect unique events that have annotations
+    // Expand '*' to all CUD events + bound actions, collect unique events
     const events = new Set<string>();
-    if (startEvent) events.add(startEvent);
-    if (cancelEvent) events.add(cancelEvent);
-    if (suspendEvent) events.add(suspendEvent);
-    if (resumeEvent) events.add(resumeEvent);
+    for (const ev of expandEvent(startEvent, entity)) events.add(ev);
+    for (const ev of expandEvent(cancelEvent, entity)) events.add(ev);
+    for (const ev of expandEvent(suspendEvent, entity)) events.add(ev);
+    for (const ev of expandEvent(resumeEvent, entity)) events.add(ev);
 
     for (const event of events) {
-      const hasStart = !!(startEvent === event && entity[PROCESS_START_ID]);
-      const hasCancel = !!(cancelEvent === event);
-      const hasSuspend = !!(suspendEvent === event);
-      const hasResume = !!(resumeEvent === event);
+      // Check if annotation matches this event (direct match OR wildcard)
+      const matchesEvent = (annotationEvent: string | undefined) =>
+        annotationEvent === event || annotationEvent === '*';
+
+      const hasStart = !!(matchesEvent(startEvent) && entity[PROCESS_START_ID]);
+      const hasCancel = !!matchesEvent(cancelEvent);
+      const hasSuspend = !!matchesEvent(suspendEvent);
+      const hasResume = !!matchesEvent(resumeEvent);
 
       const cacheKey = `${entity.name}:${event}`;
       cache.set(cacheKey, {
