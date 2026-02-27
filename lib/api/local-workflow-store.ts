@@ -8,7 +8,7 @@ import {
 
 export interface LocalWorkflowInstance extends WorkflowInstance {
   context: Record<string, unknown>;
-  attributes: Record<string, unknown>;
+  attributes: Record<string, string>[];
   outputs: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
@@ -30,13 +30,22 @@ export class LocalWorkflowStore {
       id: crypto.randomUUID(),
       definitionId,
       businessKey,
-      status: WorkflowStatus.RUNNING,
+      status: WorkflowStatus.COMPLETED,
       context,
-      attributes: {
-        priority: 'high',
-        department: 'logistics',
-        totalAmmount: 123.45,
-      },
+      attributes: [
+        {
+          id: 'ExampleCustomAttribute',
+          label: 'Example of custom attribute',
+          value: 'PRO_247',
+          type: 'string',
+        },
+        {
+          id: 'Cur',
+          label: 'Currency',
+          value: 'EUR',
+          type: 'string',
+        },
+      ],
       outputs: {
         processedBy: 'system-admin',
         completionStatus: 'success',
@@ -94,7 +103,7 @@ export class LocalWorkflowStore {
     return instanceIds.map((id) => this.updateStatus(id, status));
   }
 
-  getAttributes(instanceId: string): Record<string, unknown> | undefined {
+  getAttributes(instanceId: string): Record<string, string>[] | undefined {
     const instance = this.instances.find((i) => i.id === instanceId);
     return instance?.attributes;
   }
