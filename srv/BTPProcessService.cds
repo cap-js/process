@@ -24,4 +24,15 @@ service ProcessService {
     cascade                : Boolean
   }
 
+  function getAttributes(
+    @mandatory processInstanceId : String(256)
+  )returns AnyType;
+
+  function getOutputs(
+    @mandatory processInstanceId : String(256)
+  )returns AnyType;
+
+  function getInstancesByBusinessKey(
+    @mandatory businessKey : String(256)
+  )returns AnyType;
 }

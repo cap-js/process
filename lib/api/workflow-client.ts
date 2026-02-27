@@ -52,6 +52,10 @@ export interface IWorkflowInstanceClient {
     status: WorkflowStatus,
     cascade: boolean,
   ): Promise<UpdateStatusResult[]>;
+
+  getAttributes(instanceId: string): Promise<Record<string, unknown>>;
+
+  getOutputs(instanceId: string): Promise<Record<string, unknown>>;
 }
 
 // ============ Implementation Functions ============
@@ -200,6 +204,90 @@ export async function updateMultipleWorkflowStatus(
   return results;
 }
 
+export async function getAttributes(
+  serviceUrl: string,
+  jwt: string,
+  instanceId: string,
+): Promise<Record<string, unknown>> {
+  const url = `${serviceUrl}${BASE_PATH}/v1/workflow-instances/${instanceId}/attributes`;
+  LOG.debug('Invoking url: ' + url);
+
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      const errorBody = await res.text();
+      LOG.error(
+        `Failed to get attributes for workflow instance ${instanceId}. Status: ${res.status}, Body: ${errorBody}`,
+      );
+      throw new Error(cds.i18n.messages.at('WORKFLOW_ATTRIBUTES_FAILED', [res.status]));
+    }
+
+    const responseText = await res.text();
+    if (!responseText || responseText.trim() === '') {
+      LOG.debug(`No attributes available for workflow instance ${instanceId}`);
+      return {};
+    }
+
+    return JSON.parse(responseText);
+  } catch (err) {
+    LOG.error(`Failed to get attributes for workflow instance ${instanceId}. Error: ${err}`);
+    throw new Error(
+      cds.i18n.messages.at('WORKFLOW_ATTRIBUTES_FAILED', [
+        err instanceof Error ? err.message : String(err),
+      ]),
+    );
+  }
+}
+
+export async function getOutputs(
+  serviceUrl: string,
+  jwt: string,
+  instanceId: string,
+): Promise<Record<string, unknown>> {
+  const url = `${serviceUrl}${BASE_PATH}/v1/workflow-instances/${instanceId}/outputs`;
+  LOG.debug('Invoking url: ' + url);
+
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      const errorBody = await res.text();
+      LOG.error(
+        `Failed to get outputs for workflow instance ${instanceId}. Status: ${res.status}, Body: ${errorBody}`,
+      );
+      throw new Error(cds.i18n.messages.at('WORKFLOW_OUTPUTS_FAILED', [res.status]));
+    }
+
+    const responseText = await res.text();
+    if (!responseText || responseText.trim() === '') {
+      LOG.debug(`No outputs available for workflow instance ${instanceId}`);
+      return {};
+    }
+
+    return  JSON.parse(responseText);
+  } catch (err) {
+    LOG.error(`Failed to get outputs for workflow instance ${instanceId}. Error: ${err}`);
+    throw new Error(
+      cds.i18n.messages.at('WORKFLOW_OUTPUTS_FAILED', [
+        err instanceof Error ? err.message : String(err),
+      ]),
+    );
+  }
+}
+
 // ============ Factory Function ============
 
 export function createWorkflowInstanceClient(
@@ -225,6 +313,16 @@ export function createWorkflowInstanceClient(
     updateMultipleWorkflowStatus: async (instances, status, cascade) => {
       const jwt = await getToken();
       return updateMultipleWorkflowStatus(serviceUrl, jwt, instances, status, cascade);
+    },
+
+    getAttributes: async (instanceId) => {
+      const jwt = await getToken();
+      return getAttributes(serviceUrl, jwt, instanceId);
+    },
+
+    getOutputs: async (instanceId) => {
+      const jwt = await getToken();
+      return getOutputs(serviceUrl, jwt, instanceId);
     },
   };
 }
