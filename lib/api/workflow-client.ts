@@ -53,7 +53,7 @@ export interface IWorkflowInstanceClient {
     cascade: boolean,
   ): Promise<UpdateStatusResult[]>;
 
-  getAttributes(instanceId: string): Promise<Record<string, unknown>>;
+  getAttributes(instanceId: string): Promise<Record<string, unknown>[]>;
 
   getOutputs(instanceId: string): Promise<Record<string, unknown>>;
 }
@@ -208,7 +208,7 @@ export async function getAttributes(
   serviceUrl: string,
   jwt: string,
   instanceId: string,
-): Promise<Record<string, unknown>> {
+): Promise<Record<string, string>[]> {
   const url = `${serviceUrl}${BASE_PATH}/v1/workflow-instances/${instanceId}/attributes`;
   LOG.debug('Invoking url: ' + url);
 
@@ -232,9 +232,9 @@ export async function getAttributes(
     const responseText = await res.text();
     if (!responseText || responseText.trim() === '') {
       LOG.debug(`No attributes available for workflow instance ${instanceId}`);
-      return {};
+      return [];
     }
-
+    const test = JSON.parse(responseText);
     return JSON.parse(responseText);
   } catch (err) {
     LOG.error(`Failed to get attributes for workflow instance ${instanceId}. Error: ${err}`);

@@ -1,5 +1,6 @@
 @open
 type AnyType {}
+type AttributesReturn : many AnyType;
 
 @impl: './BTPProcessService.ts'
 service ProcessService {
@@ -26,7 +27,7 @@ service ProcessService {
 
   function getAttributes(
     @mandatory processInstanceId : String(256)
-  )returns AnyType;
+  )returns AttributesReturn;
 
   function getOutputs(
     @mandatory processInstanceId : String(256)
