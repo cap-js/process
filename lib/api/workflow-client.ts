@@ -198,7 +198,7 @@ export async function updateMultipleWorkflowStatus(
       `Updated ${successCount}/${instances.length} workflow instances to status ${status}. ${failedCount} failed.`,
     );
   } else {
-    LOG.info(`Successfully updated all ${successCount} workflow instances to status ${status}`);
+    LOG.debug(`Successfully updated all ${successCount} workflow instances to status ${status}`);
   }
 
   return results;

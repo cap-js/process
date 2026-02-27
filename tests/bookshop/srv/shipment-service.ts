@@ -4,13 +4,13 @@ class ShipmentService extends cds.ApplicationService {
   async init() {
     // Example: Start a process
     this.on('startShipment', async (req: cds.Request) => {
-      const processService = await cds.connect.to(ShipmentHandlerService);
+      const shipmentProcess = await cds.connect.to(ShipmentHandlerService);
 
       const { shipmentID } = req.data;
       const shipment = await SELECT.one.from('Shipments').where({ ID: shipmentID });
 
       // Start the process with typed inputs
-      const processInstance = await processService.start({
+      const processInstance = await shipmentProcess.start({
         businesskey: shipmentID,
         startingShipment: {
           identifier: shipment.ID,
@@ -30,16 +30,16 @@ class ShipmentService extends cds.ApplicationService {
 
     // Example: Update shipment status (suspend/resume based on newStatus)
     this.on('updateShipmentStatus', async (req: cds.Request) => {
-      const processService = await cds.connect.to(ShipmentHandlerService);
+      const shipmentProcess = await cds.connect.to(ShipmentHandlerService);
       const { shipmentID, newStatus } = req.data;
 
       if (newStatus === 'SUSPENDED') {
-        await processService.suspend({
+        await shipmentProcess.suspend({
           businessKey: shipmentID,
           cascade: false,
         });
       } else if (newStatus === 'RESUMED') {
-        await processService.resume({
+        await shipmentProcess.resume({
           businessKey: shipmentID,
           cascade: false,
         });
@@ -51,11 +51,11 @@ class ShipmentService extends cds.ApplicationService {
 
     // Example: Cancel a process
     this.on('cancelShipment', async (req: cds.Request) => {
-      const processService = await cds.connect.to(ShipmentHandlerService);
+      const shipmentProcess = await cds.connect.to(ShipmentHandlerService);
 
       const { shipmentID } = req.data;
 
-      await processService.cancel({
+      await shipmentProcess.cancel({
         businessKey: shipmentID,
         cascade: false,
       });

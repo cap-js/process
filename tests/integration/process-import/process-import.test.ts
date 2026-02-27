@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
@@ -127,7 +128,7 @@ describe('Process Import Integration Tests', () => {
         expect(startAction).toBeDefined();
         expect(startAction.kind).toBe('action');
         expect(startAction.params.inputs).toBeDefined();
-        expect(startAction.returns.type).toBe(`${serviceName}.ProcessInstance`);
+        expect(startAction.returns).toBeUndefined();
         for (const action of ['suspend', 'resume', 'cancel']) {
           const lifecycleAction = definitions[`${serviceName}.${action}`] as any;
           expect(lifecycleAction).toBeDefined();
@@ -289,7 +290,7 @@ describe('Process Import Integration Tests', () => {
         expect(startAction.kind).toBe('action');
         expect(startAction.params.inputs).toBeDefined();
         expect(startAction.params.inputs.type).toBe(`${serviceName}.ProcessInputs`);
-        expect(startAction.returns.type).toBe(`${serviceName}.ProcessInstance`);
+        expect(startAction.returns).toBeUndefined();
       });
 
       it('should generate all lifecycle actions', async () => {

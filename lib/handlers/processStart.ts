@@ -5,6 +5,7 @@ import {
   EntityRow,
   getBusinessKeyOrReject,
   getElementAnnotations,
+  getEntityDataFromRequest,
   isDeleteWithoutProcess,
   ProcessDeleteRequest,
   resolveEntityRowOrReject,
@@ -51,7 +52,8 @@ export async function handleProcessStart(req: cds.Request): Promise<void> {
   if (isDeleteWithoutProcess(req, LOG_MESSAGES.PROCESS_NOT_STARTED)) return;
 
   const target = req.target as Target;
-  const data = ((req as ProcessDeleteRequest)._Process ?? req.data) as EntityRow;
+  const data = ((req as ProcessDeleteRequest)._Process ??
+    getEntityDataFromRequest(req)) as EntityRow;
 
   const startSpecs = initStartSpecs(target, req);
 
@@ -98,7 +100,7 @@ function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
     on: target[PROCESS_START_ON] as string,
     inputs: [],
     conditionExpr: target[PROCESS_START_IF]
-      ? ((target[PROCESS_START_IF] as any).xpr as expr)
+      ? ((target[PROCESS_START_IF] as unknown as { xpr: expr }).xpr as expr)
       : undefined,
   };
   const elementAnnotations = getElementAnnotations(target as cds.entity);
@@ -127,7 +129,7 @@ function getInputElements(
     associatedTarget,
   } of elementAnnotations) {
     switch (annotationKey) {
-      case PROCESS_INPUT:
+      case PROCESS_INPUT: {
         // For associations, recursively get input elements from the associated entity
         // If the associated entity has no annotated elements, use empty array to signal "expand all"
         let associatedInputElements: ProcessStartInput[] | undefined = undefined;
@@ -175,6 +177,7 @@ function getInputElements(
 
         inputs.push(input);
         break;
+      }
     }
   }
   return inputs;

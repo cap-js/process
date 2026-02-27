@@ -1,6 +1,6 @@
 import cds from '@sap/cds';
 import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
-import { PROCESS_INPUT } from '../constants';
+import { PROCESS_INPUT, PROCESS_PREFIX } from '../constants';
 import { ProcessValidationPlugin } from './plugin';
 import { ERROR_CYCLE_DETECTED } from './constants';
 
@@ -178,18 +178,19 @@ export function getProcessDefInputsAndTypes(
   }
 
   const elements = processDef.elements;
-
-  for (const [name, element] of Object.entries(elements)) {
-    const resolvedType = resolveElementToType(
-      element as { type?: string; items?: { type?: string }; notNull?: boolean },
-      allDefinitions,
-      visited,
-    );
-    if (resolvedType) {
-      result[name] = resolvedType;
+  for (const name in elements) {
+    if (Object.hasOwn(elements, name)) {
+      const element = elements[name];
+      const resolvedType = resolveElementToType(
+        element as { type?: string; items?: { type?: string }; notNull?: boolean },
+        allDefinitions,
+        visited,
+      );
+      if (resolvedType) {
+        result[name] = resolvedType;
+      }
     }
   }
-
   return result;
 }
 
@@ -203,19 +204,25 @@ export function getElementNamesAndTypes(
   visited: Set<string>,
 ): Record<string, ElementType> {
   const elements = def.elements ?? {};
-  const elementEntries = Object.entries(elements);
 
   // Check if at least one element has @build.process.input
-  const hasInputAnnotation = elementEntries.some(([, element]) => PROCESS_INPUT in element);
-
-  // Filter elements based on input annotation
-  const filteredEntries = hasInputAnnotation
-    ? elementEntries.filter(([, element]) => PROCESS_INPUT in element)
-    : elementEntries;
+  let hasInputAnnotation = false;
+  for (const name in elements) {
+    if (PROCESS_INPUT in elements[name]) {
+      hasInputAnnotation = true;
+      break;
+    }
+  }
 
   const result: Record<string, ElementType> = {};
 
-  for (const [name, element] of filteredEntries) {
+  for (const name in elements) {
+    const element = elements[name];
+
+    // Skip elements without input annotation if any element has input annotation
+    if (hasInputAnnotation && !(PROCESS_INPUT in element)) {
+      continue;
+    }
     const isAssociationOrComposition =
       element.type === 'cds.Association' || element.type === 'cds.Composition';
     const isMandatory = element['@mandatory'] === true;
@@ -288,10 +295,12 @@ function getRecursiveElementNamesAndTypes(
 
   // Return associated elements
   const result: Record<string, ElementType> = {};
-  for (const [assocName, assocType] of Object.entries(associatedElements)) {
-    result[assocName] = assocType;
+  for (const assocName in associatedElements) {
+    if (Object.hasOwn(associatedElements, assocName)) {
+      const assocType = associatedElements[assocName];
+      result[assocName] = assocType;
+    }
   }
-
   return result;
 }
 
@@ -306,12 +315,14 @@ export function getProcessDefinitions(
   if (!allDefinitions) {
     return processMap;
   }
-
-  for (const [name, def] of Object.entries(allDefinitions)) {
-    const processId = def['@build.process'];
-    if (processId) {
-      def.name = name;
-      processMap.set(processId, def);
+  for (const name in allDefinitions) {
+    if (Object.hasOwn(allDefinitions, name)) {
+      const def = allDefinitions[name];
+      const processId = def[PROCESS_PREFIX];
+      if (processId) {
+        def.name = name;
+        processMap.set(processId, def);
+      }
     }
   }
 

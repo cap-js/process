@@ -30,7 +30,6 @@ const Plugin = cds.build?.Plugin;
 const ERROR = Plugin?.ERROR;
 const WARNING = Plugin?.WARNING;
 const VALID_EVENTS = ['CREATE', 'READ', 'UPDATE', 'DELETE'] as const;
-const LOG = cds.log('process-build');
 
 export function validateAllowedAnnotations(
   allowedAnnotations: string[],

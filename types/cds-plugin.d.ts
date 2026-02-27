@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as csn from './csn-extensions';
 
 declare module '@sap/cds' {

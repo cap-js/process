@@ -110,27 +110,50 @@ export function concatenateBusinessKey(target: cds.entity, row: EntityRow): stri
 }
 
 /**
+ * Extracts entity data from a CDS request.
+ * For CRUD operations, returns req.data directly.
+ * For bound actions, merges req.params (entity keys) with req.data (action inputs).
+ */
+export function getEntityDataFromRequest(req: cds.Request): EntityRow {
+  const data = (req.data as EntityRow) ?? {};
+  if (req.params && Array.isArray(req.params) && req.params.length > 0) {
+    const paramsData = req.params.reduce((acc: EntityRow, param) => {
+      if (typeof param === 'object' && param !== null) {
+        return { ...acc, ...param };
+      }
+      return acc;
+    }, {});
+    return { ...data, ...paramsData };
+  }
+
+  return data;
+}
+
+/**
  * Extracts element annotations that start with BUILD_PREFIX from a CDS entity
  */
 export function getElementAnnotations(entity: cds.entity): ElementAnnotation[] {
   const elementAnnotations: ElementAnnotation[] = [];
-  Object.entries(entity.elements).forEach(([elementName, element]) => {
-    Object.entries(element)
-      .filter(([key]) => key.startsWith(BUILD_PREFIX))
-      .forEach(([key, value]) => {
-        // for association elements: element._target.elements
-        let associatedTarget: cds.entity | undefined;
-        if (isAssociationType(element)) {
-          associatedTarget = element._target;
-        }
-        elementAnnotations.push({
-          elementName,
-          annotationKey: key,
-          annotationValue: String(value),
-          associatedTarget,
-        });
+  for (const elementName in entity.elements) {
+    const element = entity.elements[elementName];
+    for (const key in element) {
+      if (!key.startsWith(BUILD_PREFIX)) {
+        continue;
+      }
+      const value = element[key as keyof typeof element];
+      // for association elements: element._target.elements
+      let associatedTarget: cds.entity | undefined;
+      if (isAssociationType(element)) {
+        associatedTarget = element._target;
+      }
+      elementAnnotations.push({
+        elementName,
+        annotationKey: key,
+        annotationValue: String(value),
+        associatedTarget,
       });
-  });
+    }
+  }
   return elementAnnotations;
 }
 
@@ -174,13 +197,14 @@ function buildWhereClause(
   }, {});
 
   // build where expression for object keys
-  const entries = Object.entries(keyObject);
   const parts: unknown[] = [];
-  for (const [k, v] of entries) {
-    if (parts.length) parts.push('and');
-    parts.push({ ref: [k] }, '=', { val: v });
+  for (const key in keyObject) {
+    if (Object.hasOwn(keyObject, key)) {
+      const object = keyObject[key];
+      if (parts.length) parts.push('and');
+      parts.push({ ref: [key] }, '=', { val: object });
+    }
   }
-
   // { ref: [ 'ID' ] }, '=', { val: '123456' }
   let where;
   if (condition !== undefined) {
@@ -195,10 +219,10 @@ function buildWhereClause(
  * Fetches and attaches entity data to the request for DELETE operations
  */
 export async function addDeletedEntityToRequest(
-  target: Target,
   req: cds.Request,
   areStartAnnotationsDefined: boolean,
 ): Promise<void> {
+  const target = req.target as Target;
   let columns: column_expr[] | string[] = [];
   if (areStartAnnotationsDefined) {
     columns = await getColumnsForProcessStart(target, req);
@@ -331,8 +355,8 @@ export async function emitProcessEvent(
 ): Promise<void> {
   try {
     const processService = await cds.connect.to(PROCESS_SERVICE);
-    const outboxedService = cds.outboxed(processService);
-    await outboxedService.emit(event, payload);
+    const queuedProcessService = cds.queued(processService);
+    await queuedProcessService.emit(event, payload);
   } catch (error) {
     LOG.error(processEventFailedMsg, msgArgs, error);
     req.reject({ status: 500, message: processEventFailedMsg, args: [msgArgs] });
