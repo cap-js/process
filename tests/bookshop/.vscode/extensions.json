@@ -4,6 +4,7 @@
     "dbaeumer.vscode-eslint",
     "mechatroner.rainbow-csv",
     "qwtel.sqlite-viewer",
-    "humao.rest-client"
+    "humao.rest-client",
+    "MermaidChart.vscode-mermaid-chart"
   ]
 }
