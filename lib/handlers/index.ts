@@ -12,14 +12,12 @@ export { registerProcessServiceHandlers } from './processService';
 export {
   getKeyFieldsForEntity,
   concatenateBusinessKey,
-  getElementAnnotations,
   addDeletedEntityToRequest,
 } from './utils';
 export type {
   EntityRow,
   ProcessStartPayload,
   ProcessLifecyclePayload,
-  ElementAnnotation,
   ProcessEventType,
   AnnotatedTarget,
   ProcessDeleteRequest,

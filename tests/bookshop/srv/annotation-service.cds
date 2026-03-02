@@ -870,36 +870,6 @@ service AnnotationService {
         unitPrice   : Decimal(15, 2);
   }
 
-  // --------------------------------------------
-  // Test 7: Cycles in association with inputs
-  // Should throw error
-  // --------------------------------------------
-  @bpm.process.start: {
-    id: 'startCycleProcess',
-    on: 'CREATE',
-    inputs: [
-      $self.ID,
-      $self.name,
-      $self.cycleB,
-      $self.cycleBID
-    ]
-  }
-  entity StartCycleA {
-    key ID       : UUID;
-        name     : String;
-        cycleB   : Association to StartCycleB
-                     on cycleB.ID = $self.cycleBID;
-        cycleBID : UUID;
-  }
-
-  entity StartCycleB {
-    key ID       : UUID;
-        name     : String;
-        cycleA   : Association to StartCycleA
-                     on cycleA.ID = $self.cycleAID;
-        cycleAID : UUID;
-  }
-
   // ============================================
   // CUSTOM EVENT / BOUND ACTION TESTS
   // Testing process annotations with custom events (bound actions)

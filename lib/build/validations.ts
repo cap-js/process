@@ -149,12 +149,10 @@ export function validateInputTypes(
   processDef: CsnDefinition,
   allDefinitions: Record<string, CsnDefinition> | undefined,
 ) {
-  // entity attributes from annotations
+  // entity attributes from inputs array annotation
   const entityAttributes = getElementNamesAndTypes(
-    buildPlugin,
     def as CsnEntity,
     allDefinitions || {},
-    new Set<string>(),
   );
 
   // process def inputs from csn model
