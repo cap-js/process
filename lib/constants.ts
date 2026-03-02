@@ -9,6 +9,11 @@ export const PROCESS_SERVICE = 'ProcessService' as const;
 export const PROCESS_LOGGER_PREFIX = 'process' as const;
 
 /**
+ * CRUD Operation
+ */
+export const CUD_EVENTS = ['CREATE', 'UPDATE', 'DELETE'] as const;
+
+/**
  * Process Start Annotations
  */
 export const PROCESS_START = '@build.process.start' as const;

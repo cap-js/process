@@ -13,10 +13,9 @@ import {
   PROCESS_SUSPEND_ON,
   PROCESS_RESUME_ON,
   PROCESS_PREFIX,
+  CUD_EVENTS,
 } from './lib/index';
 import { importProcess } from './lib/processImport';
-
-const CUD_EVENTS = ['CREATE', 'UPDATE', 'DELETE'];
 
 interface EntityEventCache {
   hasStart: boolean;
