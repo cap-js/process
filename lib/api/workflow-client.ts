@@ -69,33 +69,27 @@ export async function startWorkflow(
   const url = `${serviceUrl}${BASE_PATH}/v1/workflow-instances`;
   LOG.debug('Invoking url: ' + url);
 
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ definitionId, context }),
-    });
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ definitionId, context }),
+  });
 
-    if (!res.ok) {
-      const body = await res.text();
-      LOG.error(`Failed to start workflow. Status: ${res.status}, Body: ${body}`);
-      throw new Error(cds.i18n.messages.at('WORKFLOW_START_FAILED', [res.status]));
-    }
-
-    const workflowInstance = await res.json();
-    LOG.debug(`Workflow instance started with ID: ${workflowInstance.id}`);
-    return { id: workflowInstance.id, success: true };
-  } catch (err) {
-    LOG.error(`Failed to start workflow. Error: ${err}`);
-    throw new Error(
+  if (!res.ok) {
+    const body = await res.text();
+    const errorMessage =
       cds.i18n.messages.at('WORKFLOW_START_FAILED', [
-        err instanceof Error ? err.message : String(err),
-      ]),
-    );
+        body || res.statusText || 'Unknown error',
+      ]) || 'Failed to start workflow';
+    throw cds.error(res.status, errorMessage);
   }
+
+  const workflowInstance = await res.json();
+  LOG.debug(`Workflow instance started with ID: ${workflowInstance.id}`);
+  return { id: workflowInstance.id, success: true };
 }
 
 export async function getWorkflowsByBusinessKey(
@@ -113,27 +107,24 @@ export async function getWorkflowsByBusinessKey(
   });
   LOG.debug('Invoking url: ' + queryUrl);
 
-  try {
-    const res = await fetch(queryUrl, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-      },
-    });
+  const res = await fetch(queryUrl, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    },
+  });
 
-    if (!res.ok) {
-      throw new Error(cds.i18n.messages.at('WORKFLOW_RETRIEVE_FAILED', [res.status]));
-    }
-    return await res.json();
-  } catch (err) {
-    LOG.error(`Failed to retrieve workflow instances. Error: ${err}`);
-    throw new Error(
+  if (!res.ok) {
+    const body = await res.text();
+    const errorMessage =
       cds.i18n.messages.at('WORKFLOW_RETRIEVE_FAILED', [
-        err instanceof Error ? err.message : String(err),
-      ]),
-    );
+        body || res.statusText || 'Unknown error',
+      ]) || 'Failed to retrieve workflow instances';
+    throw cds.error(res.status, errorMessage);
   }
+
+  return await res.json();
 }
 
 export async function updateWorkflowStatus(
@@ -146,32 +137,25 @@ export async function updateWorkflowStatus(
   const url = `${serviceUrl}${BASE_PATH}/v1/workflow-instances/${instanceId}`;
   LOG.debug('Invoking url: ' + url);
 
-  try {
-    const res = await fetch(url, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ status, cascade }),
-    });
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ status, cascade }),
+  });
 
-    if (!res.ok) {
-      const errorBody = await res.text();
-      LOG.error(
-        `Failed to update workflow instance ${instanceId}. Status: ${res.status}, Body: ${errorBody}`,
-      );
-      throw new Error(cds.i18n.messages.at('WORKFLOW_UPDATE_FAILED', [res.status]));
-    }
-    return { id: instanceId, success: true };
-  } catch (err) {
-    LOG.error(`Failed to update workflow instance ${instanceId}. Error: ${err}`);
-    throw new Error(
+  if (!res.ok) {
+    const errorBody = await res.text();
+    const errorMessage =
       cds.i18n.messages.at('WORKFLOW_UPDATE_FAILED', [
-        err instanceof Error ? err.message : String(err),
-      ]),
-    );
+        errorBody || res.statusText || 'Unknown error',
+      ]) || 'Failed to update workflow instance';
+    throw cds.error(res.status, errorMessage);
   }
+
+  return { id: instanceId, success: true };
 }
 
 export async function updateMultipleWorkflowStatus(
@@ -183,8 +167,7 @@ export async function updateMultipleWorkflowStatus(
 ): Promise<UpdateStatusResult[]> {
   const results = await Promise.all(
     instances.map((instance) =>
-      updateWorkflowStatus(serviceUrl, jwt, instance.id, status, cascade).catch((err) => {
-        LOG.error(`Failed to update instance ${instance.id}: ${err.message}`);
+      updateWorkflowStatus(serviceUrl, jwt, instance.id, status, cascade).catch(() => {
         return { id: instance.id, success: false };
       }),
     ),
@@ -212,37 +195,30 @@ export async function getAttributes(
   const url = `${serviceUrl}${BASE_PATH}/v1/workflow-instances/${instanceId}/attributes`;
   LOG.debug('Invoking url: ' + url);
 
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-      },
-    });
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    },
+  });
 
-    if (!res.ok) {
-      const errorBody = await res.text();
-      LOG.error(
-        `Failed to get attributes for workflow instance ${instanceId}. Status: ${res.status}, Body: ${errorBody}`,
-      );
-      throw new Error(cds.i18n.messages.at('WORKFLOW_ATTRIBUTES_FAILED', [res.status]));
-    }
-
-    const responseText = await res.text();
-    if (!responseText || responseText.trim() === '') {
-      LOG.debug(`No attributes available for workflow instance ${instanceId}`);
-      return [];
-    }
-    return JSON.parse(responseText);
-  } catch (err) {
-    LOG.error(`Failed to get attributes for workflow instance ${instanceId}. Error: ${err}`);
-    throw new Error(
+  if (!res.ok) {
+    const errorBody = await res.text();
+    const errorMessage =
       cds.i18n.messages.at('WORKFLOW_ATTRIBUTES_FAILED', [
-        err instanceof Error ? err.message : String(err),
-      ]),
-    );
+        errorBody || res.statusText || 'Unknown error',
+      ]) || 'Failed to get workflow instance attributes';
+    throw cds.error(res.status, errorMessage);
   }
+
+  const responseText = await res.text();
+  if (!responseText || responseText.trim() === '') {
+    LOG.debug(`No attributes available for workflow instance ${instanceId}`);
+    return [];
+  }
+
+  return JSON.parse(responseText);
 }
 
 export async function getOutputs(
@@ -253,38 +229,30 @@ export async function getOutputs(
   const url = `${serviceUrl}${BASE_PATH}/v1/workflow-instances/${instanceId}/outputs`;
   LOG.debug('Invoking url: ' + url);
 
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-      },
-    });
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    },
+  });
 
-    if (!res.ok) {
-      const errorBody = await res.text();
-      LOG.error(
-        `Failed to get outputs for workflow instance ${instanceId}. Status: ${res.status}, Body: ${errorBody}`,
-      );
-      throw new Error(cds.i18n.messages.at('WORKFLOW_OUTPUTS_FAILED', [res.status]));
-    }
-
-    const responseText = await res.text();
-    if (!responseText || responseText.trim() === '') {
-      LOG.debug(`No outputs available for workflow instance ${instanceId}`);
-      return {};
-    }
-
-    return JSON.parse(responseText);
-  } catch (err) {
-    LOG.error(`Failed to get outputs for workflow instance ${instanceId}. Error: ${err}`);
-    throw new Error(
+  if (!res.ok) {
+    const errorBody = await res.text();
+    const errorMessage =
       cds.i18n.messages.at('WORKFLOW_OUTPUTS_FAILED', [
-        err instanceof Error ? err.message : String(err),
-      ]),
-    );
+        errorBody || res.statusText || 'Unknown error',
+      ]) || 'Failed to get workflow instance outputs';
+    throw cds.error(res.status, errorMessage);
   }
+
+  const responseText = await res.text();
+  if (!responseText || responseText.trim() === '') {
+    LOG.debug(`No outputs available for workflow instance ${instanceId}`);
+    return {};
+  }
+
+  return JSON.parse(responseText);
 }
 
 // ============ Factory Function ============
