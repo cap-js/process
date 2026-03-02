@@ -15,6 +15,15 @@ cd /tests/bookshop
 cds watch
 ```
 
+## To use the plugin as a CAP developer:
+
+- (in future): run `npm add @cap-js/process`
+- Login to cf `cf login ...`
+- Bind to process service instance:
+  - `cds bind ProcessService to -to <sbpa-service-instance>`
+
+Start developing 🙂
+
 # Current annotation implementation:
 
 ## For starting a process:
@@ -130,7 +139,7 @@ When both `@build.process.start.id` and `@build.process.start.on` are present an
 
 # Current programmatic approach
 
-## Importing a Service
+## Importing a Service <import_service>
 
 To use the programmatic approach with types, you need to import an existing SBPA process. This requires credentials via `cds bind` and being logged in to Cloud Foundry.
 
