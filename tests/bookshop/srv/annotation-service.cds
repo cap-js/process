@@ -33,17 +33,22 @@ service AnnotationService {
   @bpm.process.start: {
     id: 'shipmentProcess',
     on: 'CREATE',
+    inputs: [
+      $self.ID,
+      $self.shipmentDate,
+      { path: $self.origin, as: 'OriginCountry' },
+      $self.items
+    ]
   }
   entity InputShipments {
-    key ID               : UUID @bpm.process.input;
+    key ID               : UUID;
         status           : String(20) default 'PENDING';
-        shipmentDate     : Date @bpm.process.input;
+        shipmentDate     : Date;
         expectedDelivery : Date;
-        origin           : String(200) @(bpm.process.input: 'OriginCountry');
+        origin           : String(200);
         destination      : String(200);
         items            : Composition of many InputShipmentItems
-                             on items.shipment = $self
-                           @bpm.process.input;
+                             on items.shipment = $self;
   }
 
 
@@ -699,11 +704,11 @@ service AnnotationService {
 
   // ============================================
   // START INPUT ANNOTATION TESTS
-  // Testing @bpm.process.input variations
+  // Testing inputs array in @build.process.start
   // ============================================
 
   // --------------------------------------------
-  // Test 1: No @bpm.process.input
+  // Test 1: No inputs specified
   // All entity fields should be included in context
   // --------------------------------------------
   @bpm.process.start: {
@@ -723,56 +728,72 @@ service AnnotationService {
     }
 
   // --------------------------------------------
-  // Test 2: With @bpm.process.input on selected fields
-  // Only annotated fields should be included in context
+  // Test 2: With inputs array on selected fields
+  // Only specified fields should be included in context
   // --------------------------------------------
   @bpm.process.start: {
     id: 'startSelectedInputProcess',
     on: 'CREATE',
+    inputs: [
+      $self.ID,
+      $self.shipmentDate,
+      $self.origin
+    ]
   }
   entity StartSelectedInput {
-    key ID               : UUID @bpm.process.input;
+    key ID               : UUID;
         status           : String(20) default 'PENDING';
-        shipmentDate     : Date @bpm.process.input;
+        shipmentDate     : Date;
         expectedDelivery : Date;
-        origin           : String(200) @bpm.process.input;
+        origin           : String(200);
         destination      : String(200);
         totalValue       : Decimal(15, 2);
   }
 
   // --------------------------------------------
-  // Test 3: With @bpm.process.input with custom alias
-  // Field should be renamed in context
+  // Test 3: With inputs array with custom aliases
+  // Fields should be renamed in context
   // --------------------------------------------
   @bpm.process.start: {
     id: 'startAliasInputProcess',
     on: 'CREATE',
+    inputs: [
+      $self.ID,
+      { path: $self.shipmentDate, as: 'ProcessStartDate' },
+      { path: $self.origin, as: 'SourceLocation' },
+      { path: $self.destination, as: 'TargetLocation' },
+      { path: $self.totalValue, as: 'Amount' }
+    ]
   }
   entity StartAliasInput {
-    key ID               : UUID @bpm.process.input;
+    key ID               : UUID;
         status           : String(20) default 'PENDING';
-        shipmentDate     : Date @(bpm.process.input: 'ProcessStartDate');
+        shipmentDate     : Date;
         expectedDelivery : Date;
-        origin           : String(200) @(bpm.process.input: 'SourceLocation');
-        destination      : String(200) @(bpm.process.input: 'TargetLocation');
-        totalValue       : Decimal(15, 2) @(bpm.process.input: 'Amount');
+        origin           : String(200);
+        destination      : String(200);
+        totalValue       : Decimal(15, 2);
   }
 
   // --------------------------------------------
-  // Test 4: With nested Composition and @bpm.process.input
+  // Test 4: With nested Composition in inputs
   // Include composition items in context (all fields)
   // --------------------------------------------
   @bpm.process.start: {
     id: 'startNestedCompositionProcess',
     on: 'CREATE',
+    inputs: [
+      $self.ID,
+      $self.shipmentDate,
+      $self.items
+    ]
   }
   entity StartNestedComposition {
-    key ID           : UUID @bpm.process.input;
+    key ID           : UUID;
         status       : String(20) default 'PENDING';
-        shipmentDate : Date @bpm.process.input;
+        shipmentDate : Date;
         items        : Composition of many StartNestedCompositionItems
-                         on items.parent = $self
-                       @bpm.process.input;
+                         on items.parent = $self;
   }
 
   entity StartNestedCompositionItems {
@@ -786,79 +807,97 @@ service AnnotationService {
   }
 
   // --------------------------------------------
-  // Test 5: With nested Composition and @bpm.process.input on child elements
+  // Test 5: With nested Composition - selected child fields
   // Include only selected fields from composition items
   // --------------------------------------------
   @bpm.process.start: {
     id: 'startNestedSelectedProcess',
     on: 'CREATE',
+    inputs: [
+      $self.ID,
+      $self.shipmentDate,
+      $self.items.ID,
+      $self.items.title,
+      $self.items.price
+    ]
   }
   entity StartNestedSelected {
-    key ID           : UUID @bpm.process.input;
+    key ID           : UUID;
         status       : String(20) default 'PENDING';
-        shipmentDate : Date @bpm.process.input;
+        shipmentDate : Date;
         items        : Composition of many StartNestedSelectedItems
-                         on items.parent = $self
-                       @bpm.process.input;
+                         on items.parent = $self;
   }
 
   entity StartNestedSelectedItems {
-    key ID       : UUID @bpm.process.input;
+    key ID       : UUID;
         parent   : Association to StartNestedSelected;
-        title    : String(200) @bpm.process.input;
+        title    : String(200);
         quantity : Integer;
-        price    : Decimal(15, 2) @bpm.process.input;
+        price    : Decimal(15, 2);
   }
 
   // --------------------------------------------
-  // Test 6: With nested Composition and aliases in child elements
+  // Test 6: With nested Composition and aliases
   // Child fields should be renamed in context
   // --------------------------------------------
   @bpm.process.start: {
     id: 'startNestedAliasProcess',
     on: 'CREATE',
+    inputs: [
+      $self.ID,
+      { path: $self.orderDate, as: 'ProcessDate' },
+      { path: $self.items, as: 'OrderLines' },
+      $self.items.ID,
+      { path: $self.items.productName, as: 'Product' },
+      { path: $self.items.quantity, as: 'Qty' },
+      { path: $self.items.unitPrice, as: 'Price' }
+    ]
   }
   entity StartNestedAlias {
-    key ID        : UUID @bpm.process.input;
+    key ID        : UUID;
         status    : String(20) default 'PENDING';
-        orderDate : Date @(bpm.process.input: 'ProcessDate');
+        orderDate : Date;
         items     : Composition of many StartNestedAliasItems
-                      on items.parent = $self
-                    @(bpm.process.input: 'OrderLines');
+                      on items.parent = $self;
   }
 
   entity StartNestedAliasItems {
-    key ID          : UUID @bpm.process.input;
+    key ID          : UUID;
         parent      : Association to StartNestedAlias;
-        productName : String(200) @(bpm.process.input: 'Product');
-        quantity    : Integer @(bpm.process.input: 'Qty');
-        unitPrice   : Decimal(15, 2) @(bpm.process.input: 'Price');
+        productName : String(200);
+        quantity    : Integer;
+        unitPrice   : Decimal(15, 2);
   }
 
   // --------------------------------------------
-  // Test 7: Cycles in composition with @bpm.process.input
+  // Test 7: Cycles in association with inputs
   // Should throw error
   // --------------------------------------------
   @bpm.process.start: {
     id: 'startCycleProcess',
     on: 'CREATE',
+    inputs: [
+      $self.ID,
+      $self.name,
+      $self.cycleB,
+      $self.cycleBID
+    ]
   }
   entity StartCycleA {
-    key ID       : UUID @bpm.process.input;
-        name     : String @bpm.process.input;
+    key ID       : UUID;
+        name     : String;
         cycleB   : Association to StartCycleB
-                     on cycleB.ID = $self.cycleBID
-                   @bpm.process.input;
-        cycleBID : UUID @bpm.process.input;
+                     on cycleB.ID = $self.cycleBID;
+        cycleBID : UUID;
   }
 
   entity StartCycleB {
-    key ID       : UUID @bpm.process.input;
-        name     : String @bpm.process.input;
+    key ID       : UUID;
+        name     : String;
         cycleA   : Association to StartCycleA
-                     on cycleA.ID = $self.cycleAID
-                   @bpm.process.input;
-        cycleAID : UUID @bpm.process.input;
+                     on cycleA.ID = $self.cycleAID;
+        cycleAID : UUID;
   }
 
   // ============================================

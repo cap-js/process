@@ -46,11 +46,6 @@ export const PROCESS_RESUME_CASCADE = '@bpm.process.resume.cascade' as const;
 export const PROCESS_RESUME_IF = '@bpm.process.resume.if' as const;
 
 /**
- * Process Input Annotation
- */
-export const PROCESS_INPUT = '@bpm.process.input' as const;
-
-/**
  * Annotation prefix for filtering
  */
 export const BUILD_PREFIX = '@bpm' as const;
