@@ -1,6 +1,7 @@
 @open
 type AnyType {}
 type AttributesReturn : many AnyType;
+type InstancesReturn : many AnyType;
 
 @impl: './BTPProcessService.ts'
 service ProcessService {
@@ -35,5 +36,5 @@ service ProcessService {
 
   function getInstancesByBusinessKey(
     @mandatory businessKey : String(256)
-  )returns AnyType;
+  )returns InstancesReturn;
 }

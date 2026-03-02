@@ -53,7 +53,7 @@ export interface IWorkflowInstanceClient {
     cascade: boolean,
   ): Promise<UpdateStatusResult[]>;
 
-  getAttributes(instanceId: string): Promise<Record<string, unknown>[]>;
+  getAttributes(instanceId: string): Promise<Record<string, string>[]>;
 
   getOutputs(instanceId: string): Promise<Record<string, unknown>>;
 }
