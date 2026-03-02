@@ -1067,4 +1067,36 @@ service AnnotationService {
   } actions {
     action triggerAction() returns CancelOnWildcardWhen;
   }
+  
+  // --------------------------------------------
+  // Test 7: Deep cyclic path in inputs array
+  // Demonstrates that explicit paths avoid cycle issues
+  // --------------------------------------------
+  @build.process.start: {
+    id: 'startCyclicPathProcess',
+    on: 'CREATE',
+    inputs: [
+      $self.ID,
+      $self.status,
+      $self.items.ID,
+      $self.items.title,
+      $self.items.shipment.ID,
+      $self.items.shipment.status,
+      $self.items.shipment.items.ID,
+      $self.items.shipment.items.title,
+      $self.items.shipment.items.shipment.ID
+    ]
+  }
+  entity StartCyclicPath {
+    key ID     : UUID;
+        status : String(20) default 'PENDING';
+        items  : Composition of many StartCyclicPathItems
+                   on items.shipment = $self;
+  }
+
+  entity StartCyclicPathItems {
+    key ID       : UUID;
+        shipment : Association to StartCyclicPath;
+        title    : String(200);
+  }
 }

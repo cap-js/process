@@ -275,4 +275,84 @@ describe('Integration tests for START annotation with inputs array', () => {
       });
     });
   });
+
+  // ================================================
+  // Test 7: Deep cyclic path in inputs array
+  // Demonstrates that explicit paths work with cyclic relationships
+  // e.g. $self.items.shipment.items.shipment.ID
+  // ================================================
+  describe('Test 7: Deep cyclic path (items.shipment.items.shipment.ID)', () => {
+    it('should handle deep cyclic paths without infinite loops', async () => {
+      const shipment = {
+        ID: '550e8400-e29b-41d4-a716-446655440006',
+        status: 'PENDING',
+        items: [
+          {
+            ID: 'item-001',
+            title: 'Product A',
+          },
+          {
+            ID: 'item-002',
+            title: 'Product B',
+          },
+        ],
+      };
+
+      const response = await POST('/odata/v4/annotation/StartCyclicPath', shipment);
+
+      expect(response.status).toBe(201);
+      expect(foundMessages.length).toBe(1);
+
+      const context = getStartContext();
+      expect(context).toBeDefined();
+
+      expect(context).toEqual({
+        ID: shipment.ID,
+        status: shipment.status,
+        businesskey: shipment.ID,
+        items: [
+          {
+            ID: shipment.items[0].ID,
+            title: shipment.items[0].title,
+            shipment: {
+              ID: shipment.ID,
+              status: shipment.status,
+              items: [
+                {
+                  ID: shipment.items[0].ID,
+                  title: shipment.items[0].title,
+                  shipment: { ID: shipment.ID },
+                },
+                {
+                  ID: shipment.items[1].ID,
+                  title: shipment.items[1].title,
+                  shipment: { ID: shipment.ID },
+                },
+              ],
+            },
+          },
+          {
+            ID: shipment.items[1].ID,
+            title: shipment.items[1].title,
+            shipment: {
+              ID: shipment.ID,
+              status: shipment.status,
+              items: [
+                {
+                  ID: shipment.items[0].ID,
+                  title: shipment.items[0].title,
+                  shipment: { ID: shipment.ID },
+                },
+                {
+                  ID: shipment.items[1].ID,
+                  title: shipment.items[1].title,
+                  shipment: { ID: shipment.ID },
+                },
+              ],
+            },
+          },
+        ],
+      });
+    });
+  });
 });
