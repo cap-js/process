@@ -120,11 +120,14 @@ export async function fetchAllDataTypes(
     currentBatch.forEach((d) => fetched.add(d.artifactUid));
 
     // Fetch all artifacts in this batch in parallel
-    const fetchPromises = currentBatch.map((dep) =>
-      fetchArtifact(serviceUrl, jwt, projectId, dep.artifactUid)
-        .then((artifact) => ({ status: 'fulfilled' as const, artifact, dep }))
-        .catch((error) => ({ status: 'rejected' as const, error, dep })),
-    );
+    const fetchPromises = currentBatch.map(async (dep) => {
+      try {
+        const artifact = await fetchArtifact(serviceUrl, jwt, projectId, dep.artifactUid);
+        return { status: 'fulfilled' as const, artifact, dep };
+      } catch (error) {
+        return { status: 'rejected' as const, error, dep };
+      }
+    });
 
     // eslint-disable-next-line no-await-in-loop -- Intentional: must await batch to collect nested dependencies for next iteration
     const responses = await Promise.all(fetchPromises);
