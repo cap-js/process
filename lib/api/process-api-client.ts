@@ -151,9 +151,14 @@ export async function fetchAllDataTypes(
     }
 
     // Deduplicate next batch and prepare for next iteration
-    currentBatch = nextBatch.filter(
-      (d, i, arr) => arr.findIndex((x) => x.artifactUid === d.artifactUid) === i,
-    );
+    currentBatch = [];
+    const seen = new Set<string>();
+    for (const d of nextBatch) {
+      if (!seen.has(d.artifactUid)) {
+        seen.add(d.artifactUid);
+        currentBatch.push(d);
+      }
+    }
   }
 
   return result;
