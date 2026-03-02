@@ -19,7 +19,7 @@ class ShipmentService extends cds.ApplicationService {
               identifier: 'item_1',
               title: 'Laptop',
               quantity: 1,
-              price: 80.0,
+              price: 1200.0,
             },
           ],
         },
