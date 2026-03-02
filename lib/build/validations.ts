@@ -29,7 +29,7 @@ import {
 const Plugin = cds.build?.Plugin;
 const ERROR = Plugin?.ERROR;
 const WARNING = Plugin?.WARNING;
-const VALID_EVENTS = ['CREATE', 'READ', 'UPDATE', 'DELETE'] as const;
+const VALID_EVENTS = ['CREATE', 'READ', 'UPDATE', 'DELETE', '*'] as const;
 
 export function validateAllowedAnnotations(
   allowedAnnotations: string[],
