@@ -2,7 +2,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import cds from '@sap/cds';
 import * as csn from '../types/csn-extensions';
-import { getServiceCredentials, getServiceToken } from './auth';
+import { getServiceCredentials, CachingTokenProvider, createXsuaaTokenProvider } from './auth';
 import {
   createProcessApiClient,
   IProcessApiClient,
@@ -97,10 +97,10 @@ async function createApiClient(): Promise<IProcessApiClient> {
   }
 
   LOG.debug('Creating API client...');
-  return createProcessApiClient(apiUrl, async () => {
-    const tokenInfo = await getServiceToken(PROCESS_SERVICE);
-    return tokenInfo.jwt;
-  });
+  const tokenProvider = createXsuaaTokenProvider(credentials);
+  const cachingTokenProvider = new CachingTokenProvider(tokenProvider);
+
+  return createProcessApiClient(apiUrl, () => cachingTokenProvider.getToken());
 }
 
 // ============================================================================

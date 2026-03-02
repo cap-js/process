@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as csn from './csn-extensions';
 
+export interface EntityEventCache {
+  hasStart: boolean;
+  hasCancel: boolean;
+  hasSuspend: boolean;
+  hasResume: boolean;
+}
+
 declare module '@sap/cds' {
   export = cds;
   namespace cds {

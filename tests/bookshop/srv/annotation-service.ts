@@ -65,6 +65,49 @@ class AnnotationService extends cds.ApplicationService {
       return entity;
     });
 
+    // Wildcard entity actions
+    this.on('triggerAction', 'StartOnWildcard', async (req: cds.Request) => {
+      const entity = await SELECT.one
+        .from('AnnotationService.StartOnWildcard')
+        .where(req.params[0] as object);
+      return entity;
+    });
+
+    this.on('triggerAction', 'StartOnWildcardWhen', async (req: cds.Request) => {
+      const entity = await SELECT.one
+        .from('AnnotationService.StartOnWildcardWhen')
+        .where(req.params[0] as object);
+      return entity;
+    });
+
+    this.on('triggerAction', 'CancelOnWildcard', async (req: cds.Request) => {
+      const entity = await SELECT.one
+        .from('AnnotationService.CancelOnWildcard')
+        .where(req.params[0] as object);
+      return entity;
+    });
+
+    this.on('triggerAction', 'SuspendOnWildcard', async (req: cds.Request) => {
+      const entity = await SELECT.one
+        .from('AnnotationService.SuspendOnWildcard')
+        .where(req.params[0] as object);
+      return entity;
+    });
+
+    this.on('triggerAction', 'ResumeOnWildcard', async (req: cds.Request) => {
+      const entity = await SELECT.one
+        .from('AnnotationService.ResumeOnWildcard')
+        .where(req.params[0] as object);
+      return entity;
+    });
+
+    this.on('triggerAction', 'CancelOnWildcardWhen', async (req: cds.Request) => {
+      const entity = await SELECT.one
+        .from('AnnotationService.CancelOnWildcardWhen')
+        .where(req.params[0] as object);
+      return entity;
+    });
+
     await super.init();
   }
 }

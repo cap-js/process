@@ -973,4 +973,89 @@ service AnnotationService {
   } actions {
     action triggerResumeWhen() returns ResumeOnActionWhen;
   }
+
+  // ============================================
+  // WILDCARD EVENT TESTS
+  // Testing process annotations with '*' to trigger on all events
+  // ============================================
+
+  // --------------------------------------------
+  // Start process on wildcard '*' (all CUD events + bound actions)
+  // --------------------------------------------
+  @build.process.start: {
+    id: 'startOnWildcardProcess',
+    on: '*',
+  }
+  entity StartOnWildcard as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns StartOnWildcard;
+  }
+
+  // --------------------------------------------
+  // Start process on wildcard '*' with condition
+  // --------------------------------------------
+  @build.process.start: {
+    id: 'startOnWildcardWhenProcess',
+    on: '*',
+    if: (mileage > 500)
+  }
+  entity StartOnWildcardWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns StartOnWildcardWhen;
+  }
+
+  // --------------------------------------------
+  // Cancel process on wildcard '*' (all CUD events + bound actions)
+  // --------------------------------------------
+  @build.process.cancel: {
+    on: '*',
+    cascade: false,
+  }
+  entity CancelOnWildcard as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns CancelOnWildcard;
+  }
+
+  // --------------------------------------------
+  // Suspend process on wildcard '*' (all CUD events + bound actions)
+  // --------------------------------------------
+  @build.process.suspend: {
+    on: '*',
+    cascade: false,
+  }
+  entity SuspendOnWildcard as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns SuspendOnWildcard;
+  }
+
+  // --------------------------------------------
+  // Resume process on wildcard '*' (all CUD events + bound actions)
+  // --------------------------------------------
+  @build.process.resume: {
+    on: '*',
+    cascade: false,
+  }
+  entity ResumeOnWildcard as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns ResumeOnWildcard;
+  }
+
+  // --------------------------------------------
+  // Wildcard with condition
+  // --------------------------------------------
+  @build.process.cancel: {
+    on: '*',
+    cascade: true,
+    if: (mileage > 500)
+  }
+  entity CancelOnWildcardWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns CancelOnWildcardWhen;
+  }
 }
