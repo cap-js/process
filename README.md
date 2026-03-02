@@ -20,7 +20,7 @@ cds watch
 - (in future): run `npm add @cap-js/process`
 - Login to cf `cf login ...`
 - Bind to process service instance:
-  - `cds bind ProcessService to -to <sbpa-service-instance>`
+  - `cds bind ProcessService -to <sbpa-service-instance>`
 
 Start developing 🙂
 
