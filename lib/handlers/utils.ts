@@ -1,4 +1,5 @@
 import cds, { column_expr, expr, Results, Target } from '@sap/cds';
+import crypto from 'crypto';
 import {
   BUILD_PREFIX,
   PROCESS_CANCEL_IF,
@@ -105,6 +106,12 @@ export function concatenateBusinessKey(target: cds.entity, row: EntityRow): stri
   let businessKey = '';
   for (const keyField of getKeyFieldsForEntity(target)) {
     businessKey += String(row[keyField] ?? '');
+  }
+
+  if (businessKey.length >= 255) {
+    // hash businessKey value
+    const hash = crypto.createHash('sha256').update(businessKey).digest('hex');
+    return `H:${hash}`;
   }
   return businessKey;
 }
