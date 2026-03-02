@@ -1,10 +1,8 @@
-import { column_expr, expr, Target } from '@sap/cds';
+import { column_expr, entities, entity, expr, Target } from '@sap/cds';
 import {
-  ElementAnnotation,
   emitProcessEvent,
   EntityRow,
   getBusinessKeyOrReject,
-  getElementAnnotations,
   getEntityDataFromRequest,
   isDeleteWithoutProcess,
   ProcessDeleteRequest,
@@ -14,13 +12,17 @@ import {
   PROCESS_START_ID,
   PROCESS_START_ON,
   PROCESS_START_IF,
-  PROCESS_INPUT,
+  PROCESS_START_INPUTS,
   LOG_MESSAGES,
   PROCESS_LOGGER_PREFIX,
 } from './../constants';
 
 import cds from '@sap/cds';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
+
+type SimpleInputCSN = { '=': string };
+type AliasInputCSN = { path: { '=': string }; as: string };
+type InputCSNEntry = SimpleInputCSN | AliasInputCSN;
 
 type ProcessStartInput = {
   sourceElement: string;
@@ -109,86 +111,154 @@ function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
       ? ((target[PROCESS_START_IF] as unknown as { xpr: expr }).xpr as expr)
       : undefined,
   };
-  const elementAnnotations = getElementAnnotations(target as cds.entity);
-  const entityName = (target as cds.entity).name;
-  startSpecs.inputs = getInputElements(
-    elementAnnotations,
-    new Set([entityName]),
-    [entityName],
-    req,
-  );
+  const inputsCSN = target[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
+  startSpecs.inputs = parseInputsArray(inputsCSN, target as cds.entity);
 
   return startSpecs;
 }
 
-function getInputElements(
-  elementAnnotations: ElementAnnotation[],
-  visitedEntities: Set<string> = new Set(),
-  currentPath: string[] = [],
-  req: cds.Request,
+function isAliasInput(entry: InputCSNEntry): entry is AliasInputCSN {
+  return 'path' in entry && 'as' in entry;
+}
+
+function parsePath(pathString: string): string[] {
+  return pathString.replace(/^\$self\./, '').split('.');
+}
+
+function parseInputsArray(
+  inputsCSN: InputCSNEntry[] | undefined,
+  entity: cds.entity,
 ): ProcessStartInput[] {
-  const inputs: ProcessStartInput[] = [];
-  for (const {
-    elementName,
-    annotationKey,
-    annotationValue,
-    associatedTarget,
-  } of elementAnnotations) {
-    switch (annotationKey) {
-      case PROCESS_INPUT: {
-        // For associations, recursively get input elements from the associated entity
-        // If the associated entity has no annotated elements, use empty array to signal "expand all"
-        let associatedInputElements: ProcessStartInput[] | undefined = undefined;
+  if (!inputsCSN || inputsCSN.length === 0) {
+    return [];
+  }
+  const parsedEntries = inputsCSN.map((entry) => {
+    if (isAliasInput(entry)) {
+      return {
+        path: parsePath(entry.path['=']),
+        alias: entry.as,
+      };
+    } else {
+      return {
+        path: parsePath(entry['=']),
+        alias: undefined,
+      };
+    }
+  });
 
-        if (associatedTarget) {
-          const associatedEntityName = associatedTarget.name || elementName;
+  return buildInputTree(parsedEntries, entity);
+}
 
-          // Check for cycle: if we've already visited this entity, throw an error
-          if (visitedEntities.has(associatedEntityName)) {
-            LOG.error(`Cycle detected in @bpm.process.input annotations: ${associatedEntityName}`);
-            return req.reject({
-              status: 400,
-              message: `Cycle detected in @bpm.process.input annotations: ${associatedEntityName}`,
-            });
-          }
+function buildInputTree(
+  entries: { path: string[]; alias?: string }[],
+  rootEntity: cds.entity,
+): ProcessStartInput[] {
+  type StackItem = {
+    entries: { path: string[]; alias?: string }[];
+    entity: cds.entity;
+    resultTarget: ProcessStartInput[];
+  };
 
-          // Add to visited set and path for this branch
-          const newVisited = new Set(visitedEntities);
-          newVisited.add(associatedEntityName);
-          const newPath = [...currentPath, associatedEntityName];
+  const rootResult: ProcessStartInput[] = [];
+  const stack: StackItem[] = [{ entries, entity: rootEntity, resultTarget: rootResult }];
 
-          associatedInputElements = getInputElements(
-            getElementAnnotations(associatedTarget),
-            newVisited,
-            newPath,
-            req,
-          );
-        }
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+    const currentEntries = current.entries;
+    const currentEntity = current.entity;
+    const result = current.resultTarget;
 
-        const input: ProcessStartInput = {
-          sourceElement: elementName,
-          associatedInputElements,
-        };
+    const rootAliases = new Map<string, string>();
+    for (let i = 0; i < currentEntries.length; i++) {
+      const entry = currentEntries[i];
+      if (entry.path.length === 1 && entry.alias) {
+        rootAliases.set(entry.path[0], entry.alias);
+      }
+    }
 
-        if (
-          typeof annotationValue === 'boolean' ||
-          annotationValue === 'true' ||
-          annotationValue === 'false'
-        ) {
-          input.targetVariable = undefined;
+    const elementsWithChildren = new Set<string>();
+    for (let i = 0; i < currentEntries.length; i++) {
+      const entry = currentEntries[i];
+      if (entry.path.length > 1) {
+        elementsWithChildren.add(entry.path[0]);
+      }
+    }
+
+    const nestedMap = new Map<string, { path: string[]; alias?: string }[]>();
+
+    for (let i = 0; i < currentEntries.length; i++) {
+      const entry = currentEntries[i];
+
+      if (entry.path.length === 1) {
+        const elementName = entry.path[0];
+        const element = currentEntity.elements?.[elementName];
+        const isAssocOrComp =
+          element?.type === 'cds.Association' || element?.type === 'cds.Composition';
+
+        if (isAssocOrComp && !elementsWithChildren.has(elementName)) {
+          result.push({
+            sourceElement: elementName,
+            targetVariable: entry.alias,
+            associatedInputElements: [],
+          });
         } else {
-          input.targetVariable = annotationValue;
+          result.push({
+            sourceElement: elementName,
+            targetVariable: entry.alias,
+          });
         }
+      } else {
+        const rootElement = entry.path[0];
+        const remaining = { path: entry.path.slice(1), alias: entry.alias };
 
-        inputs.push(input);
-        break;
+        if (!nestedMap.has(rootElement)) {
+          nestedMap.set(rootElement, []);
+        }
+        nestedMap.get(rootElement)!.push(remaining);
+      }
+    }
+
+    const nestedKeys = Array.from(nestedMap.keys());
+    for (let i = 0; i < nestedKeys.length; i++) {
+      const rootElement = nestedKeys[i];
+      const nestedEntries = nestedMap.get(rootElement)!;
+      const element = currentEntity.elements?.[rootElement];
+      const targetEntity = (element as { _target?: cds.entity })?._target ?? currentEntity;
+
+      let existing: ProcessStartInput | undefined;
+      for (let j = 0; j < result.length; j++) {
+        if (result[j].sourceElement === rootElement) {
+          existing = result[j];
+          break;
+        }
+      }
+
+      if (existing) {
+        existing.associatedInputElements = [];
+        stack.push({
+          entries: nestedEntries,
+          entity: targetEntity,
+          resultTarget: existing.associatedInputElements,
+        });
+      } else {
+        const newEntry: ProcessStartInput = {
+          sourceElement: rootElement,
+          targetVariable: rootAliases.get(rootElement),
+          associatedInputElements: [],
+        };
+        result.push(newEntry);
+        stack.push({
+          entries: nestedEntries,
+          entity: targetEntity,
+          resultTarget: newEntry.associatedInputElements!,
+        });
       }
     }
   }
-  return inputs;
+
+  return rootResult;
 }
 
-// Cycles are detected in getInputElements, so no cycle handling needed here
 function convertToColumnsExpr(array: ProcessStartInput[]): column_expr[] {
   return array.map((item) => {
     const column: column_expr = {};
@@ -209,8 +279,6 @@ function convertToColumnsExpr(array: ProcessStartInput[]): column_expr[] {
       if (item.associatedInputElements.length > 0) {
         column.expand = convertToColumnsExpr(item.associatedInputElements);
       } else {
-        // Association annotated as input but associated entity has no annotated elements
-        // -> expand with '*' to include all direct attributes
         column.expand = ['*'] as unknown as column_expr[];
       }
     }

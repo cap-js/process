@@ -20,6 +20,7 @@ export const PROCESS_START = '@bpm.process.start' as const;
 export const PROCESS_START_ID = '@bpm.process.start.id' as const;
 export const PROCESS_START_ON = '@bpm.process.start.on' as const;
 export const PROCESS_START_IF = '@bpm.process.start.if' as const;
+export const PROCESS_START_INPUTS = '@bpm.process.start.inputs' as const;
 
 /**
  * Process Cancel Annotations

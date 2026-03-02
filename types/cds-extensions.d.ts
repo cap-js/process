@@ -62,6 +62,7 @@ declare module '@sap/cds' {
     '@bpm.process.start.id'?: string;
     '@bpm.process.start.on'?: string;
     '@bpm.process.start.if'?: object;
+    '@bpm.process.start.inputs'?: object[];
     '@bpm.process.cancel.on'?: string;
     '@bpm.process.cancel.cascade'?: boolean;
     '@bpm.process.cancel.if'?: object;
