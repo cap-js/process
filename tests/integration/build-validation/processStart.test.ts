@@ -1,4 +1,4 @@
-import { PROCESS_INPUT, PROCESS_START, PROCESS_START_ID } from '../../../lib/constants';
+import { PROCESS_START, PROCESS_START_ID, PROCESS_START_INPUTS } from '../../../lib/constants';
 import { validateModel, withProcessDefinition, wrapEntity } from './helpers';
 
 // Tests additional annotation validation specific for start annotation
@@ -118,8 +118,8 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
     });
   });
 
-  describe(`${PROCESS_INPUT} tests`, () => {
-    it('should pass with simple input without any annotation', async () => {
+  describe(`${PROCESS_START_INPUTS} tests`, () => {
+    it('should pass with all entity fields when no inputs array is specified', async () => {
       const entityDef = `
                 ${PROCESS_START}: { id: 'validProcessId', on: 'DELETE' }
                 entity ValidEntity { key ID: String;
@@ -138,29 +138,89 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       expect(result.buildSucceeded).toBe(true);
     });
 
-    it('should pass with inputs annotated and nested association', async () => {
+    it('should pass with selected inputs using inputs array', async () => {
       const entityDef = `
                 ${PROCESS_START}: {
                     id: 'validProcess',
                     on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        $self.name
+                    ]
                 }
-                entity startEntity {
-                    key ID               : String ${PROCESS_INPUT}: 'identifier';
-                        startingShipment : Association to one Shipments
-                                            on startingShipment.ID = ID
-                                        ${PROCESS_INPUT};
-                }
-
-                entity Shipments {
-                    key ID      : String  ${PROCESS_INPUT}: 'identifier';
-                        address : String ${PROCESS_INPUT};
-                        date    : String;
-                        weight  : Integer ${PROCESS_INPUT};
+                entity StartEntity {
+                    key ID   : String;
+                        name : String;
+                        age  : Integer;
                 }
             `;
-      const processInputs = `identifier: String; startingShipment: Shipments; businesskey: String;`;
+      const processInputs = `ID: String; name: String; businesskey: String;`;
 
-      const otherTypes = 'type Shipments { identifier: String; address: String; weight: Integer; }';
+      const cdsSourceProcessDef = withProcessDefinition(
+        entityDef,
+        'validProcess',
+        processInputs,
+      );
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
+    });
+
+    it('should pass with aliased inputs', async () => {
+      const entityDef = `
+                ${PROCESS_START}: {
+                    id: 'validProcess',
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        { path: $self.name, as: 'userName' }
+                    ]
+                }
+                entity StartEntity {
+                    key ID   : String;
+                        name : String;
+                }
+            `;
+      const processInputs = `ID: String; userName: String; businesskey: String;`;
+
+      const cdsSourceProcessDef = withProcessDefinition(
+        entityDef,
+        'validProcess',
+        processInputs,
+      );
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
+    });
+
+    it('should pass with nested composition in inputs array', async () => {
+      const entityDef = `
+                ${PROCESS_START}: {
+                    id: 'validProcess',
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        $self.items
+                    ]
+                }
+                entity StartEntity {
+                    key ID    : String;
+                        items : Composition of many ItemEntity on items.parentID = $self.ID;
+                }
+
+                entity ItemEntity {
+                    key ID       : String;
+                        parentID : String;
+                        title    : String;
+                        price    : Decimal(15,2);
+                }
+            `;
+      const processInputs = `ID: String; items: ItemType; businesskey: String;`;
+      const otherTypes = 'type ItemType { ID: String; parentID: String; title: String; price: Decimal(15,2); }';
 
       const cdsSourceProcessDef = withProcessDefinition(
         entityDef,
@@ -175,48 +235,58 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       expect(result.buildSucceeded).toBe(true);
     });
 
-    it('should ERROR when cycle in input annotation is found', async () => {
+    it('should pass with selected nested composition fields', async () => {
       const entityDef = `
                 ${PROCESS_START}: {
-                    id: 'validProcessID',
-                    on: 'CREATE'
+                    id: 'validProcess',
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        $self.items.ID,
+                        $self.items.title
+                    ]
                 }
-                entity FirstEntity {
-                    key ID             : String ${PROCESS_INPUT};
-                        secondEntityID : String ${PROCESS_INPUT};
-                        secondEntity   : Composition of many SecondEntity
-                                        on secondEntityID = secondEntity.ID
-                                        ${PROCESS_INPUT};
+                entity StartEntity {
+                    key ID    : String;
+                        items : Composition of many ItemEntity on items.parent = $self;
                 }
 
-                entity SecondEntity {
-                    key ID            : String ${PROCESS_INPUT};
-                        firstEntityID : String ${PROCESS_INPUT};
-                        firstEntity   : Composition of many FirstEntity
-                                        on firstEntityID = firstEntity.ID
-                                        ${PROCESS_INPUT};
+                entity ItemEntity {
+                    key ID     : String;
+                        parent : Association to StartEntity;
+                        title  : String;
+                        price  : Decimal(15,2);
                 }
             `;
-      const processInputs = `ID: String; businesskey: String;`;
+      const processInputs = `ID: String; items: ItemType; businesskey: String;`;
+      const otherTypes = 'type ItemType { ID: String; title: String; }';
 
-      const cdsSourceProcessDef = withProcessDefinition(entityDef, 'validProcessID', processInputs);
+      const cdsSourceProcessDef = withProcessDefinition(
+        entityDef,
+        'validProcess',
+        processInputs,
+        otherTypes,
+      );
 
       const result = await validateModel(cdsSourceProcessDef);
 
-      expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors.some((e) => e.msg.includes('Cycle detected'))).toBe(true);
-      expect(result.buildSucceeded).toBe(false);
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
     });
 
-    it('should ERROR when entity input is not in process input', async () => {
+    it('should ERROR when entity input is not in process definition', async () => {
       const entityDef = `
                 ${PROCESS_START}: {
                     id: 'validProcessID',
-                    on: 'CREATE'
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        $self.name
+                    ]
                 }
                 entity FirstEntity {
-                    key ID             : String ${PROCESS_INPUT};
-                        name           : String ${PROCESS_INPUT};
+                    key ID   : String;
+                        name : String;
                 }
             `;
       const processInputs = `ID: String; businesskey: String;`;
@@ -236,14 +306,17 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       expect(result.buildSucceeded).toBe(false);
     });
 
-    it('should ERROR when process input is not in entity attributes', async () => {
+    it('should ERROR when mandatory process input is missing from entity', async () => {
       const entityDef = `
                 ${PROCESS_START}: {
                     id: 'validProcessID',
-                    on: 'CREATE'
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID
+                    ]
                 }
                 entity FirstEntity {
-                    key ID             : String ${PROCESS_INPUT};
+                    key ID : String;
                 }
             `;
       const processInputs = `ID: String; name: String not null; businesskey: String;`;
@@ -261,15 +334,19 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       expect(result.buildSucceeded).toBe(false);
     });
 
-    it('should WARN if mandatory process input is not mandatory in entity attribute', async () => {
+    it('should WARN if mandatory process input is not mandatory in entity', async () => {
       const entityDef = `
                 ${PROCESS_START}: {
                     id: 'validProcessID',
-                    on: 'CREATE'
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        $self.mandatoryField
+                    ]
                 }
                 entity FirstEntity {
-                    key ID             : String ${PROCESS_INPUT};
-                    mandatoryField: String ${PROCESS_INPUT};
+                    key ID             : String;
+                        mandatoryField : String;
                 }
             `;
       const processInputs = `ID: String; mandatoryField: String not null; businesskey: String;`;
