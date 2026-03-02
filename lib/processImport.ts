@@ -225,16 +225,16 @@ function addProcessTypes(
     definitions,
   );
 
-  definitions[attributeName]={
+  definitions[attributeName] = {
     kind: 'type',
     name: attributeName,
     elements: {
-      id: { type: csn.CdsBuiltinType.String, notNull:true},
-      label: { type: csn.CdsBuiltinType.String, notNull:true},
-      value: { type: csn.CdsBuiltinType.String},
-      type: { type: csn.CdsBuiltinType.String, notNull:true},        
+      id: { type: csn.CdsBuiltinType.String, notNull: true },
+      label: { type: csn.CdsBuiltinType.String, notNull: true },
+      value: { type: csn.CdsBuiltinType.String },
+      type: { type: csn.CdsBuiltinType.String, notNull: true },
     },
-  }
+  };
 
   definitions[attributesName] = {
     kind: 'type',
@@ -243,7 +243,7 @@ function addProcessTypes(
       type: attributeName,
     },
   };
- 
+
   definitions[instanceName] = {
     kind: 'type',
     name: instanceName,
