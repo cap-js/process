@@ -5,7 +5,7 @@ const { join } = cds.utils.path;
 const app = join(__dirname, '../../bookshop');
 const { test, POST } = cds.test(app);
 
-describe('Integration tests for START annotation with @bpm.process.input', () => {
+describe('Integration tests for START annotation with inputs array', () => {
   let foundMessages: any[] = [];
 
   beforeAll(async () => {
@@ -30,10 +30,10 @@ describe('Integration tests for START annotation with @bpm.process.input', () =>
   };
 
   // ================================================
-  // Test 1: No @bpm.process.input
+  // Test 1: No inputs array specified
   // All entity fields should be included in context
   // ================================================
-  describe('Test 1: No @bpm.process.input (all fields included)', () => {
+  describe('Test 1: No inputs array (all fields included)', () => {
     it('should include all entity fields in process context', async () => {
       const shipment = {
         ID: '550e8400-e29b-41d4-a716-446655440000',
@@ -60,11 +60,11 @@ describe('Integration tests for START annotation with @bpm.process.input', () =>
   });
 
   // ================================================
-  // Test 2: With @bpm.process.input on selected fields
-  // Only annotated fields should be included in context
+  // Test 2: With inputs array on selected fields
+  // Only specified fields should be included in context
   // ================================================
-  describe('Test 2: @bpm.process.input on selected fields', () => {
-    it('should include only annotated fields in process context', async () => {
+  describe('Test 2: inputs array with selected fields', () => {
+    it('should include only specified fields in process context', async () => {
       const shipment = {
         ID: '550e8400-e29b-41d4-a716-446655440001',
         status: 'PENDING',
@@ -83,7 +83,7 @@ describe('Integration tests for START annotation with @bpm.process.input', () =>
       const context = getStartContext();
       expect(context).toBeDefined();
 
-      // Only annotated fields should be present: ID, shipmentDate, origin
+      // Only specified fields should be present: ID, shipmentDate, origin
       expect(context).toEqual({
         ID: shipment.ID,
         shipmentDate: shipment.shipmentDate,
@@ -94,10 +94,10 @@ describe('Integration tests for START annotation with @bpm.process.input', () =>
   });
 
   // ================================================
-  // Test 3: With @bpm.process.input with custom alias
-  // Field should be renamed in context
+  // Test 3: With inputs array with custom aliases
+  // Field should be renamed in context using { path: $self.field, as: 'Alias' }
   // ================================================
-  describe('Test 3: @bpm.process.input with custom alias', () => {
+  describe('Test 3: inputs array with custom alias', () => {
     it('should rename fields according to alias in process context', async () => {
       const shipment = {
         ID: '550e8400-e29b-41d4-a716-446655440002',
@@ -130,10 +130,10 @@ describe('Integration tests for START annotation with @bpm.process.input', () =>
   });
 
   // ================================================
-  // Test 4: With nested Composition (all child fields)
-  // Include composition items with all their fields
+  // Test 4: With nested Composition in inputs (all child fields)
+  // Include composition items with all their fields using $self.items
   // ================================================
-  describe('Test 4: Nested Composition with @bpm.process.input (all child fields)', () => {
+  describe('Test 4: Nested Composition in inputs (all child fields)', () => {
     it('should include composition items with all their fields', async () => {
       const order = {
         ID: '550e8400-e29b-41d4-a716-446655440003',
@@ -165,22 +165,22 @@ describe('Integration tests for START annotation with @bpm.process.input', () =>
       const context = getStartContext();
       expect(context).toBeDefined();
 
-      // Annotated fields
+      // Specified fields in inputs array
       expect(context).toEqual({
         ID: order.ID,
         shipmentDate: order.shipmentDate,
         businesskey: order.ID,
-        items: order.items, // entire composition included with all fields
+        items: order.items, // entire composition included with all fields via $self.items
       });
     });
   });
 
   // ================================================
   // Test 5: With nested Composition (selected child fields)
-  // Include only selected fields from composition items
+  // Include only selected fields from composition items using $self.items.field
   // ================================================
   describe('Test 5: Nested Composition with selected child fields', () => {
-    it('should include only annotated fields from composition items', async () => {
+    it('should include only specified fields from composition items', async () => {
       const order = {
         ID: '550e8400-e29b-41d4-a716-446655440004',
         status: 'PENDING',
@@ -209,13 +209,13 @@ describe('Integration tests for START annotation with @bpm.process.input', () =>
       const context = getStartContext();
       expect(context).toBeDefined();
 
-      // Parent annotated fields
+      // Parent specified fields
       expect(context).toEqual({
         ID: order.ID,
         shipmentDate: order.shipmentDate,
         businesskey: order.ID,
         items: [
-          // composition included but only with annotated fields: ID, title, price
+          // composition included but only with specified fields: ID, title, price
           {
             ID: order.items[0].ID,
             title: order.items[0].title,
@@ -233,7 +233,7 @@ describe('Integration tests for START annotation with @bpm.process.input', () =>
 
   // ================================================
   // Test 6: Nested Composition with aliases
-  // Child fields should be renamed in context
+  // Child fields should be renamed in context using { path: $self.items.field, as: 'Alias' }
   // ================================================
   describe('Test 6: Nested Composition with aliases', () => {
     it('should rename fields according to aliases in nested items', async () => {
@@ -273,25 +273,6 @@ describe('Integration tests for START annotation with @bpm.process.input', () =>
           },
         ],
       });
-    });
-  });
-  // ================================================
-  // Test 7: Cycles in associations
-  // Should throw an error
-  // ================================================
-  describe('Test 7: Cycles in associations', () => {
-    it('should throw an error when cycle is detected', async () => {
-      const object = {
-        ID: '550e8400-e29b-41d4-a716-446655440006',
-        name: 'Test Cycle A',
-        cycleBID: '550e8400-e29b-41d4-a716-446655440007',
-      };
-      try {
-        await POST('/odata/v4/annotation/StartCycleA', object);
-      } catch (error: any) {
-        expect(error.status).toBe(400);
-        expect(error.message).toContain('Cycle detected in @bpm.process.input annotations:');
-      }
     });
   });
 });
