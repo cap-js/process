@@ -1,4 +1,5 @@
 import cds, { Results } from '@sap/cds';
+import { EntityEventCache } from './types/cds-plugin';
 import {
   addDeletedEntityToRequest,
   handleProcessCancel,
@@ -16,13 +17,6 @@ import {
   CUD_EVENTS,
 } from './lib/index';
 import { importProcess } from './lib/processImport';
-
-interface EntityEventCache {
-  hasStart: boolean;
-  hasCancel: boolean;
-  hasSuspend: boolean;
-  hasResume: boolean;
-}
 
 // Register build plugin for annotation validation during cds build
 cds.build?.register?.('process-validation', ProcessValidationPlugin);
