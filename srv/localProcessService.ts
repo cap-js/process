@@ -13,9 +13,9 @@ class ProcessService extends cds.ApplicationService {
 
       LOG.debug(
         `==============================================================\n` +
-        `Process start for ${definitionId} initiated\n` +
-        `BusinessKey: ${businessKey}\nContext: ${JSON.stringify(context, null, 2)}\n` +
-        `==============================================================`
+          `Process start for ${definitionId} initiated\n` +
+          `BusinessKey: ${businessKey}\nContext: ${JSON.stringify(context, null, 2)}\n` +
+          `==============================================================`,
       );
 
       localWorkflowStore.startWorkflow({
@@ -31,9 +31,9 @@ class ProcessService extends cds.ApplicationService {
 
       LOG.debug(
         `==============================================================\n` +
-        `Process cancel for ${businessKey} initiated\n` +
-        `Context: ${JSON.stringify(req.data, null, 2)}\n` +
-        `==============================================================`
+          `Process cancel for ${businessKey} initiated\n` +
+          `Context: ${JSON.stringify(req.data, null, 2)}\n` +
+          `==============================================================`,
       );
 
       const instances = localWorkflowStore.getInstancesByBusinessKey(businessKey, [
@@ -64,9 +64,9 @@ class ProcessService extends cds.ApplicationService {
 
       LOG.debug(
         `==============================================================\n` +
-        `Process suspend for ${businessKey} initiated\n` +
-        `Context: ${JSON.stringify(req.data, null, 2)}\n` +
-        `==============================================================`
+          `Process suspend for ${businessKey} initiated\n` +
+          `Context: ${JSON.stringify(req.data, null, 2)}\n` +
+          `==============================================================`,
       );
 
       const instances = localWorkflowStore.getInstancesByBusinessKey(
@@ -97,9 +97,9 @@ class ProcessService extends cds.ApplicationService {
 
       LOG.debug(
         `==============================================================\n` +
-        `Process resume for ${businessKey} initiated\n` +
-        `Context: ${JSON.stringify(req.data, null, 2)}\n` +
-        `==============================================================`
+          `Process resume for ${businessKey} initiated\n` +
+          `Context: ${JSON.stringify(req.data, null, 2)}\n` +
+          `==============================================================`,
       );
 
       const instances = localWorkflowStore.getInstancesByBusinessKey(
@@ -130,8 +130,8 @@ class ProcessService extends cds.ApplicationService {
 
       LOG.debug(
         `==============================================================\n` +
-        `Get instances by businessKey: ${businessKey}\n` +
-        `==============================================================`
+          `Get instances by businessKey: ${businessKey}\n` +
+          `==============================================================`,
       );
 
       if (!businessKey) {
@@ -149,8 +149,8 @@ class ProcessService extends cds.ApplicationService {
 
       LOG.debug(
         `==============================================================\n` +
-        `Get attributes for instance: ${processInstanceId}\n` +
-        `==============================================================`
+          `Get attributes for instance: ${processInstanceId}\n` +
+          `==============================================================`,
       );
 
       if (!processInstanceId) {
@@ -173,8 +173,8 @@ class ProcessService extends cds.ApplicationService {
 
       LOG.debug(
         `==============================================================\n` +
-        `Get outputs for instance: ${processInstanceId}\n` +
-        `==============================================================`
+          `Get outputs for instance: ${processInstanceId}\n` +
+          `==============================================================`,
       );
 
       if (!processInstanceId) {
