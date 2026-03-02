@@ -1,3 +1,17 @@
+# Setup
+
+### Execute following commands install dependencies after cloning the project:
+````
+npm install
+npm i -g tsx
+npm run build
+````
+### To run the sample application, execute:
+````
+cd /tests/bookshop
+cds watch
+````
+
 # Current annotation implementation:
 
 ## For starting a process:
