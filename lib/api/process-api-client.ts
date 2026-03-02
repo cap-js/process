@@ -106,7 +106,6 @@ export async function fetchAllDataTypes(
   const result: DataType[] = [];
   const fetched = new Set<string>();
 
-  // Filter initial batch: skip already fetched and content dependencies
   let currentBatch = dependencies.filter((d) => {
     if (d.type === 'content') {
       LOG.debug(`Skipping content dependency: ${d.artifactUid}`);
@@ -116,10 +115,8 @@ export async function fetchAllDataTypes(
   });
 
   while (currentBatch.length > 0) {
-    // Mark all in current batch as fetched to avoid duplicates
     currentBatch.forEach((d) => fetched.add(d.artifactUid));
 
-    // Fetch all artifacts in this batch in parallel
     const fetchPromises = currentBatch.map(async (dep) => {
       try {
         const artifact = await fetchArtifact(serviceUrl, jwt, projectId, dep.artifactUid);
@@ -132,7 +129,6 @@ export async function fetchAllDataTypes(
     // eslint-disable-next-line no-await-in-loop -- Intentional: must await batch to collect nested dependencies for next iteration
     const responses = await Promise.all(fetchPromises);
 
-    // Collect next batch of dependencies from successful fetches
     const nextBatch: Dependency[] = [];
 
     for (const response of responses) {
@@ -146,14 +142,13 @@ export async function fetchAllDataTypes(
         LOG.debug(`Fetched data type: ${artifact.name}`);
         result.push(artifact);
 
-        // Collect nested dependencies for next batch
         artifact.dependencies
           ?.filter((d) => !fetched.has(d.artifactUid) && d.type !== 'content')
           .forEach((d) => nextBatch.push(d));
       }
     }
 
-    // Deduplicate next batch and prepare for next iteration
+    // prepare for next iteration
     currentBatch = [];
     const seen = new Set<string>();
     for (const d of nextBatch) {
