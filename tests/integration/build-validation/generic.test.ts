@@ -160,6 +160,17 @@ describe('.on annotation tests ', () => {
           expect(result.buildSucceeded).toBe(true);
         });
 
+        it('should PASS with wildcard (*) event', async () => {
+          const cdsSource = wrapEntity(`
+                        ${annotationBase}: { ${baseProps}, on: '*' }
+                        entity OnWildcard { key ID: UUID; }
+                    `);
+
+          const result = await validateModel(cdsSource);
+          expect(result.errors).toHaveLength(0);
+          expect(result.buildSucceeded).toBe(true);
+        });
+
         it('should PASS when on references a valid bound action', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, on: 'customAction' }
