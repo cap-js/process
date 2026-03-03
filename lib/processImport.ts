@@ -79,9 +79,6 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
   await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
   await fs.promises.writeFile(outputPath, JSON.stringify(processHeader, null, 2), 'utf8');
 
-  const serviceName = `${projectId}.${capitalize(processHeader.identifier)}Service`;
-  await addServiceToPackageJson(serviceName, `srv/external/${processName}`);
-
   return { filePath: outputPath, processHeader };
 }
 
@@ -111,31 +108,7 @@ async function generateCsnModel(jsonFilePath: string): Promise<csn.CsnModel> {
   const processHeader = loadProcessHeader(jsonFilePath);
   const csnModel = buildCsnModel(processHeader);
 
-  // Register service in package.json for local imports too
-  const serviceName = `${processHeader.projectId}.${capitalize(processHeader.identifier)}Service`;
-  const modelPath = getModelPathFromFilePath(jsonFilePath);
-  await addServiceToPackageJson(serviceName, modelPath);
-
   return csnModel;
-}
-
-/**
- * Convert absolute/relative file path to model path for package.json
- * e.g., "./srv/external/foo.json" -> "srv/external/foo"
- *       "/abs/path/srv/external/foo.json" -> "srv/external/foo"
- */
-function getModelPathFromFilePath(filePath: string): string {
-  // Resolve to absolute, then make relative to cds.root
-  const absolutePath = path.resolve(filePath);
-  let relativePath = path.relative(cds.root, absolutePath);
-
-  // Remove .json extension
-  if (relativePath.endsWith('.json')) {
-    relativePath = relativePath.slice(0, -5);
-  }
-
-  // Normalize path separators
-  return relativePath.replace(/\\/g, '/');
 }
 
 function loadProcessHeader(filePath: string): ProcessHeader {
@@ -529,28 +502,6 @@ function ensureObjectSchema(schema?: JsonSchema): JsonSchema {
     return schema;
   }
   return { type: 'object', properties: {}, required: [] };
-}
-
-// ============================================================================
-//  PACKAGE.JSON UPDATE
-// ============================================================================
-
-async function addServiceToPackageJson(serviceName: string, modelPath: string): Promise<void> {
-  const packagePath = path.join(cds.root, 'package.json');
-
-  try {
-    const content = await fs.promises.readFile(packagePath, 'utf8');
-    const pkg = JSON.parse(content);
-
-    pkg.cds ??= {};
-    pkg.cds.requires ??= {};
-    pkg.cds.requires[serviceName] = { kind: 'external', model: modelPath };
-
-    await fs.promises.writeFile(packagePath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-    LOG.debug(`Added ${serviceName} to package.json`);
-  } catch (error) {
-    LOG.warn(`Could not update package.json: ${error}`);
-  }
 }
 
 // ============================================================================
