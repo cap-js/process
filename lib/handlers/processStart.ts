@@ -158,111 +158,125 @@ function parseInputsArray(inputsCSN: InputCSNEntry[] | undefined): ProcessEntry[
   return parsedEntries;
 }
 
+enum BuildState {
+  GROUP_ENTRIES = 'GROUP_ENTRIES',
+  PROCESS_ELEMENT = 'PROCESS_ELEMENT',
+  CHECK_NESTED = 'CHECK_NESTED',
+  BUILD_SIMPLE = 'BUILD_SIMPLE',
+  BUILD_ASSOC = 'BUILD_ASSOC',
+  BUILD_NESTED = 'BUILD_NESTED',
+  NEXT_ELEMENT = 'NEXT_ELEMENT',
+  DONE = 'DONE',
+}
+
 function buildInputTree(entries: ProcessEntry[], rootEntity: cds.entity): ProcessStartInput[] {
-  type StackItem = {
-    entries: ProcessEntry[];
-    entity: cds.entity;
-    resultTarget: ProcessStartInput[];
-  };
+  if (entries.length === 0) {
+    return [];
+  }
 
-  const rootResult: ProcessStartInput[] = [];
-  const stack: StackItem[] = [{ entries, entity: rootEntity, resultTarget: rootResult }];
+  const result: ProcessStartInput[] = [];
+  let state: BuildState = BuildState.GROUP_ENTRIES;
 
-  while (stack.length > 0) {
-    const current = stack.pop()!;
-    const currentEntries = current.entries;
-    const currentEntity = current.entity;
-    const result = current.resultTarget;
+  let groups: Map<string, ProcessEntry[]> = new Map();
+  let elementNames: string[] = [];
+  let currentIndex: number = 0;
+  let currentElementName: string = '';
+  let currentGroup: ProcessEntry[] = [];
+  let directAlias: string | undefined = undefined;
+  let nestedEntries: ProcessEntry[] = [];
 
-    const rootAliases = new Map<string, string>();
-    for (let i = 0; i < currentEntries.length; i++) {
-      const entry = currentEntries[i];
-      if (entry.path.length === 1 && entry.alias) {
-        rootAliases.set(entry.path[0], entry.alias);
+  while (state !== BuildState.DONE) {
+    switch (state) {
+      case BuildState.GROUP_ENTRIES: {
+        for (const entry of entries) {
+          const firstSegment = entry.path[0];
+          if (!groups.has(firstSegment)) {
+            groups.set(firstSegment, []);
+          }
+          groups.get(firstSegment)!.push(entry);
+        }
+        elementNames = Array.from(groups.keys());
+        currentIndex = 0;
+        state = BuildState.PROCESS_ELEMENT;
+        break;
       }
-    }
 
-    const elementsWithChildren = new Set<string>();
-    for (let i = 0; i < currentEntries.length; i++) {
-      const entry = currentEntries[i];
-      if (entry.path.length > 1) {
-        elementsWithChildren.add(entry.path[0]);
+      case BuildState.PROCESS_ELEMENT: {
+        if (currentIndex >= elementNames.length) {
+          state = BuildState.DONE;
+          break;
+        }
+        currentElementName = elementNames[currentIndex];
+        currentGroup = groups.get(currentElementName)!;
+
+        const directEntry = currentGroup.find((e) => e.path.length === 1);
+
+        directAlias = directEntry?.alias;
+        nestedEntries = currentGroup
+          .filter((e) => e.path.length > 1)
+          .map((e) => ({ path: e.path.slice(1), alias: e.alias }));
+
+        state = BuildState.CHECK_NESTED;
+        break;
       }
-    }
 
-    const nestedMap = new Map<string, { path: string[]; alias?: string }[]>();
-
-    for (let i = 0; i < currentEntries.length; i++) {
-      const entry = currentEntries[i];
-
-      if (entry.path.length === 1) {
-        const elementName = entry.path[0];
-        const element = currentEntity.elements?.[elementName];
+      case BuildState.CHECK_NESTED: {
+        const element = rootEntity.elements?.[currentElementName];
         const isAssocOrComp =
           element?.type === 'cds.Association' || element?.type === 'cds.Composition';
 
-        if (isAssocOrComp && !elementsWithChildren.has(elementName)) {
-          result.push({
-            sourceElement: elementName,
-            targetVariable: entry.alias,
-            associatedInputElements: [],
-          });
+        if (nestedEntries.length > 0) {
+          state = BuildState.BUILD_NESTED;
+        } else if (isAssocOrComp) {
+          state = BuildState.BUILD_ASSOC;
         } else {
-          result.push({
-            sourceElement: elementName,
-            targetVariable: entry.alias,
-          });
+          state = BuildState.BUILD_SIMPLE;
         }
-      } else {
-        const rootElement = entry.path[0];
-        const remaining = { path: entry.path.slice(1), alias: entry.alias };
-
-        if (!nestedMap.has(rootElement)) {
-          nestedMap.set(rootElement, []);
-        }
-        nestedMap.get(rootElement)!.push(remaining);
-      }
-    }
-
-    const nestedKeys = Array.from(nestedMap.keys());
-    for (let i = 0; i < nestedKeys.length; i++) {
-      const rootElement = nestedKeys[i];
-      const nestedEntries = nestedMap.get(rootElement)!;
-      const element = currentEntity.elements?.[rootElement];
-      const targetEntity = (element as { _target?: cds.entity })?._target ?? currentEntity;
-
-      let existing: ProcessStartInput | undefined;
-      for (let j = 0; j < result.length; j++) {
-        if (result[j].sourceElement === rootElement) {
-          existing = result[j];
-          break;
-        }
+        break;
       }
 
-      if (existing) {
-        existing.associatedInputElements = [];
-        stack.push({
-          entries: nestedEntries,
-          entity: targetEntity,
-          resultTarget: existing.associatedInputElements,
+      case BuildState.BUILD_SIMPLE: {
+        result.push({
+          sourceElement: currentElementName,
+          targetVariable: directAlias,
         });
-      } else {
-        const newEntry: ProcessStartInput = {
-          sourceElement: rootElement,
-          targetVariable: rootAliases.get(rootElement),
+        state = BuildState.NEXT_ELEMENT;
+        break;
+      }
+
+      case BuildState.BUILD_ASSOC: {
+        result.push({
+          sourceElement: currentElementName,
+          targetVariable: directAlias,
           associatedInputElements: [],
-        };
-        result.push(newEntry);
-        stack.push({
-          entries: nestedEntries,
-          entity: targetEntity,
-          resultTarget: newEntry.associatedInputElements!,
         });
+        state = BuildState.NEXT_ELEMENT;
+        break;
+      }
+
+      case BuildState.BUILD_NESTED: {
+        const element = rootEntity.elements?.[currentElementName];
+        const targetEntity = (element as { _target?: cds.entity })?._target ?? rootEntity;
+        const nestedResults = buildInputTree(nestedEntries, targetEntity);
+
+        result.push({
+          sourceElement: currentElementName,
+          targetVariable: directAlias,
+          associatedInputElements: nestedResults,
+        });
+        state = BuildState.NEXT_ELEMENT;
+        break;
+      }
+
+      case BuildState.NEXT_ELEMENT: {
+        currentIndex++;
+        state = BuildState.PROCESS_ELEMENT;
+        break;
       }
     }
   }
 
-  return rootResult;
+  return result;
 }
 
 function convertToColumnsExpr(array: ProcessStartInput[]): column_expr[] {
