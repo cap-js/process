@@ -89,7 +89,7 @@ class ProcessService extends cds.ApplicationService {
       const { businessKey } = request.data;
 
       if (!businessKey) {
-        return request.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
+        return request.reject({ status: 400, message: 'Missing required parameter: businessKey' });
       }
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
@@ -106,7 +106,10 @@ class ProcessService extends cds.ApplicationService {
       const { processInstanceId } = request.data;
 
       if (!processInstanceId) {
-        return request.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
+        return request.reject({
+          status: 400,
+          message: 'Missing required parameter: processInstanceId',
+        });
       }
 
       const attributes = await this.workflowInstanceClient.getAttributes(processInstanceId);
@@ -117,7 +120,10 @@ class ProcessService extends cds.ApplicationService {
       const { processInstanceId } = request.data;
 
       if (!processInstanceId) {
-        return request.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
+        return request.reject({
+          status: 400,
+          message: 'Missing required parameter: processInstanceId',
+        });
       }
 
       const outputs = await this.workflowInstanceClient.getOutputs(processInstanceId);
@@ -132,7 +138,7 @@ class ProcessService extends cds.ApplicationService {
       return await this.cachingTokenProvider.getToken(tenant);
     } catch (error) {
       LOG.error('Error fetching token for Process Service:', error);
-      throw new Error(cds.i18n.messages.at('AUTH_TOKEN_FETCH_FAILED'));
+      throw new Error('Error during token fetching.');
     }
   }
 }

@@ -80,10 +80,7 @@ export async function startWorkflow(
 
   if (!res.ok) {
     const body = await res.text();
-    const errorMessage =
-      cds.i18n.messages.at('WORKFLOW_START_FAILED', [
-        body || res.statusText || 'Unknown error',
-      ]) || 'Failed to start workflow';
+    const errorMessage = `Failed to start workflow: ${body || res.statusText || 'Unknown error'}`;
     throw cds.error(res.status, errorMessage);
   }
 
@@ -117,10 +114,7 @@ export async function getWorkflowsByBusinessKey(
 
   if (!res.ok) {
     const body = await res.text();
-    const errorMessage =
-      cds.i18n.messages.at('WORKFLOW_RETRIEVE_FAILED', [
-        body || res.statusText || 'Unknown error',
-      ]) || 'Failed to retrieve workflow instances';
+    const errorMessage = `Failed to retrieve workflow instances: ${body || res.statusText || 'Unknown error'}`;
     throw cds.error(res.status, errorMessage);
   }
 
@@ -148,10 +142,7 @@ export async function updateWorkflowStatus(
 
   if (!res.ok) {
     const errorBody = await res.text();
-    const errorMessage =
-      cds.i18n.messages.at('WORKFLOW_UPDATE_FAILED', [
-        errorBody || res.statusText || 'Unknown error',
-      ]) || 'Failed to update workflow instance';
+    const errorMessage = `Failed to update workflow instance: ${errorBody || res.statusText || 'Unknown error'}`;
     throw cds.error(res.status, errorMessage);
   }
 
@@ -205,10 +196,7 @@ export async function getAttributes(
 
   if (!res.ok) {
     const errorBody = await res.text();
-    const errorMessage =
-      cds.i18n.messages.at('WORKFLOW_ATTRIBUTES_FAILED', [
-        errorBody || res.statusText || 'Unknown error',
-      ]) || 'Failed to get workflow instance attributes';
+    const errorMessage = `Failed to get workflow instance attributes: ${errorBody || res.statusText || 'Unknown error'}`;
     throw cds.error(res.status, errorMessage);
   }
 
@@ -239,10 +227,7 @@ export async function getOutputs(
 
   if (!res.ok) {
     const errorBody = await res.text();
-    const errorMessage =
-      cds.i18n.messages.at('WORKFLOW_OUTPUTS_FAILED', [
-        errorBody || res.statusText || 'Unknown error',
-      ]) || 'Failed to get workflow instance outputs';
+    const errorMessage = `Failed to get workflow instance outputs: ${errorBody || res.statusText || 'Unknown error'}`;
     throw cds.error(res.status, errorMessage);
   }
 

@@ -36,7 +36,7 @@ async function fetchXsuaaToken(
   });
 
   if (!jwt) {
-    throw new Error(cds.i18n.messages.at('AUTH_EMPTY_JWT'));
+    throw new Error('Empty JWT returned from XSUAA authorization service.');
   }
 
   LOG.debug('XSUAA token fetched successfully');
@@ -47,7 +47,7 @@ async function fetchXsuaaToken(
 
 export function createXsuaaTokenProvider(credentials: ProcessServiceCredentials): ITokenProvider {
   if (!credentials?.uaa) {
-    throw new Error(cds.i18n.messages.at('AUTH_MISSING_UAA_CREDENTIALS'));
+    throw new Error('Missing UAA credentials for XSUAA token provider.');
   }
 
   return {

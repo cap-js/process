@@ -88,12 +88,12 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
 async function createApiClient(): Promise<IProcessApiClient> {
   const credentials = getServiceCredentials(PROCESS_SERVICE);
   if (!credentials) {
-    throw new Error(cds.i18n.messages.at('IMPORT_NO_CREDENTIALS'));
+    throw new Error('No ProcessService credentials found. Run with: cds bind --exec -- ...');
   }
 
   const apiUrl = credentials.endpoints?.api;
   if (!apiUrl) {
-    throw new Error(cds.i18n.messages.at('IMPORT_NO_API_URL'));
+    throw new Error('No API URL found in ProcessService credentials.');
   }
 
   LOG.debug('Creating API client...');
@@ -407,10 +407,7 @@ function mapSchemaPropertyToElement(
       ctx.serviceName,
       sanitizeName(`${baseName(ctx.parentTypeName)}_${propName}_Array`),
     );
-    if (!schema.items)
-      throw new Error(
-        cds.i18n.messages.at('IMPORT_ARRAY_NO_ITEMS', [ctx.parentTypeName, propName]),
-      );
+    if (!schema.items) throw new Error(`Array ${ctx.parentTypeName}.${propName} has no 'items'.`);
 
     ctx.definitions[arrayName] = {
       kind: 'type',
@@ -466,7 +463,7 @@ function buildArrayItemsSpec(itemsSchema: JsonSchema, ctx: SchemaMapContext): cs
   // Nested array
   if (itemsSchema.type === 'array') {
     if (!itemsSchema.items)
-      throw new Error(cds.i18n.messages.at('IMPORT_NESTED_ARRAY_NO_ITEMS', [ctx.parentTypeName]));
+      throw new Error(`Nested array under ${ctx.parentTypeName} missing 'items'.`);
     return { items: buildArrayItemsSpec(itemsSchema.items, ctx) };
   }
 
@@ -479,9 +476,7 @@ function resolveTypeReference(
 ): string {
   const ref = schema.$ref;
   if (!ref)
-    throw new Error(
-      cds.i18n.messages.at('IMPORT_INVALID_REF', [serviceName, schema.refName ?? 'unknown']),
-    );
+    throw new Error(`Invalid reference in ${serviceName} for ${schema.refName ?? 'unknown'}`);
 
   // Internal reference: #/definitions/date
   if (ref.startsWith('#/')) {

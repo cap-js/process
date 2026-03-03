@@ -32,7 +32,7 @@ function registerStartHandler(service: cds.Service, definitionId: string): void 
 
     const { inputs } = req.data;
     if (!inputs) {
-      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INPUTS' });
+      return req.reject({ status: 400, message: 'Missing required parameter: inputs' });
     }
     const payload: ProcessStartPayload = { definitionId, context: inputs };
 
@@ -46,7 +46,7 @@ function registerSuspendHandler(service: cds.Service, definitionId: string): voi
 
     const { businessKey, cascade } = req.data;
     if (!businessKey) {
-      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
+      return req.reject({ status: 400, message: 'Missing required parameter: businessKey' });
     }
 
     const payload: ProcessLifecyclePayload = { businessKey, cascade: cascade ?? false };
@@ -63,7 +63,7 @@ function registerResumeHandler(service: cds.Service, definitionId: string): void
 
     const { businessKey, cascade } = req.data;
     if (!businessKey) {
-      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
+      return req.reject({ status: 400, message: 'Missing required parameter: businessKey' });
     }
 
     const payload: ProcessLifecyclePayload = { businessKey, cascade: cascade ?? false };
@@ -80,7 +80,7 @@ function registerCancelHandler(service: cds.Service, definitionId: string): void
 
     const { businessKey, cascade } = req.data;
     if (!businessKey) {
-      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
+      return req.reject({ status: 400, message: 'Missing required parameter: businessKey' });
     }
 
     const payload: ProcessLifecyclePayload = { businessKey, cascade: cascade ?? false };
@@ -115,7 +115,7 @@ function registerGetAttributesHandler(service: cds.Service, definitionId: string
 
     const { processInstanceId } = req.data;
     if (!processInstanceId) {
-      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
+      return req.reject({ status: 400, message: 'Missing required parameter: processInstanceId' });
     }
 
     const processService = await cds.connect.to(PROCESS_SERVICE);
@@ -131,7 +131,7 @@ function registerGetOutputsHandler(service: cds.Service, definitionId: string): 
 
     const { processInstanceId } = req.data;
     if (!processInstanceId) {
-      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
+      return req.reject({ status: 400, message: 'Missing required parameter: processInstanceId' });
     }
 
     const processService = await cds.connect.to(PROCESS_SERVICE);
