@@ -135,7 +135,14 @@ function getModelPathFromFilePath(filePath: string): string {
   }
 
   // Normalize path separators
-  return relativePath.replace(/\\/g, '/');
+  relativePath = relativePath.replace(/\\/g, '/');
+
+  // Replace "workflows" prefix with "srv/external"
+  if (relativePath.startsWith('workflows/')) {
+    relativePath = 'srv/external/' + relativePath.slice('workflows/'.length);
+  }
+
+  return relativePath;
 }
 
 function loadProcessHeader(filePath: string): ProcessHeader {
