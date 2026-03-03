@@ -135,7 +135,7 @@ class ProcessService extends cds.ApplicationService {
       );
 
       if (!businessKey) {
-        return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
+        return req.reject({ status: 400, message: 'Missing required parameter: businessKey' });
       }
 
       const instances = localWorkflowStore.getInstancesByBusinessKey(businessKey);
@@ -154,14 +154,17 @@ class ProcessService extends cds.ApplicationService {
       );
 
       if (!processInstanceId) {
-        return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
+        return req.reject({
+          status: 400,
+          message: 'Missing required parameter: processInstanceId',
+        });
       }
 
       const attributes = localWorkflowStore.getAttributes(processInstanceId);
 
       if (attributes === undefined) {
         LOG.warn(`Workflow instance not found: ${processInstanceId}`);
-        return req.reject({ status: 404, message: 'WORKFLOW_INSTANCE_NOT_FOUND' });
+        return req.reject({ status: 404, message: 'Workflow instance not found' });
       }
 
       LOG.debug(`Retrieved attributes for instance: ${processInstanceId}`);
@@ -178,14 +181,17 @@ class ProcessService extends cds.ApplicationService {
       );
 
       if (!processInstanceId) {
-        return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
+        return req.reject({
+          status: 400,
+          message: 'Missing required parameter: processInstanceId',
+        });
       }
 
       const outputs = localWorkflowStore.getOutputs(processInstanceId);
 
       if (outputs === undefined) {
         LOG.warn(`Workflow instance not found: ${processInstanceId}`);
-        return req.reject({ status: 404, message: 'WORKFLOW_INSTANCE_NOT_FOUND' });
+        return req.reject({ status: 404, message: 'Workflow instance not found' });
       }
 
       LOG.debug(`Retrieved outputs for instance: ${processInstanceId}`);

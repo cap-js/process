@@ -71,7 +71,7 @@ export async function handleProcessStart(req: cds.Request): Promise<void> {
     req,
     data,
     startSpecs.conditionExpr,
-    'PROCESS_START_FETCH_FAILED',
+    'Failed to fetch entity for process start.',
     LOG_MESSAGES.PROCESS_NOT_STARTED,
     columns,
   );
@@ -82,8 +82,8 @@ export async function handleProcessStart(req: cds.Request): Promise<void> {
     target as cds.entity,
     row,
     req,
-    'PROCESS_START_INVALID_KEY',
-    'PROCESS_START_EMPTY_KEY',
+    'Failed to build business key for process start.',
+    'Business key is empty for process start.',
   );
   if (!businessKey) return;
 
@@ -91,7 +91,13 @@ export async function handleProcessStart(req: cds.Request): Promise<void> {
 
   // emit process start
   const payload = { definitionId: startSpecs.id!, context };
-  await emitProcessEvent('start', req, payload, 'PROCESS_START_FAILED', startSpecs.id!);
+  await emitProcessEvent(
+    'start',
+    req,
+    payload,
+    `Failed to start process with definition ID ${startSpecs.id!}.`,
+    startSpecs.id!,
+  );
 }
 
 function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
@@ -139,11 +145,12 @@ function getInputElements(
 
           // Check for cycle: if we've already visited this entity, throw an error
           if (visitedEntities.has(associatedEntityName)) {
-            LOG.error('PROCESS_START_CYCLE_DETECTED', associatedEntityName);
+            LOG.error(
+              `Cycle detected in @build.process.input annotations: ${associatedEntityName}`,
+            );
             return req.reject({
               status: 400,
-              message: 'PROCESS_START_CYCLE_DETECTED',
-              args: [associatedEntityName],
+              message: `Cycle detected in @build.process.input annotations: ${associatedEntityName}`,
             });
           }
 
