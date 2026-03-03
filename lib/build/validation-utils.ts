@@ -297,7 +297,6 @@ function convertTreeToElementTypes(
 
     const keyName = node.targetVariable ?? node.sourceElement;
     const isMandatory = element['@mandatory'] === true;
-    const isAssocOrComp = element.type === 'cds.Association' || element.type === 'cds.Composition';
 
     if (node.associatedInputElements !== undefined) {
       // This is an association/composition

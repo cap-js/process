@@ -185,7 +185,7 @@ export async function addDeletedEntityToRequest(
   const target = req.target as Target;
   let columns: column_expr[] | string[] = [];
   if (areStartAnnotationsDefined) {
-    columns = await getColumnsForProcessStart(target, req);
+    columns = getColumnsForProcessStart(target);
   } else {
     columns = getKeyFieldsForEntity(target as cds.entity);
   }

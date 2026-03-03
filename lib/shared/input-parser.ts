@@ -187,7 +187,7 @@ export function buildInputTree<TEntity>(
   const result: InputTreeNode[] = [];
   let state: BuildState = BuildState.GROUP_ENTRIES;
 
-  let groups: Map<string, ParsedInputEntry[]> = new Map();
+  const groups: Map<string, ParsedInputEntry[]> = new Map();
   let elementNames: string[] = [];
   let currentIndex: number = 0;
   let currentElementName: string = '';

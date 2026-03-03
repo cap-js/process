@@ -1,4 +1,4 @@
-import { column_expr, entities, entity, expr, Target } from '@sap/cds';
+import { column_expr, expr, Target } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
