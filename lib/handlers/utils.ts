@@ -110,7 +110,7 @@ export function concatenateBusinessKey(target: cds.entity, row: EntityRow): stri
     businessKey += String(row[keyField] ?? '');
   }
 
-  if (businessKey.length >= BUSINESS_KEY_CHAR_LIMIT) {
+  if (businessKey.length > BUSINESS_KEY_CHAR_LIMIT) {
     return businessKeyHasher.getHashedKey(businessKey);
   }
   return businessKey;
