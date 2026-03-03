@@ -23,3 +23,24 @@ Content-Type: application/json
 }
 
 ###
+
+# @name createShipment with annotation
+POST {{server}}/odata/v4/character-limit-testing/CacheTest
+Content-Type: application/json
+
+{
+   "id": "entityIdD",
+   "name": "Til"
+}
+
+###
+
+# @name updateShipment
+PATCH {{server}}/odata/v4/character-limit-testing/CacheTest('entityIdD')
+Content-Type: application/json
+
+{
+    "name": "Test"
+}
+
+###
