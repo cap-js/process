@@ -207,6 +207,7 @@ function addProcessTypes(
 ): void {
   const inputsName = fqn(serviceName, 'ProcessInputs');
   const outputsName = fqn(serviceName, 'ProcessOutputs');
+  const attributeName = fqn(serviceName, 'ProcessAttribute');
   const attributesName = fqn(serviceName, 'ProcessAttributes');
   const instanceName = fqn(serviceName, 'ProcessInstance');
   const instancesName = fqn(serviceName, 'ProcessInstances');
@@ -223,12 +224,25 @@ function addProcessTypes(
     serviceName,
     definitions,
   );
-  definitions[attributesName] = buildTypeFromSchema(
-    attributesName,
-    ensureObjectSchema(process.header?.processAttributes),
-    serviceName,
-    definitions,
-  );
+
+  definitions[attributeName] = {
+    kind: 'type',
+    name: attributeName,
+    elements: {
+      id: { type: csn.CdsBuiltinType.String, notNull: true },
+      label: { type: csn.CdsBuiltinType.String, notNull: true },
+      value: { type: csn.CdsBuiltinType.String },
+      type: { type: csn.CdsBuiltinType.String, notNull: true },
+    },
+  };
+
+  definitions[attributesName] = {
+    kind: 'type',
+    name: attributesName,
+    items: {
+      type: attributeName,
+    },
+  };
 
   definitions[instanceName] = {
     kind: 'type',

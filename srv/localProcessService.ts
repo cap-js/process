@@ -11,11 +11,12 @@ class ProcessService extends cds.ApplicationService {
       const { definitionId, context } = req.data;
       const businessKey = context?.businesskey ?? context?.businessKey;
 
-      LOG.debug('==============================================================');
-      LOG.debug(`Process start for ${definitionId} initiated`);
-      LOG.debug(`BusinessKey: ${businessKey}`);
-      LOG.debug('Context: ', JSON.stringify(context, null, 2));
-      LOG.debug('==============================================================');
+      LOG.debug(
+        `==============================================================\n` +
+          `Process start for ${definitionId} initiated\n` +
+          `BusinessKey: ${businessKey}\nContext: ${JSON.stringify(context, null, 2)}\n` +
+          `==============================================================`,
+      );
 
       localWorkflowStore.startWorkflow({
         definitionId,
@@ -28,10 +29,12 @@ class ProcessService extends cds.ApplicationService {
     this.on('cancel', async (req: cds.Request) => {
       const { businessKey } = req.data;
 
-      LOG.debug('==============================================================');
-      LOG.debug(`Process cancel for ${businessKey} initiated`);
-      LOG.debug('Context: ', JSON.stringify(req.data, null, 2));
-      LOG.debug('==============================================================');
+      LOG.debug(
+        `==============================================================\n` +
+          `Process cancel for ${businessKey} initiated\n` +
+          `Context: ${JSON.stringify(req.data, null, 2)}\n` +
+          `==============================================================`,
+      );
 
       const instances = localWorkflowStore.getInstancesByBusinessKey(businessKey, [
         WorkflowStatus.RUNNING,
@@ -59,10 +62,12 @@ class ProcessService extends cds.ApplicationService {
     this.on('suspend', async (req: cds.Request) => {
       const { businessKey } = req.data;
 
-      LOG.debug('==============================================================');
-      LOG.debug(`Process suspend for ${businessKey} initiated`);
-      LOG.debug('Context: ', JSON.stringify(req.data, null, 2));
-      LOG.debug('==============================================================');
+      LOG.debug(
+        `==============================================================\n` +
+          `Process suspend for ${businessKey} initiated\n` +
+          `Context: ${JSON.stringify(req.data, null, 2)}\n` +
+          `==============================================================`,
+      );
 
       const instances = localWorkflowStore.getInstancesByBusinessKey(
         businessKey,
@@ -90,10 +95,12 @@ class ProcessService extends cds.ApplicationService {
     this.on('resume', async (req: cds.Request) => {
       const { businessKey } = req.data;
 
-      LOG.debug('==============================================================');
-      LOG.debug(`Process resume for ${businessKey} initiated`);
-      LOG.debug('Context: ', JSON.stringify(req.data, null, 2));
-      LOG.debug('==============================================================');
+      LOG.debug(
+        `==============================================================\n` +
+          `Process resume for ${businessKey} initiated\n` +
+          `Context: ${JSON.stringify(req.data, null, 2)}\n` +
+          `==============================================================`,
+      );
 
       const instances = localWorkflowStore.getInstancesByBusinessKey(
         businessKey,
@@ -121,9 +128,11 @@ class ProcessService extends cds.ApplicationService {
     this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
       const { businessKey } = req.data;
 
-      LOG.debug('==============================================================');
-      LOG.debug(`Get instances by businessKey: ${businessKey}`);
-      LOG.debug('==============================================================');
+      LOG.debug(
+        `==============================================================\n` +
+          `Get instances by businessKey: ${businessKey}\n` +
+          `==============================================================`,
+      );
 
       if (!businessKey) {
         return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
@@ -131,16 +140,18 @@ class ProcessService extends cds.ApplicationService {
 
       const instances = localWorkflowStore.getInstancesByBusinessKey(businessKey);
 
-      LOG.info(`Found ${instances.length} workflow instance(s) for businessKey: ${businessKey}`);
+      LOG.debug(`Found ${instances.length} workflow instance(s) for businessKey: ${businessKey}`);
       return instances;
     });
 
     this.on('getAttributes', async (req: cds.Request) => {
       const { processInstanceId } = req.data;
 
-      LOG.debug('==============================================================');
-      LOG.debug(`Get attributes for instance: ${processInstanceId}`);
-      LOG.debug('==============================================================');
+      LOG.debug(
+        `==============================================================\n` +
+          `Get attributes for instance: ${processInstanceId}\n` +
+          `==============================================================`,
+      );
 
       if (!processInstanceId) {
         return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
@@ -153,16 +164,18 @@ class ProcessService extends cds.ApplicationService {
         return req.reject({ status: 404, message: 'WORKFLOW_INSTANCE_NOT_FOUND' });
       }
 
-      LOG.info(`Retrieved attributes for instance: ${processInstanceId}`);
+      LOG.debug(`Retrieved attributes for instance: ${processInstanceId}`);
       return attributes;
     });
 
     this.on('getOutputs', async (req: cds.Request) => {
       const { processInstanceId } = req.data;
 
-      LOG.debug('==============================================================');
-      LOG.debug(`Get outputs for instance: ${processInstanceId}`);
-      LOG.debug('==============================================================');
+      LOG.debug(
+        `==============================================================\n` +
+          `Get outputs for instance: ${processInstanceId}\n` +
+          `==============================================================`,
+      );
 
       if (!processInstanceId) {
         return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
@@ -175,7 +188,7 @@ class ProcessService extends cds.ApplicationService {
         return req.reject({ status: 404, message: 'WORKFLOW_INSTANCE_NOT_FOUND' });
       }
 
-      LOG.info(`Retrieved outputs for instance: ${processInstanceId}`);
+      LOG.debug(`Retrieved outputs for instance: ${processInstanceId}`);
       return outputs;
     });
 
