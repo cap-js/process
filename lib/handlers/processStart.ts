@@ -29,6 +29,10 @@ type ProcessStartInput = {
   targetVariable?: string;
   associatedInputElements?: ProcessStartInput[];
 };
+type ProcessEntry = {
+  path: string[];
+  alias?: string;
+};
 
 export type ProcessStartSpec = {
   id?: string;
@@ -41,7 +45,7 @@ export function getColumnsForProcessStart(
   target: Target,
   req: cds.Request,
 ): column_expr[] | string[] {
-  const startSpecs = initStartSpecs(target, req);
+  const startSpecs = initStartSpecs(target);
   if (startSpecs.inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
     return ['*'];
@@ -57,7 +61,8 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   data = ((req as ProcessDeleteRequest)._Process ??
     getEntityDataFromRequest(data, req.params)) as EntityRow;
 
-  const startSpecs = initStartSpecs(target, req);
+  const startSpecs = initStartSpecs(target);
+  startSpecs.inputs = parseInput(target);
 
   // if startSpecs.input = [] --> no input defined, fetch entire row
   let columns: column_expr[] | string[] = [];
@@ -102,7 +107,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   );
 }
 
-function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
+function initStartSpecs(target: Target): ProcessStartSpec {
   const startSpecs: ProcessStartSpec = {
     id: target[PROCESS_START_ID] as string,
     on: target[PROCESS_START_ON] as string,
@@ -111,50 +116,51 @@ function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
       ? ((target[PROCESS_START_IF] as unknown as { xpr: expr }).xpr as expr)
       : undefined,
   };
-  const inputsCSN = target[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
-  startSpecs.inputs = parseInputsArray(inputsCSN, target as cds.entity);
-
   return startSpecs;
 }
 
-function isAliasInput(entry: InputCSNEntry): entry is AliasInputCSN {
-  return 'path' in entry && 'as' in entry;
+function parseInput(target: Target): ProcessStartInput[] {
+  const inputsCSN = target[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
+  const parsedEntriesinputs = parseInputsArray(inputsCSN);
+  const inputTree = buildInputTree(parsedEntriesinputs, target as cds.entity);
+  return inputTree;
 }
 
 function parsePath(pathString: string): string[] {
   return pathString.replace(/^\$self\./, '').split('.');
 }
 
-function parseInputsArray(
-  inputsCSN: InputCSNEntry[] | undefined,
-  entity: cds.entity,
-): ProcessStartInput[] {
+/**
+ * Expected Input CSN structure:
+ *  1. Simple input: {'=': '$self.ID'} -> {{path : '$self.ID' }{alias: undefined}}
+ *  2. Aliased input: {path: {'=': '$self.ID'}, as: 'myId'} -> {{path: '$self.ID', alias: 'myId'}}
+ *  3. No inputs: -> []
+ */
+
+function parseInputsArray(inputsCSN: InputCSNEntry[] | undefined): ProcessEntry[] {
   if (!inputsCSN || inputsCSN.length === 0) {
     return [];
   }
-  const parsedEntries = inputsCSN.map((entry) => {
-    if (isAliasInput(entry)) {
-      return {
-        path: parsePath(entry.path['=']),
-        alias: entry.as,
-      };
-    } else {
-      return {
-        path: parsePath(entry['=']),
-        alias: undefined,
-      };
-    }
-  });
+  const parsedEntries: ProcessEntry[] = [];
+  for (const entry of inputsCSN) {
+    for (const key in entry) {
+      if (key === '=') {
+        const simpleEntry = entry as SimpleInputCSN;
+        parsedEntries.push({ path: parsePath(simpleEntry[key]), alias: undefined });
+      }
 
-  return buildInputTree(parsedEntries, entity);
+      if (key === 'path') {
+        const aliasEntry = entry as AliasInputCSN;
+        parsedEntries.push({ path: parsePath(aliasEntry.path['=']), alias: aliasEntry.as });
+      }
+    }
+  }
+  return parsedEntries;
 }
 
-function buildInputTree(
-  entries: { path: string[]; alias?: string }[],
-  rootEntity: cds.entity,
-): ProcessStartInput[] {
+function buildInputTree(entries: ProcessEntry[], rootEntity: cds.entity): ProcessStartInput[] {
   type StackItem = {
-    entries: { path: string[]; alias?: string }[];
+    entries: ProcessEntry[];
     entity: cds.entity;
     resultTarget: ProcessStartInput[];
   };
