@@ -69,10 +69,9 @@ class ProcessService extends cds.ApplicationService {
           `==============================================================`,
       );
 
-      const instances = localWorkflowStore.getInstancesByBusinessKey(
-        businessKey,
+      const instances = localWorkflowStore.getInstancesByBusinessKey(businessKey, [
         WorkflowStatus.RUNNING,
-      );
+      ]);
 
       if (instances.length === 0) {
         LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
@@ -102,10 +101,9 @@ class ProcessService extends cds.ApplicationService {
           `==============================================================`,
       );
 
-      const instances = localWorkflowStore.getInstancesByBusinessKey(
-        businessKey,
+      const instances = localWorkflowStore.getInstancesByBusinessKey(businessKey, [
         WorkflowStatus.SUSPENDED,
-      );
+      ]);
 
       if (instances.length === 0) {
         LOG.warn(`No suspended workflow instances found with businessKey: ${businessKey}`);
