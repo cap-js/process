@@ -37,10 +37,7 @@ export type ProcessStartSpec = {
   conditionExpr: expr | undefined;
 };
 
-export function getColumnsForProcessStart(
-  target: Target,
-  req: cds.Request,
-): column_expr[] | string[] {
+export function getColumnsForProcessStart(target: Target): column_expr[] | string[] {
   const startSpecs = initStartSpecs(target);
   if (startSpecs.inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
