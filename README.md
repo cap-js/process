@@ -2,6 +2,8 @@
 
 ### Execute following commands to install dependencies after cloning the project:
 
+Make sure to follow https://pages.github.tools.sap/cap/docs/get-started/ to install global dependencies that are required for CAP aplication development.
+
 ```
 npm install
 npm i -g tsx
