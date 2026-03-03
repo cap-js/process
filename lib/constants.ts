@@ -1,4 +1,9 @@
 /**
+ * Character limit for business key
+ */
+export const BUSINESS_KEY_CHAR_LIMIT = 255 as const;
+
+/**
  * Process Service
  */
 export const PROCESS_SERVICE = 'ProcessService' as const;
