@@ -150,10 +150,7 @@ export function validateInputTypes(
   allDefinitions: Record<string, CsnDefinition> | undefined,
 ) {
   // entity attributes from inputs array annotation
-  const entityAttributes = getElementNamesAndTypes(
-    def as CsnEntity,
-    allDefinitions || {},
-  );
+  const entityAttributes = getElementNamesAndTypes(def as CsnEntity, allDefinitions || {});
 
   // process def inputs from csn model
   const processDefInputs = getProcessDefInputsAndTypes(processDef, allDefinitions || {});

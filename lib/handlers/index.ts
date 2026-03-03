@@ -9,11 +9,7 @@ export type {
   ProcessActionConfig,
 } from './processActionHandler';
 export { registerProcessServiceHandlers } from './processService';
-export {
-  getKeyFieldsForEntity,
-  concatenateBusinessKey,
-  addDeletedEntityToRequest,
-} from './utils';
+export { getKeyFieldsForEntity, concatenateBusinessKey, addDeletedEntityToRequest } from './utils';
 export type {
   EntityRow,
   ProcessStartPayload,

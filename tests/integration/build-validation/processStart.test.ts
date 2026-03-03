@@ -156,11 +156,7 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
             `;
       const processInputs = `ID: String; name: String; businesskey: String;`;
 
-      const cdsSourceProcessDef = withProcessDefinition(
-        entityDef,
-        'validProcess',
-        processInputs,
-      );
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, 'validProcess', processInputs);
 
       const result = await validateModel(cdsSourceProcessDef);
 
@@ -185,11 +181,7 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
             `;
       const processInputs = `ID: String; userName: String; businesskey: String;`;
 
-      const cdsSourceProcessDef = withProcessDefinition(
-        entityDef,
-        'validProcess',
-        processInputs,
-      );
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, 'validProcess', processInputs);
 
       const result = await validateModel(cdsSourceProcessDef);
 
@@ -220,7 +212,8 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
                 }
             `;
       const processInputs = `ID: String; items: ItemType; businesskey: String;`;
-      const otherTypes = 'type ItemType { ID: String; parentID: String; title: String; price: Decimal(15,2); }';
+      const otherTypes =
+        'type ItemType { ID: String; parentID: String; title: String; price: Decimal(15,2); }';
 
       const cdsSourceProcessDef = withProcessDefinition(
         entityDef,
