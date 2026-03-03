@@ -158,6 +158,42 @@ function parseInputsArray(inputsCSN: InputCSNEntry[] | undefined): ProcessEntry[
   return parsedEntries;
 }
 
+/**
+ *
+ *   <start>           ::= GROUP_ENTRIES
+ *   GROUP_ENTRIES     ::= PROCESS_ELEMENT
+ *   PROCESS_ELEMENT   ::= CHECK_NESTED | DONE
+ *   CHECK_NESTED      ::= BUILD_SIMPLE | BUILD_ASSOC | BUILD_NESTED
+ *   BUILD_SIMPLE      ::= NEXT_ELEMENT
+ *   BUILD_ASSOC       ::= NEXT_ELEMENT
+ *   BUILD_NESTED      ::= NEXT_ELEMENT
+ *   NEXT_ELEMENT      ::= PROCESS_ELEMENT | DONE
+ *   <end>             ::= DONE
+ *
+ *   Transition Conditions:
+ *   PROCESS_ELEMENT -> DONE         : when elementKeys is empty
+ *   CHECK_NESTED    -> BUILD_SIMPLE : when path.length === 1 && not association
+ *   CHECK_NESTED    -> BUILD_ASSOC  : when path.length === 1 && is association
+ *   CHECK_NESTED    -> BUILD_NESTED : when path.length > 1 || has nested entries
+ *   NEXT_ELEMENT    -> DONE         : when no more elements
+ *
+ *
+ *   Input/Output Examples:
+ *   1. Simple field: { path: ['ID'] }
+ *      -> { sourceElement: 'ID' }
+ *
+ *   2. Association (expand all): { path: ['items'] } where items is Composition
+ *      -> { sourceElement: 'items', associatedInputElements: [] }
+ *      -> converts to: { ref: ['items'], expand: ['*'] }
+ *
+ *   3. Nested path: { path: ['items', 'title'] }
+ *      -> { sourceElement: 'items', associatedInputElements: [{ sourceElement: 'title' }] }
+ *
+ *   4. With alias: { path: ['price'], alias: 'Amount' }
+ *      -> { sourceElement: 'price', targetVariable: 'Amount' }
+ *
+ */
+
 enum BuildState {
   GROUP_ENTRIES = 'GROUP_ENTRIES',
   PROCESS_ELEMENT = 'PROCESS_ELEMENT',
