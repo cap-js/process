@@ -24,6 +24,12 @@ cds.build?.register?.('process-validation', ProcessValidationPlugin);
 // Register import handler for: cds import --from process
 // @ts-expect-error: import does not exist on cds type
 cds.import ??= {};
+//@ts-expect-error: cds type does not exist
+cds.import.options ??= {};
+//@ts-expect-error: cds type does not exist
+cds.import.options.process = { no_copy: true, as: 'cds', config: 'kind=rest' };
+// until above is not released for cds-dk, use:
+// cds-tsx import --from process ./workflows/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler.json --force --config kind=rest --no-copy --as cds
 // @ts-expect-error: process does not exist on cds.import type
 cds.import.from ??= {};
 // @ts-expect-error: from does not exist on cds.import type

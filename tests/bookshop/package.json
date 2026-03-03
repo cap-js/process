@@ -31,7 +31,7 @@
         }
       },
       "eu12.bpm-horizon-walkme.sdshipmentprocessor.ShipmentHandlerService": {
-        "kind": "external",
+        "kind": "rest",
         "model": "srv/external/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler"
       }
     }
