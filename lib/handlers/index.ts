@@ -11,7 +11,7 @@ export type {
 export { registerProcessServiceHandlers } from './processService';
 export {
   getKeyFieldsForEntity,
-  concatenateBusinessKey,
+  deriveBusinessKey,
   getElementAnnotations,
   addDeletedEntityToRequest,
 } from './utils';

@@ -101,10 +101,10 @@ export function getKeyFieldsForEntity(entity: cds.entity): string[] {
 }
 
 /**
- * Concatenates all key field values into a single business key string.
+ * Derives a business key from an entity row by concatenating all key field values.
  * If the resulting key exceeds the character limit, it is hashed using SHA-256.
  */
-export function concatenateBusinessKey(target: cds.entity, row: EntityRow): string {
+export function deriveBusinessKey(target: cds.entity, row: EntityRow): string {
   let businessKey = '';
   for (const keyField of getKeyFieldsForEntity(target)) {
     businessKey += String(row[keyField] ?? '');
@@ -335,7 +335,7 @@ export function getBusinessKeyOrReject(
 ): string | undefined {
   let businessKey: string;
   try {
-    businessKey = concatenateBusinessKey(target, { ...row, ...req.data });
+    businessKey = deriveBusinessKey(target, { ...row, ...req.data });
   } catch (error) {
     LOG.error(invalidKeyMsg, error);
     req.reject({ status: 400, message: invalidKeyMsg });
