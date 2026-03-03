@@ -24,3 +24,4 @@ export type {
   AnnotatedTarget,
   ProcessDeleteRequest,
 } from './utils';
+export { businessKeyHasher, BusinessKeyHasher } from './business-key-cache';

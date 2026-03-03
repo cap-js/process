@@ -1,5 +1,4 @@
 import cds, { column_expr, expr, Results, Target } from '@sap/cds';
-import crypto from 'crypto';
 import {
   BUILD_PREFIX,
   BUSINESS_KEY_CHAR_LIMIT,
@@ -15,6 +14,7 @@ import {
   PROCESS_SUSPEND_ON,
 } from '../constants';
 import { getColumnsForProcessStart } from './processStart';
+import { businessKeyHasher } from './business-key-cache';
 const { SELECT } = cds.ql;
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -101,7 +101,8 @@ export function getKeyFieldsForEntity(entity: cds.entity): string[] {
 }
 
 /**
- * Concatenates all key field values into a single business key string
+ * Concatenates all key field values into a single business key string.
+ * If the resulting key exceeds the character limit, it is hashed using SHA-256.
  */
 export function concatenateBusinessKey(target: cds.entity, row: EntityRow): string {
   let businessKey = '';
@@ -110,9 +111,7 @@ export function concatenateBusinessKey(target: cds.entity, row: EntityRow): stri
   }
 
   if (businessKey.length >= BUSINESS_KEY_CHAR_LIMIT) {
-    // hash businessKey value
-    const hash = crypto.createHash('sha256').update(businessKey).digest('hex');
-    return `H:${hash}`;
+    return businessKeyHasher.getHashedKey(businessKey);
   }
   return businessKey;
 }
