@@ -16,23 +16,19 @@ import {
   LOG_MESSAGES,
   PROCESS_LOGGER_PREFIX,
 } from './../constants';
+import {
+  InputCSNEntry,
+  InputTreeNode,
+  parseInputsArray,
+  buildInputTree,
+  ElementResolver,
+} from '../shared/input-parser';
 
 import cds from '@sap/cds';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
-type SimpleInputCSN = { '=': string };
-type AliasInputCSN = { path: { '=': string }; as: string };
-type InputCSNEntry = SimpleInputCSN | AliasInputCSN;
-
-type ProcessStartInput = {
-  sourceElement: string;
-  targetVariable?: string;
-  associatedInputElements?: ProcessStartInput[];
-};
-type ProcessEntry = {
-  path: string[];
-  alias?: string;
-};
+// Use InputTreeNode as ProcessStartInput (same structure)
+type ProcessStartInput = InputTreeNode;
 
 export type ProcessStartSpec = {
   id?: string;
@@ -119,200 +115,24 @@ function initStartSpecs(target: Target): ProcessStartSpec {
   return startSpecs;
 }
 
+/**
+ * Element resolver for runtime cds.entity
+ */
+const runtimeElementResolver: ElementResolver<cds.entity> = {
+  getElements: (entity) => entity.elements,
+  isAssocOrComp: (element) => {
+    const el = element as { type?: string };
+    return el?.type === 'cds.Association' || el?.type === 'cds.Composition';
+  },
+  getTargetEntity: (element, currentEntity) => {
+    return (element as { _target?: cds.entity })?._target ?? currentEntity;
+  },
+};
+
 function parseInput(target: Target): ProcessStartInput[] {
   const inputsCSN = target[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
-  const parsedEntriesinputs = parseInputsArray(inputsCSN);
-  const inputTree = buildInputTree(parsedEntriesinputs, target as cds.entity);
-  return inputTree;
-}
-
-function parsePath(pathString: string): string[] {
-  return pathString.replace(/^\$self\./, '').split('.');
-}
-
-/**
- * Expected Input CSN structure:
- *  1. Simple input: {'=': '$self.ID'} -> {{path : '$self.ID' }{alias: undefined}}
- *  2. Aliased input: {path: {'=': '$self.ID'}, as: 'myId'} -> {{path: '$self.ID', alias: 'myId'}}
- *  3. No inputs: -> []
- */
-
-function parseInputsArray(inputsCSN: InputCSNEntry[] | undefined): ProcessEntry[] {
-  if (!inputsCSN || inputsCSN.length === 0) {
-    return [];
-  }
-  const parsedEntries: ProcessEntry[] = [];
-  for (const entry of inputsCSN) {
-    for (const key in entry) {
-      if (key === '=') {
-        const simpleEntry = entry as SimpleInputCSN;
-        parsedEntries.push({ path: parsePath(simpleEntry[key]), alias: undefined });
-      }
-
-      if (key === 'path') {
-        const aliasEntry = entry as AliasInputCSN;
-        parsedEntries.push({ path: parsePath(aliasEntry.path['=']), alias: aliasEntry.as });
-      }
-    }
-  }
-  return parsedEntries;
-}
-
-/**
- *
- *   <start>           ::= GROUP_ENTRIES
- *   GROUP_ENTRIES     ::= PROCESS_ELEMENT
- *   PROCESS_ELEMENT   ::= CHECK_NESTED | DONE
- *   CHECK_NESTED      ::= BUILD_SIMPLE | BUILD_ASSOC | BUILD_NESTED
- *   BUILD_SIMPLE      ::= NEXT_ELEMENT
- *   BUILD_ASSOC       ::= NEXT_ELEMENT
- *   BUILD_NESTED      ::= NEXT_ELEMENT
- *   NEXT_ELEMENT      ::= PROCESS_ELEMENT | DONE
- *   <end>             ::= DONE
- *
- *   Transition Conditions:
- *   PROCESS_ELEMENT -> DONE         : when elementKeys is empty
- *   CHECK_NESTED    -> BUILD_SIMPLE : when path.length === 1 && not association
- *   CHECK_NESTED    -> BUILD_ASSOC  : when path.length === 1 && is association
- *   CHECK_NESTED    -> BUILD_NESTED : when path.length > 1 || has nested entries
- *   NEXT_ELEMENT    -> DONE         : when no more elements
- *
- *
- *   Input/Output Examples:
- *   1. Simple field: { path: ['ID'] }
- *      -> { sourceElement: 'ID' }
- *
- *   2. Association (expand all): { path: ['items'] } where items is Composition
- *      -> { sourceElement: 'items', associatedInputElements: [] }
- *      -> converts to: { ref: ['items'], expand: ['*'] }
- *
- *   3. Nested path: { path: ['items', 'title'] }
- *      -> { sourceElement: 'items', associatedInputElements: [{ sourceElement: 'title' }] }
- *
- *   4. With alias: { path: ['price'], alias: 'Amount' }
- *      -> { sourceElement: 'price', targetVariable: 'Amount' }
- *
- */
-
-enum BuildState {
-  GROUP_ENTRIES = 'GROUP_ENTRIES',
-  PROCESS_ELEMENT = 'PROCESS_ELEMENT',
-  CHECK_NESTED = 'CHECK_NESTED',
-  BUILD_SIMPLE = 'BUILD_SIMPLE',
-  BUILD_ASSOC = 'BUILD_ASSOC',
-  BUILD_NESTED = 'BUILD_NESTED',
-  NEXT_ELEMENT = 'NEXT_ELEMENT',
-  DONE = 'DONE',
-}
-
-function buildInputTree(entries: ProcessEntry[], rootEntity: cds.entity): ProcessStartInput[] {
-  if (entries.length === 0) {
-    return [];
-  }
-
-  const result: ProcessStartInput[] = [];
-  let state: BuildState = BuildState.GROUP_ENTRIES;
-
-  let groups: Map<string, ProcessEntry[]> = new Map();
-  let elementNames: string[] = [];
-  let currentIndex: number = 0;
-  let currentElementName: string = '';
-  let currentGroup: ProcessEntry[] = [];
-  let directAlias: string | undefined = undefined;
-  let nestedEntries: ProcessEntry[] = [];
-
-  while (state !== BuildState.DONE) {
-    switch (state) {
-      case BuildState.GROUP_ENTRIES: {
-        for (const entry of entries) {
-          const firstSegment = entry.path[0];
-          if (!groups.has(firstSegment)) {
-            groups.set(firstSegment, []);
-          }
-          groups.get(firstSegment)!.push(entry);
-        }
-        elementNames = Array.from(groups.keys());
-        currentIndex = 0;
-        state = BuildState.PROCESS_ELEMENT;
-        break;
-      }
-
-      case BuildState.PROCESS_ELEMENT: {
-        if (currentIndex >= elementNames.length) {
-          state = BuildState.DONE;
-          break;
-        }
-        currentElementName = elementNames[currentIndex];
-        currentGroup = groups.get(currentElementName)!;
-
-        const directEntry = currentGroup.find((e) => e.path.length === 1);
-
-        directAlias = directEntry?.alias;
-        nestedEntries = currentGroup
-          .filter((e) => e.path.length > 1)
-          .map((e) => ({ path: e.path.slice(1), alias: e.alias }));
-
-        state = BuildState.CHECK_NESTED;
-        break;
-      }
-
-      case BuildState.CHECK_NESTED: {
-        const element = rootEntity.elements?.[currentElementName];
-        const isAssocOrComp =
-          element?.type === 'cds.Association' || element?.type === 'cds.Composition';
-
-        if (nestedEntries.length > 0) {
-          state = BuildState.BUILD_NESTED;
-        } else if (isAssocOrComp) {
-          state = BuildState.BUILD_ASSOC;
-        } else {
-          state = BuildState.BUILD_SIMPLE;
-        }
-        break;
-      }
-
-      case BuildState.BUILD_SIMPLE: {
-        result.push({
-          sourceElement: currentElementName,
-          targetVariable: directAlias,
-        });
-        state = BuildState.NEXT_ELEMENT;
-        break;
-      }
-
-      case BuildState.BUILD_ASSOC: {
-        result.push({
-          sourceElement: currentElementName,
-          targetVariable: directAlias,
-          associatedInputElements: [],
-        });
-        state = BuildState.NEXT_ELEMENT;
-        break;
-      }
-
-      case BuildState.BUILD_NESTED: {
-        const element = rootEntity.elements?.[currentElementName];
-        const targetEntity = (element as { _target?: cds.entity })?._target ?? rootEntity;
-        const nestedResults = buildInputTree(nestedEntries, targetEntity);
-
-        result.push({
-          sourceElement: currentElementName,
-          targetVariable: directAlias,
-          associatedInputElements: nestedResults,
-        });
-        state = BuildState.NEXT_ELEMENT;
-        break;
-      }
-
-      case BuildState.NEXT_ELEMENT: {
-        currentIndex++;
-        state = BuildState.PROCESS_ELEMENT;
-        break;
-      }
-    }
-  }
-
-  return result;
+  const parsedEntries = parseInputsArray(inputsCSN);
+  return buildInputTree(parsedEntries, target as cds.entity, runtimeElementResolver);
 }
 
 function convertToColumnsExpr(array: ProcessStartInput[]): column_expr[] {

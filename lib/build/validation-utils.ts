@@ -1,11 +1,49 @@
 import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
 import { PROCESS_PREFIX, PROCESS_START_INPUTS } from '../constants';
+import {
+  InputCSNEntry,
+  InputTreeNode,
+  parseInputsArray,
+  buildInputTree,
+  ElementResolver,
+} from '../shared/input-parser';
 
 export type ElementType = {
   type: string;
   isMandatory?: boolean;
   isArray?: boolean;
   properties?: Record<string, ElementType>;
+};
+
+/**
+ * Context for CSN-based element resolution (used at build time)
+ */
+type CsnEntityContext = {
+  elements: Record<string, CsnElement>;
+  allDefinitions: Record<string, CsnDefinition>;
+};
+
+/**
+ * Element resolver for build-time CSN entities
+ */
+const csnElementResolver: ElementResolver<CsnEntityContext> = {
+  getElements: (ctx) => ctx.elements,
+  isAssocOrComp: (element) => {
+    const el = element as CsnElement;
+    return el?.type === 'cds.Association' || el?.type === 'cds.Composition';
+  },
+  getTargetEntity: (element, currentCtx) => {
+    const el = element as CsnElement;
+    const targetDef = el.target ? currentCtx.allDefinitions[el.target] : undefined;
+    const childElements =
+      targetDef && targetDef.kind === 'entity'
+        ? (targetDef.elements as Record<string, CsnElement>)
+        : {};
+    return {
+      elements: childElements,
+      allDefinitions: currentCtx.allDefinitions,
+    };
+  },
 };
 
 /**
@@ -189,51 +227,28 @@ export function getProcessDefInputsAndTypes(
 }
 
 /**
- * CSN format types for parsing inputs array
+ * Gets all process definitions from model definitions
  */
-type SimpleInputCSN = { '=': string };
-type AliasInputCSN = { path: { '=': string }; as: string };
-type InputCSNEntry = SimpleInputCSN | AliasInputCSN;
+export function getProcessDefinitions(
+  allDefinitions: Record<string, CsnDefinition> | undefined,
+): Map<string, CsnDefinition> {
+  const processMap: Map<string, CsnDefinition> = new Map();
 
-/**
- * Parsed input entry with path segments and optional alias
- */
-type ParsedInputEntry = {
-  path: string[];
-  alias?: string;
-};
-
-/**
- * Type guard for alias input entries
- */
-function isAliasInput(entry: InputCSNEntry): entry is AliasInputCSN {
-  return 'path' in entry && 'as' in entry;
-}
-
-/**
- * Parses a path string like "$self.items.title" into ["items", "title"]
- */
-function parsePath(pathString: string): string[] {
-  return pathString.replace(/^\$self\./, '').split('.');
-}
-
-/**
- * Parses the inputs CSN array into parsed entries
- */
-function parseInputsCSN(inputsCSN: InputCSNEntry[]): ParsedInputEntry[] {
-  return inputsCSN.map((entry) => {
-    if (isAliasInput(entry)) {
-      return {
-        path: parsePath(entry.path['=']),
-        alias: entry.as,
-      };
-    } else {
-      return {
-        path: parsePath(entry['=']),
-        alias: undefined,
-      };
+  if (!allDefinitions) {
+    return processMap;
+  }
+  for (const name in allDefinitions) {
+    if (Object.hasOwn(allDefinitions, name)) {
+      const def = allDefinitions[name];
+      const processId = def[PROCESS_PREFIX];
+      if (processId) {
+        def.name = name;
+        processMap.set(processId, def);
+      }
     }
-  });
+  }
+
+  return processMap;
 }
 
 /**
@@ -249,115 +264,74 @@ export function getElementNamesAndTypes(
 
   // If inputs array is defined, parse it to get specific fields
   if (inputsCSN && inputsCSN.length > 0) {
-    const parsedEntries = parseInputsCSN(inputsCSN);
-    return buildElementTypesFromInputs(parsedEntries, elements, allDefinitions);
+    const parsedEntries = parseInputsArray(inputsCSN);
+    const ctx: CsnEntityContext = {
+      elements: elements as Record<string, CsnElement>,
+      allDefinitions,
+    };
+    const inputTree = buildInputTree(parsedEntries, ctx, csnElementResolver);
+    return convertTreeToElementTypes(
+      inputTree,
+      elements as Record<string, CsnElement>,
+      allDefinitions,
+    );
   }
 
   // No inputs array defined - return all entity fields
-  return getAllElementTypes(elements, allDefinitions);
+  return getAllElementTypes(elements as Record<string, CsnElement>, allDefinitions);
 }
 
 /**
- * Builds element types from parsed input entries
+ * Converts InputTreeNode[] to Record<string, ElementType>
  */
-function buildElementTypesFromInputs(
-  entries: ParsedInputEntry[],
+function convertTreeToElementTypes(
+  tree: InputTreeNode[],
   elements: Record<string, CsnElement>,
   allDefinitions: Record<string, CsnDefinition>,
 ): Record<string, ElementType> {
   const result: Record<string, ElementType> = {};
 
-  // Group entries by their root element
-  const rootEntries: ParsedInputEntry[] = [];
-  const nestedMap = new Map<string, ParsedInputEntry[]>();
-
-  for (const entry of entries) {
-    if (entry.path.length === 1) {
-      rootEntries.push(entry);
-    } else {
-      const rootElement = entry.path[0];
-      if (!nestedMap.has(rootElement)) {
-        nestedMap.set(rootElement, []);
-      }
-      nestedMap.get(rootElement)!.push({
-        path: entry.path.slice(1),
-        alias: entry.alias,
-      });
-    }
-  }
-
-  // Collect root-level aliases for elements that also have nested entries
-  const rootAliases = new Map<string, string>();
-  for (const entry of rootEntries) {
-    if (entry.alias) {
-      rootAliases.set(entry.path[0], entry.alias);
-    }
-  }
-
-  // Check which root elements have nested children
-  const elementsWithChildren = new Set<string>(nestedMap.keys());
-
-  // Process root-level entries
-  for (const entry of rootEntries) {
-    const elementName = entry.path[0];
-    const element = elements[elementName];
+  for (const node of tree) {
+    const element = elements[node.sourceElement];
     if (!element) continue;
 
-    const keyName = entry.alias ?? elementName;
-    const isAssociationOrComposition =
-      element.type === 'cds.Association' || element.type === 'cds.Composition';
+    const keyName = node.targetVariable ?? node.sourceElement;
     const isMandatory = element['@mandatory'] === true;
+    const isAssocOrComp = element.type === 'cds.Association' || element.type === 'cds.Composition';
 
-    if (isAssociationOrComposition) {
-      // If this element also has nested entries, skip adding it here - it will be handled below
-      if (elementsWithChildren.has(elementName)) {
-        continue;
-      }
-
-      // Association without specific child fields - expand all
+    if (node.associatedInputElements !== undefined) {
+      // This is an association/composition
       const targetDef = element.target ? allDefinitions[element.target] : undefined;
       const childElements =
         targetDef && targetDef.kind === 'entity'
           ? (targetDef.elements as Record<string, CsnElement>)
           : {};
-      result[keyName] = {
-        type: element.type,
-        isMandatory,
-        isArray: element.cardinality?.max === '*',
-        properties: getAllElementTypes(childElements, allDefinitions),
-      };
+
+      if (node.associatedInputElements.length > 0) {
+        // Has specific nested fields
+        result[keyName] = {
+          type: element.type,
+          isMandatory,
+          isArray: element.cardinality?.max === '*',
+          properties: convertTreeToElementTypes(
+            node.associatedInputElements,
+            childElements,
+            allDefinitions,
+          ),
+        };
+      } else {
+        // Expand all (*) - get all child element types
+        result[keyName] = {
+          type: element.type,
+          isMandatory,
+          isArray: element.cardinality?.max === '*',
+          properties: getAllElementTypes(childElements, allDefinitions),
+        };
+      }
     } else {
+      // Simple field
       result[keyName] = { type: element.type, isMandatory };
     }
-  }
-
-  // Process nested entries (e.g., $self.items.ID, $self.items.title)
-  for (const [rootElement, nestedEntries] of nestedMap) {
-    const element = elements[rootElement];
-    if (!element) continue;
-
-    const keyName = rootAliases.get(rootElement) ?? rootElement;
-    const isMandatory = element['@mandatory'] === true;
-
-    const targetDef = element.target ? allDefinitions[element.target] : undefined;
-    const childElements =
-      targetDef && targetDef.kind === 'entity'
-        ? (targetDef.elements as Record<string, CsnElement>)
-        : {};
-
-    // Recursively build element types for nested entries
-    const nestedProperties = buildElementTypesFromInputs(
-      nestedEntries,
-      childElements,
-      allDefinitions,
-    );
-
-    result[keyName] = {
-      type: element.type,
-      isMandatory,
-      isArray: element.cardinality?.max === '*',
-      properties: nestedProperties,
-    };
   }
 
   return result;
@@ -398,29 +372,4 @@ function getAllElementTypes(
   }
 
   return result;
-}
-
-/**
- * Gets all process definitions from model definitions
- */
-export function getProcessDefinitions(
-  allDefinitions: Record<string, CsnDefinition> | undefined,
-): Map<string, CsnDefinition> {
-  const processMap: Map<string, CsnDefinition> = new Map();
-
-  if (!allDefinitions) {
-    return processMap;
-  }
-  for (const name in allDefinitions) {
-    if (Object.hasOwn(allDefinitions, name)) {
-      const def = allDefinitions[name];
-      const processId = def[PROCESS_PREFIX];
-      if (processId) {
-        def.name = name;
-        processMap.set(processId, def);
-      }
-    }
-  }
-
-  return processMap;
 }
