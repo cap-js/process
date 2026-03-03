@@ -1,5 +1,5 @@
 import cds from '@sap/cds';
-import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX } from '../constants';
+import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, PROCESS_SERVICE } from '../constants';
 import { emitProcessEvent, ProcessLifecyclePayload, ProcessStartPayload } from './utils';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
@@ -21,6 +21,9 @@ export function registerProcessServiceHandlers(service: cds.Service): void {
   registerSuspendHandler(service, definitionId);
   registerResumeHandler(service, definitionId);
   registerCancelHandler(service, definitionId);
+  registerGetInstancesByBusinessKeyHandler(service, definitionId);
+  registerGetAttributesHandler(service, definitionId);
+  registerGetOutputsHandler(service, definitionId);
 }
 
 function registerStartHandler(service: cds.Service, definitionId: string): void {
@@ -84,5 +87,56 @@ function registerCancelHandler(service: cds.Service, definitionId: string): void
     await emitProcessEvent('cancel', req, payload, 'PROCESS_CANCEL_FAILED', businessKey);
 
     LOG.debug(`Process cancelled: businessKey=${businessKey}`);
+  });
+}
+
+function registerGetInstancesByBusinessKeyHandler(
+  service: cds.Service,
+  definitionId: string,
+): void {
+  service.on('getInstancesByBusinessKey', async (req) => {
+    LOG.debug(`Getting instances by businessKey for process: ${definitionId}`);
+
+    const { businessKey } = req.data;
+    if (!businessKey) {
+      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
+    }
+
+    const processService = await cds.connect.to(PROCESS_SERVICE);
+    const result = await processService.send('getInstancesByBusinessKey', { businessKey });
+
+    return result;
+  });
+}
+
+function registerGetAttributesHandler(service: cds.Service, definitionId: string): void {
+  service.on('getAttributes', async (req) => {
+    LOG.debug(`Getting attributes for process: ${definitionId}`);
+
+    const { processInstanceId } = req.data;
+    if (!processInstanceId) {
+      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
+    }
+
+    const processService = await cds.connect.to(PROCESS_SERVICE);
+    const result = await processService.send('getAttributes', { processInstanceId });
+
+    return result;
+  });
+}
+
+function registerGetOutputsHandler(service: cds.Service, definitionId: string): void {
+  service.on('getOutputs', async (req) => {
+    LOG.debug(`Getting outputs for process: ${definitionId}`);
+
+    const { processInstanceId } = req.data;
+    if (!processInstanceId) {
+      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_INSTANCE_ID' });
+    }
+
+    const processService = await cds.connect.to(PROCESS_SERVICE);
+    const result = await processService.send('getOutputs', { processInstanceId });
+
+    return result;
   });
 }

@@ -135,7 +135,14 @@ function getModelPathFromFilePath(filePath: string): string {
   }
 
   // Normalize path separators
-  return relativePath.replace(/\\/g, '/');
+  relativePath = relativePath.replace(/\\/g, '/');
+
+  // Replace "workflows" prefix with "srv/external"
+  if (relativePath.startsWith('workflows/')) {
+    relativePath = 'srv/external/' + relativePath.slice('workflows/'.length);
+  }
+
+  return relativePath;
 }
 
 function loadProcessHeader(filePath: string): ProcessHeader {
@@ -207,8 +214,10 @@ function addProcessTypes(
 ): void {
   const inputsName = fqn(serviceName, 'ProcessInputs');
   const outputsName = fqn(serviceName, 'ProcessOutputs');
+  const attributeName = fqn(serviceName, 'ProcessAttribute');
   const attributesName = fqn(serviceName, 'ProcessAttributes');
   const instanceName = fqn(serviceName, 'ProcessInstance');
+  const instancesName = fqn(serviceName, 'ProcessInstances');
 
   definitions[inputsName] = buildTypeFromSchema(
     inputsName,
@@ -222,12 +231,25 @@ function addProcessTypes(
     serviceName,
     definitions,
   );
-  definitions[attributesName] = buildTypeFromSchema(
-    attributesName,
-    ensureObjectSchema(process.header?.processAttributes),
-    serviceName,
-    definitions,
-  );
+
+  definitions[attributeName] = {
+    kind: 'type',
+    name: attributeName,
+    elements: {
+      id: { type: csn.CdsBuiltinType.String, notNull: true },
+      label: { type: csn.CdsBuiltinType.String, notNull: true },
+      value: { type: csn.CdsBuiltinType.String },
+      type: { type: csn.CdsBuiltinType.String, notNull: true },
+    },
+  };
+
+  definitions[attributesName] = {
+    kind: 'type',
+    name: attributesName,
+    items: {
+      type: attributeName,
+    },
+  };
 
   definitions[instanceName] = {
     kind: 'type',
@@ -236,9 +258,16 @@ function addProcessTypes(
       definitionId: { type: csn.CdsBuiltinType.String },
       definitionVersion: { type: csn.CdsBuiltinType.String },
       id: { type: csn.CdsBuiltinType.String },
+      status: { type: csn.CdsBuiltinType.String },
       startedAt: { type: csn.CdsBuiltinType.String },
       startedBy: { type: csn.CdsBuiltinType.String },
     },
+  };
+
+  definitions[instancesName] = {
+    kind: 'type',
+    name: instancesName,
+    items: { type: instanceName },
   };
 }
 
@@ -253,6 +282,7 @@ function addProcessActions(
   const inputsType = fqn(serviceName, 'ProcessInputs');
   const outputsType = fqn(serviceName, 'ProcessOutputs');
   const attributesType = fqn(serviceName, 'ProcessAttributes');
+  const instancesType = fqn(serviceName, 'ProcessInstances');
 
   // Start action
   definitions[fqn(serviceName, 'start')] = {
@@ -280,6 +310,15 @@ function addProcessActions(
       processInstanceId: { type: csn.CdsBuiltinType.String, notNull: true },
     },
     returns: { type: outputsType },
+  };
+
+  definitions[fqn(serviceName, 'getInstancesByBusinessKey')] = {
+    kind: 'function',
+    name: fqn(serviceName, 'getInstancesByBusinessKey'),
+    params: {
+      businessKey: { type: csn.CdsBuiltinType.String, notNull: true },
+    },
+    returns: { type: instancesType },
   };
 
   // Lifecycle actions

@@ -1,5 +1,7 @@
 @open
 type AnyType {}
+type AttributesReturn : many AnyType;
+type InstancesReturn : many AnyType;
 
 @impl: './BTPProcessService.ts'
 service ProcessService {
@@ -24,4 +26,15 @@ service ProcessService {
     cascade                : Boolean
   }
 
+  function getAttributes(
+    @mandatory processInstanceId : String(256)
+  )returns AttributesReturn;
+
+  function getOutputs(
+    @mandatory processInstanceId : String(256)
+  )returns AnyType;
+
+  function getInstancesByBusinessKey(
+    @mandatory businessKey : String(256)
+  )returns InstancesReturn;
 }
