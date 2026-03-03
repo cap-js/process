@@ -24,4 +24,8 @@ service ShipmentService {
   action cancelShipment(shipmentID: UUID)                   returns Shipments;
 
   action startShipment(shipmentID: UUID)                    returns Shipments;
+
+  action getShipmentAttributes(shipmentID: UUID)            returns String;
+
+  action getShipmentOutputs(shipmentID: UUID)               returns String;
 }
