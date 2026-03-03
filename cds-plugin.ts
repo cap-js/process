@@ -44,27 +44,38 @@ cds.on('serving', async (service: cds.Service) => {
     }
   });
 
-  service.after('*', async (each: Results, req: cds.Request) => {
+  service.after('*', async (results: Results, req: cds.Request) => {
     if (!req.target) return;
     const cacheKey = `${req.target.name}:${req.event}`;
     const cached = annotationCache.get(cacheKey);
 
     if (!cached) return; // Fast exit - no annotations
 
-    if (cached.hasStart) {
-      await handleProcessStart(req);
-    }
-    if (cached.hasCancel) {
-      await handleProcessCancel(req);
-    }
-    if (cached.hasSuspend) {
-      await handleProcessSuspend(req);
-    }
-    if (cached.hasResume) {
-      await handleProcessResume(req);
+    if (results.length > 0) {
+      results.forEach(async (result) => {
+        req.data = result;
+        await handleRequest(cached, req);
+      });
+    } else {
+      await handleRequest(cached, req);
     }
   });
 });
+
+async function handleRequest(cached: EntityEventCache, req: cds.Request) {
+  if (cached.hasStart) {
+    await handleProcessStart(req);
+  }
+  if (cached.hasCancel) {
+    await handleProcessCancel(req);
+  }
+  if (cached.hasSuspend) {
+    await handleProcessSuspend(req);
+  }
+  if (cached.hasResume) {
+    await handleProcessResume(req);
+  }
+}
 
 function expandEvent(event: string | undefined, entity: cds.entity): string[] {
   if (!event) return [];
