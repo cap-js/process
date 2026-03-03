@@ -105,35 +105,57 @@ export async function fetchAllDataTypes(
 ): Promise<DataType[]> {
   const result: DataType[] = [];
   const fetched = new Set<string>();
-  const queue = [...dependencies];
 
-  while (queue.length > 0) {
-    const dep = queue.shift()!;
-
-    if (fetched.has(dep.artifactUid)) continue;
-    if (dep.type === 'content') {
-      LOG.debug(`Skipping content dependency: ${dep.artifactUid}`);
-      continue;
+  let currentBatch = dependencies.filter((d) => {
+    if (d.type === 'content') {
+      LOG.debug(`Skipping content dependency: ${d.artifactUid}`);
+      return false;
     }
+    return !fetched.has(d.artifactUid);
+  });
 
-    fetched.add(dep.artifactUid);
+  while (currentBatch.length > 0) {
+    currentBatch.forEach((d) => fetched.add(d.artifactUid));
 
-    try {
-      // will be handled in separate BLI
-      // eslint-disable-next-line no-await-in-loop
-      const artifact = await fetchArtifact(serviceUrl, jwt, projectId, dep.artifactUid);
+    const fetchPromises = currentBatch.map(async (dep) => {
+      try {
+        const artifact = await fetchArtifact(serviceUrl, jwt, projectId, dep.artifactUid);
+        return { status: 'fulfilled' as const, artifact, dep };
+      } catch (error) {
+        return { status: 'rejected' as const, error, dep };
+      }
+    });
 
+    // eslint-disable-next-line no-await-in-loop -- Intentional: must await batch to collect nested dependencies for next iteration
+    const responses = await Promise.all(fetchPromises);
+
+    const nextBatch: Dependency[] = [];
+
+    for (const response of responses) {
+      if (response.status === 'rejected') {
+        LOG.warn(`Could not fetch artifact ${response.dep.artifactUid}: ${response.error}`);
+        continue;
+      }
+
+      const artifact = response.artifact;
       if (artifact.type === 'datatype' || artifact.type === 'bpi.datatype') {
         LOG.debug(`Fetched data type: ${artifact.name}`);
         result.push(artifact);
 
-        // Queue nested dependencies
         artifact.dependencies
-          ?.filter((d) => !fetched.has(d.artifactUid))
-          .forEach((d) => queue.push(d));
+          ?.filter((d) => !fetched.has(d.artifactUid) && d.type !== 'content')
+          .forEach((d) => nextBatch.push(d));
       }
-    } catch (error) {
-      LOG.warn(`Could not fetch artifact ${dep.artifactUid}: ${error}`);
+    }
+
+    // prepare for next iteration
+    currentBatch = [];
+    const seen = new Set<string>();
+    for (const d of nextBatch) {
+      if (!seen.has(d.artifactUid)) {
+        seen.add(d.artifactUid);
+        currentBatch.push(d);
+      }
     }
   }
 
