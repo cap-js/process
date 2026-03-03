@@ -1,0 +1,25 @@
+@server = http://localhost:4004
+
+# @name createShipment with annotation
+POST {{server}}/odata/v4/character-limit-testing/ManyKeyFields
+Content-Type: application/json
+
+{
+    "field1": "bncscfarzwltukrandyqsofbptmdkgldjqtruviyihoaicmath",
+    "field2": "jampfushulfjxrrkmrbxclbeycrbkfuejiaamijuyjwallhvkyyvhloxmmmzogqbdxdbrpqkktatzxnfydyymppovncrhkbjymch",
+    "field3": "bkavaewtascuxbpbtfbegxlccaiuvqwseebditevxyvwcgwxlyaojkatowsahoznxnwttyxuedlnwdnqmctwizfkujwfdbqntzmf",
+    "field4": "ircdtivgihisylmzljokfugnqklfdnkilqeewywskijquninpjkcfjmskjqiakfzfdsepykwdszcflgepehyuzajlztierfmaqzbqcfwmgvdehvmptindmaaapojtfywwxkbyfyrusnoapfkdrzrtlswuamqjvbxpnexftpczxqtdwkblfmffkyaswykzarhkyekjppwlfbgwevnaewcxhejyynjppimvtphzbjrrstgpukohscajouvgh",
+    "name": "Til"
+}
+
+###
+
+# @name updateShipment
+PATCH {{server}}/odata/v4/character-limit-testing/ManyKeyFields(field1='bncscfarzwltukrandyqsofbptmdkgldjqtruviyihoaicmath',field2='jampfushulfjxrrkmrbxclbeycrbkfuejiaamijuyjwallhvkyyvhloxmmmzogqbdxdbrpqkktatzxnfydyymppovncrhkbjymch',field3='bkavaewtascuxbpbtfbegxlccaiuvqwseebditevxyvwcgwxlyaojkatowsahoznxnwttyxuedlnwdnqmctwizfkujwfdbqntzmf',field4='ircdtivgihisylmzljokfugnqklfdnkilqeewywskijquninpjkcfjmskjqiakfzfdsepykwdszcflgepehyuzajlztierfmaqzbqcfwmgvdehvmptindmaaapojtfywwxkbyfyrusnoapfkdrzrtlswuamqjvbxpnexftpczxqtdwkblfmffkyaswykzarhkyekjppwlfbgwevnaewcxhejyynjppimvtphzbjrrstgpukohscajouvgh)'
+Content-Type: application/json
+
+{
+    "name": "Test"
+}
+
+###
