@@ -68,8 +68,8 @@ async function fetchJson<T>(url: string, jwt: string): Promise<T> {
 
   if (!response.ok) {
     const body = await response.text();
-    LOG.error(`API request failed. Status: ${response.status}, Body: ${body}`);
-    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    const errorMessage = `API request failed to fetch JSON: ${body || response.statusText || 'Unknown error'}`;
+    throw cds.error(response.status, errorMessage);
   }
 
   return response.json() as Promise<T>;
