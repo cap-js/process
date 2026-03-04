@@ -22,6 +22,7 @@ import {
   parseInputsArray,
   buildInputTree,
   ElementResolver,
+  WILDCARD,
 } from '../shared/input-parser';
 
 import cds from '@sap/cds';
@@ -37,7 +38,7 @@ export type ProcessStartSpec = {
   conditionExpr: expr | undefined;
 };
 
-export function getColumnsForProcessStart(target: Target): column_expr[] | string[] {
+export function getColumnsForProcessStart(target: Target): (column_expr | string)[] {
   const startSpecs = initStartSpecs(target);
   if (startSpecs.inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
@@ -58,7 +59,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   startSpecs.inputs = parseInput(target);
 
   // if startSpecs.input = [] --> no input defined, fetch entire row
-  let columns: column_expr[] | string[] = [];
+  let columns: (column_expr | string)[] = [];
   if (startSpecs.inputs.length === 0) {
     columns = ['*'];
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
@@ -132,8 +133,16 @@ function parseInput(target: Target): ProcessStartInput[] {
   return buildInputTree(parsedEntries, target as cds.entity, runtimeElementResolver);
 }
 
-function convertToColumnsExpr(array: ProcessStartInput[]): column_expr[] {
-  return array.map((item) => {
+function convertToColumnsExpr(array: ProcessStartInput[]): (column_expr | string)[] {
+  const result: (column_expr | string)[] = [];
+
+  for (const item of array) {
+    // Handle wildcard '*' (from $self) - means all scalar fields
+    if (item.sourceElement === WILDCARD) {
+      result.push(WILDCARD);
+      continue;
+    }
+
     const column: column_expr = {};
 
     // Start with the source element as a ref
@@ -150,12 +159,14 @@ function convertToColumnsExpr(array: ProcessStartInput[]): column_expr[] {
     // - If it's empty (no annotated elements in associated entity), expand with '*' to get all direct attributes
     if (item.associatedInputElements !== undefined) {
       if (item.associatedInputElements.length > 0) {
-        column.expand = convertToColumnsExpr(item.associatedInputElements);
+        column.expand = convertToColumnsExpr(item.associatedInputElements) as column_expr[];
       } else {
         column.expand = ['*'] as unknown as column_expr[];
       }
     }
 
-    return column;
-  });
+    result.push(column);
+  }
+
+  return result;
 }

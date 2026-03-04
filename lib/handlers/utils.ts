@@ -121,7 +121,7 @@ async function fetchEntity(
   results: EntityRow,
   request: cds.Request,
   condition: expr | undefined,
-  columns?: column_expr[] | string[],
+  columns?: (column_expr | string)[],
 ): Promise<EntityRow | undefined> {
   if (typeof results !== 'object') {
     results = {};
@@ -183,7 +183,7 @@ export async function addDeletedEntityToRequest(
   areStartAnnotationsDefined: boolean,
 ): Promise<void> {
   const target = req.target as Target;
-  let columns: column_expr[] | string[] = [];
+  let columns: (column_expr | string)[] = [];
   if (areStartAnnotationsDefined) {
     columns = getColumnsForProcessStart(target);
   } else {
@@ -250,7 +250,7 @@ export async function resolveEntityRowOrReject(
   conditionExpr: expr | undefined,
   fetchFailedMsg: string,
   notTriggeredMsg: string,
-  columns?: column_expr[] | string[],
+  columns?: (column_expr | string)[],
 ): Promise<EntityRow | undefined> {
   let row: EntityRow | undefined;
   try {

@@ -40,10 +40,21 @@ export function isSimpleInput(entry: InputCSNEntry): entry is SimpleInputCSN {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
+ * Special marker for selecting all scalar fields
+ */
+export const WILDCARD = '*' as const;
+
+/**
  * Parses a path string like "$self.items.title" into ["items", "title"]
  * Strips the "$self." prefix and splits by "."
+ *
+ * Special case: "$self" alone returns ['*'] to indicate all scalar fields
  */
 export function parsePath(pathString: string): string[] {
+  // Handle $self alone - means all scalar fields
+  if (pathString === '$self') {
+    return [WILDCARD];
+  }
   return pathString.replace(/^\$self\./, '').split('.');
 }
 
@@ -56,6 +67,7 @@ export function parsePath(pathString: string): string[] {
  * @example
  * // Input:
  * [
+ *   { '=': '$self' },                              // Wildcard: all scalar fields
  *   { '=': '$self.ID' },
  *   { '=': '$self.items.title' },
  *   { path: { '=': '$self.price' }, as: 'Amount' }
@@ -63,6 +75,7 @@ export function parsePath(pathString: string): string[] {
  *
  * // Output:
  * [
+ *   { path: ['*'], alias: undefined },             // Wildcard marker
  *   { path: ['ID'], alias: undefined },
  *   { path: ['items', 'title'], alias: undefined },
  *   { path: ['price'], alias: 'Amount' }
@@ -141,19 +154,6 @@ export type ElementResolver<TEntity> = {
  *   CHECK_NESTED    → BUILD_ASSOC  : when path.length === 1 && is association
  *   CHECK_NESTED    → BUILD_NESTED : when path.length > 1 || has nested entries
  *   NEXT_ELEMENT    → DONE         : when no more elements
- *
- * Input/Output Examples:
- *   1. Simple field: { path: ['ID'] }
- *      → { sourceElement: 'ID' }
- *
- *   2. Association (expand all): { path: ['items'] } where items is Composition
- *      → { sourceElement: 'items', associatedInputElements: [] }
- *
- *   3. Nested path: { path: ['items', 'title'] }
- *      → { sourceElement: 'items', associatedInputElements: [{ sourceElement: 'title' }] }
- *
- *   4. With alias: { path: ['price'], alias: 'Amount' }
- *      → { sourceElement: 'price', targetVariable: 'Amount' }
  */
 
 enum BuildState {
@@ -173,6 +173,23 @@ enum BuildState {
  * @param entries - Parsed input entries from parseInputsArray
  * @param rootEntity - The root entity to resolve elements from
  * @param resolver - Functions to resolve element information
+ * @example
+ * Input/Output Examples:
+ *   1. Wildcard (all scalar fields): { path: ['*'] }
+ *      → { sourceElement: '*' }
+ *      Note: '*' is converted to SELECT * in column expressions
+ *
+ *   2. Simple field: { path: ['ID'] }
+ *      → { sourceElement: 'ID' }
+ *
+ *   3. Association (expand all): { path: ['items'] } where items is Composition
+ *      → { sourceElement: 'items', associatedInputElements: [] }
+ *
+ *   4. Nested path: { path: ['items', 'title'] }
+ *      → { sourceElement: 'items', associatedInputElements: [{ sourceElement: 'title' }] }
+ *
+ *   5. With alias: { path: ['price'], alias: 'Amount' }
+ *      → { sourceElement: 'price', targetVariable: 'Amount' }
  * @returns Tree of InputTreeNode representing the input structure
  */
 export function buildInputTree<TEntity>(

@@ -355,4 +355,63 @@ describe('Integration tests for START annotation with inputs array', () => {
       });
     });
   });
+
+  // ================================================
+  // Test 8: $self wildcard - all scalar fields
+  // Using $self alone to include all scalar fields plus composition
+  // ================================================
+  describe('Test 8: $self wildcard (all scalar fields + composition)', () => {
+    it('should include all scalar fields and composition when using $self', async () => {
+      const order = {
+        ID: '550e8400-e29b-41d4-a716-446655440008',
+        status: 'PENDING',
+        shipmentDate: '2026-01-15',
+        totalValue: 2500.0,
+        items: [
+          {
+            ID: 'item-001',
+            title: 'Product A',
+            quantity: 5,
+          },
+          {
+            ID: 'item-002',
+            title: 'Product B',
+            quantity: 3,
+          },
+        ],
+      };
+
+      const response = await POST('/odata/v4/annotation/StartSelfWildcard', order);
+
+      expect(response.status).toBe(201);
+      expect(foundMessages.length).toBe(1);
+
+      const context = getStartContext();
+      expect(context).toBeDefined();
+
+      // $self includes all scalar fields: ID, status, shipmentDate, totalValue
+      // $self.items includes all scalar fields of items: ID, title, quantity, parent_ID
+      expect(context).toEqual({
+        ID: order.ID,
+        status: order.status,
+        shipmentDate: order.shipmentDate,
+        totalValue: order.totalValue,
+        businesskey: order.ID,
+        items: [
+          {
+            ID: order.items[0].ID,
+            title: order.items[0].title,
+            quantity: order.items[0].quantity,
+            parent_ID: order.ID,
+          },
+          {
+            ID: order.items[1].ID,
+            title: order.items[1].title,
+            quantity: order.items[1].quantity,
+            parent_ID: order.ID,
+          },
+        ],
+      });
+    });
+  });
 });

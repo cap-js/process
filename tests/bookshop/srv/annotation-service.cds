@@ -1099,4 +1099,32 @@ service AnnotationService {
         shipment : Association to StartCyclicPath;
         title    : String(200);
   }
+
+  // --------------------------------------------
+  // Test 8: $self wildcard - all scalar fields
+  // Using $self alone to include all scalar fields plus composition
+  // --------------------------------------------
+  @build.process.start: {
+    id: 'startSelfWildcardProcess',
+    on: 'CREATE',
+    inputs: [
+      $self,         // All scalar fields of the entity
+      $self.items    // Plus the composition with all its scalar fields
+    ]
+  }
+  entity StartSelfWildcard {
+    key ID           : UUID;
+        status       : String(20) default 'PENDING';
+        shipmentDate : Date;
+        totalValue   : Decimal(15, 2);
+        items        : Composition of many StartSelfWildcardItems
+                         on items.parent = $self;
+  }
+
+  entity StartSelfWildcardItems {
+    key ID       : UUID;
+        parent   : Association to StartSelfWildcard;
+        title    : String(200);
+        quantity : Integer;
+  }
 }
