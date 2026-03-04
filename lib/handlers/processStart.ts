@@ -18,6 +18,7 @@ import {
   LOG_MESSAGES,
   PROCESS_LOGGER_PREFIX,
   PROCESS_START_QUALIFIER_PREFIX,
+  PROCESS_START_QUALIFIER_PATTERN,
 } from './../constants';
 
 import cds from '@sap/cds';
@@ -129,10 +130,10 @@ function getAllStartSpecs(target: Target, req: cds.Request): ProcessStartSpec[] 
     });
   }
 
-  // Qualified annotations: @build.process.start #qualifier: { id, on, if }
-  // CDS stores these as @build.process.start#qualifier.id, @build.process.start#qualifier.on, etc.
+  // Qualified annotations: @bpm.process.start #qualifier: { id, on, if }
+  // CDS stores these as @bpm.process.start#qualifier.id, @bpm.process.start#qualifier.on, etc.
   for (const key of Object.keys(entityAnnotations)) {
-    const match = key.match(/^@build\.process\.start#(\w+)\.on$/);
+    const match = key.match(PROCESS_START_QUALIFIER_PATTERN);
     if (match) {
       const qualifier = match[1];
       const prefix = `${PROCESS_START_QUALIFIER_PREFIX}${qualifier}`;

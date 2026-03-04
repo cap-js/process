@@ -15,6 +15,8 @@ import {
   PROCESS_RESUME_ON,
   PROCESS_PREFIX,
   CUD_EVENTS,
+  PROCESS_START_QUALIFIER_PREFIX,
+  PROCESS_START_QUALIFIER_PATTERN,
 } from './lib/index';
 import { importProcess } from './lib/processImport';
 
@@ -85,20 +87,20 @@ function buildAnnotationCache(service: cds.Service) {
     // Collect all events that have a start annotation (non-qualified and qualified)
     const startEventsSet = new Set<string>();
 
-    // Non-qualified: @build.process.start: { id, on }
+    // Non-qualified: @bpm.process.start: { id, on }
     const nonQualStartOn = entity[PROCESS_START_ON] as string | undefined;
     if (nonQualStartOn && entity[PROCESS_START_ID]) {
       for (const ev of expandEvent(nonQualStartOn, entity)) startEventsSet.add(ev);
     }
 
-    // Qualified: @build.process.start #qualifier: { id, on }
-    // CDS stores as @build.process.start#qualifier.on, @build.process.start#qualifier.id
+    // Qualified: @bpm.process.start #qualifier: { id, on }
+    // CDS stores as @bpm.process.start#qualifier.on, @bpm.process.start#qualifier.id
     for (const key of Object.keys(entity)) {
-      const match = key.match(/^@build\.process\.start#(\w+)\.on$/);
+      const match = key.match(PROCESS_START_QUALIFIER_PATTERN);
       if (match) {
         const qualifier = match[1];
         const onValue = entity[key as keyof typeof entity] as string | undefined;
-        const hasId = !!(entity[`@build.process.start#${qualifier}.id` as keyof typeof entity]);
+        const hasId = !!(entity[`${PROCESS_START_QUALIFIER_PREFIX}${qualifier}.id` as keyof typeof entity]);
         if (onValue && hasId) {
           for (const ev of expandEvent(onValue, entity)) startEventsSet.add(ev);
         }

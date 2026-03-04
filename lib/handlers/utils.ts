@@ -11,6 +11,8 @@ import {
   PROCESS_START_ON,
   PROCESS_SUSPEND_IF,
   PROCESS_SUSPEND_ON,
+  PROCESS_START_QUALIFIER_PREFIX,
+  PROCESS_START_QUALIFIER_PATTERN,
 } from '../constants';
 import { getColumnsForProcessStart } from './processStart';
 const { SELECT } = cds.ql;
@@ -256,20 +258,22 @@ export async function addDeletedEntityToRequest(
     }
   }
 
-  // Handle qualified start annotations: @build.process.start #qualifier: { on: 'DELETE', if: ... }
-  // CDS stores as @build.process.start#qualifier.on, @build.process.start#qualifier.if
-  for (const key of Object.keys(annotatedTarget)) {
-    const match = key.match(/^@build\.process\.start#(\w+)\.on$/);
-    if (match && annotatedTarget[key] === 'DELETE') {
-      const qualifier = match[1];
-      const conditionExpr = annotatedTarget[`@build.process.start#${qualifier}.if`] as
-        | { xpr: expr }
-        | undefined;
-      if (conditionExpr) {
-        where =
-          Array.isArray(where) && where.length
-            ? [{ xpr: where }, 'and', { xpr: conditionExpr.xpr }]
-            : conditionExpr.xpr;
+  // Handle qualified start annotations: @bpm.process.start #qualifier: { on: 'DELETE', if: ... }
+  // CDS stores as @bpm.process.start#qualifier.on, @bpm.process.start#qualifier.if
+  if (areStartAnnotationsDefined) {
+    for (const key of Object.keys(annotatedTarget)) {
+      const match = key.match(PROCESS_START_QUALIFIER_PATTERN);
+      if (match && annotatedTarget[key] === 'DELETE') {
+        const qualifier = match[1];
+        const conditionExpr = annotatedTarget[`${PROCESS_START_QUALIFIER_PREFIX}${qualifier}.if`] as
+          | { xpr: expr }
+          | undefined;
+        if (conditionExpr) {
+          where =
+            Array.isArray(where) && where.length
+              ? [{ xpr: where }, 'and', { xpr: conditionExpr.xpr }]
+              : conditionExpr.xpr;
+        }
       }
     }
   }

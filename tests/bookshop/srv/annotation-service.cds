@@ -837,18 +837,18 @@ service AnnotationService {
 
   // ============================================
   // MULTIPLE START ANNOTATIONS VIA QUALIFIERS
-  // Testing @build.process.start #qualifier support
+  // Testing @bpm.process.start #qualifier support
   // ============================================
 
   // --------------------------------------------
   // Test: Two processes start on same event (no conditions)
   // Both approvalProcess and notificationProcess should start on CREATE
   // --------------------------------------------
-  @build.process.start #approval: {
+  @bpm.process.start #approval: {
     id: 'approvalProcess',
     on: 'CREATE',
   }
-  @build.process.start #notification: {
+  @bpm.process.start #notification: {
     id: 'notificationProcess',
     on: 'CREATE',
   }
@@ -865,11 +865,11 @@ service AnnotationService {
   // Test: Two processes start on different events
   // approvalProcess starts on CREATE, auditProcess starts on UPDATE
   // --------------------------------------------
-  @build.process.start #approvalCreate: {
+  @bpm.process.start #approvalCreate: {
     id: 'approvalProcess',
     on: 'CREATE',
   }
-  @build.process.start #auditUpdate: {
+  @bpm.process.start #auditUpdate: {
     id: 'auditProcess',
     on: 'UPDATE',
   }
@@ -886,12 +886,12 @@ service AnnotationService {
   // Test: Two processes with conditions on same event
   // highMileageProcess starts if mileage > 500, lowMileageProcess if mileage <= 500
   // --------------------------------------------
-  @build.process.start #highMileage: {
+  @bpm.process.start #highMileage: {
     id: 'highMileageProcess',
     on: 'CREATE',
     if: (mileage > 500)
   }
-  @build.process.start #lowMileage: {
+  @bpm.process.start #lowMileage: {
     id: 'lowMileageProcess',
     on: 'CREATE',
     if: (mileage <= 500)
@@ -909,15 +909,15 @@ service AnnotationService {
   // Test: Three processes start on same event (no conditions)
   // processA, processB, processC should all start on CREATE
   // --------------------------------------------
-  @build.process.start #procA: {
+  @bpm.process.start #procA: {
     id: 'processA',
     on: 'CREATE',
   }
-  @build.process.start #procB: {
+  @bpm.process.start #procB: {
     id: 'processB',
     on: 'CREATE',
   }
-  @build.process.start #procC: {
+  @bpm.process.start #procC: {
     id: 'processC',
     on: 'CREATE',
   }
