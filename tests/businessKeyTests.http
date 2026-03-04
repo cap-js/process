@@ -1,0 +1,45 @@
+@server = http://localhost:4004
+
+# @name create car entity
+POST {{server}}/odata/v4/businesskey/Car
+Content-Type: application/json
+
+{
+    "ID": "1234",
+    "mileage": 10000
+}
+
+###
+
+# @name create dog entity
+POST {{server}}/odata/v4/businesskey/Dog
+Content-Type: application/json
+
+{
+    "ID": "1234",
+    "name": "Alex"
+}
+
+###
+
+# @name update dog entity
+PATCH {{server}}/odata/v4/businesskey/Dog('1234')
+Content-Type: application/json
+
+{
+    "name": "Tim"
+}
+
+###
+
+# @name create ManyKeyFieldsEntity entity
+POST {{server}}/odata/v4/businesskey/MultipleKeyFields
+Content-Type: application/json
+
+{
+    "one": "7843465106515632686855503566748619748343093297630805230720487992500811626894300802186263328996581841",
+    "two": "8943959473266183137817446589562040945696024238207915011764797904443390212490503250461279516760225830",
+    "three": "1047126529360297281647873953198609857850479244724128109476806387038656307017356773570279144433705689"
+}
+
+###

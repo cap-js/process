@@ -1,0 +1,50 @@
+
+// Example that shows a prefix is required to differentiate processes
+
+new Car: {
+    ID: "1234",
+    mileage: 100
+}
+Process carProcess Start with context: {
+    businesskey: "1234"
+    ID: "1234"
+    mileage: 100
+}
+
+
+new Dog: {
+    ID: "1234",
+    name: "Alex"
+}
+Process dogProcess Start with context: {
+    businesskey: "1234"
+    ID: "1234"
+    name: "Alex"
+}
+
+
+update Dog with name = "Tim"
+
+--> Processes with businesskey "1234" will be cancelled --> both processes
+
+Possible Solution: 
+- prefix businessKey with Entity Name
+- introduce new annotation to let the developer customize the prefix
+
+
+// Example that shows character limit
+
+new MultipleKeyFields {
+    one: "7843465106515632686855503566748619748343093297630805230720487992500811626894300802186263328996581841"
+    two: "8943959473266183137817446589562040945696024238207915011764797904443390212490503250461279516760225830"
+    three: "1047126529360297281647873953198609857850479244724128109476806387038656307017356773570279144433705689"
+}
+
+--> Process would start with businesskey 
+"784346510651563268685550356674861974834309329763080523072048799250081162689430080218626328996581841894395947326618313781744
+6589562040945696024238207915011764797904443390212490503250461279516760225830104712652936029728164787395319860985785047924472
+4128109476806387038656307017356773570279144433705689"
+
+--> SBPA Process Builder limits length of businesskey to 255 ("Specify the business key of the workflow instance, in UTF-8 encoding.
+The business key of a workflow instance is limited to 255 characters." https://api.sap.com/api/SPA_Workflow_Runtime/path/get_v1_workflow_instances)
+

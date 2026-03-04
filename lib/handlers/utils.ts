@@ -110,7 +110,10 @@ export function deriveBusinessKey(target: cds.entity, row: EntityRow): string {
     businessKey += String(row[keyField] ?? '');
   }
 
+  // businessKey = `${target.name}.${businessKey}`;
+
   if (businessKey.length > BUSINESS_KEY_CHAR_LIMIT) {
+    LOG.debug('Business key character limit is exceeded, current length: ' + businessKey.length);
     return businessKeyHasher.getHashedKey(businessKey);
   }
   return businessKey;

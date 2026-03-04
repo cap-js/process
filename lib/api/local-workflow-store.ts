@@ -30,7 +30,7 @@ export class LocalWorkflowStore {
       id: crypto.randomUUID(),
       definitionId,
       businessKey,
-      status: WorkflowStatus.COMPLETED,
+      status: WorkflowStatus.RUNNING,
       context,
       attributes: [
         {
