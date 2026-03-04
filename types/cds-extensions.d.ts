@@ -59,18 +59,18 @@ declare module '@sap/cds' {
 
   // Process annotation types - using literal strings that match constants in lib/constants.ts
   interface Target extends cds.Definition_2 {
-    '@build.process.start.id'?: string;
-    '@build.process.start.on'?: string;
-    '@build.process.start.if'?: object;
-    '@build.process.cancel.on'?: string;
-    '@build.process.cancel.cascade'?: boolean;
-    '@build.process.cancel.if'?: object;
-    '@build.process.suspend.on'?: string;
-    '@build.process.suspend.cascade'?: boolean;
-    '@build.process.suspend.if'?: object;
-    '@build.process.resume.on'?: string;
-    '@build.process.resume.cascade'?: boolean;
-    '@build.process.resume.if'?: object;
+    '@bpm.process.start.id'?: string;
+    '@bpm.process.start.on'?: string;
+    '@bpm.process.start.if'?: object;
+    '@bpm.process.cancel.on'?: string;
+    '@bpm.process.cancel.cascade'?: boolean;
+    '@bpm.process.cancel.if'?: object;
+    '@bpm.process.suspend.on'?: string;
+    '@bpm.process.suspend.cascade'?: boolean;
+    '@bpm.process.suspend.if'?: object;
+    '@bpm.process.resume.on'?: string;
+    '@bpm.process.resume.cascade'?: boolean;
+    '@bpm.process.resume.if'?: object;
   }
 
   interface Results extends cds.ResultSet {

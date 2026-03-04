@@ -184,7 +184,7 @@ function createServiceDefinition(serviceName: string, process: ProcessHeader): c
     name: serviceName,
     doc: 'DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT.',
     '@protocol': 'none',
-    '@build.process': `${process.projectId}.${process.identifier}`,
+    '@bpm.process': `${process.projectId}.${process.identifier}`,
   };
 }
 

@@ -102,7 +102,7 @@ export function wrapEntity(entityDef: string, serviceName = 'TestService'): stri
  * Creates a CDS model with a process definition for input validation tests.
  *
  * The process definition needs:
- * 1. An entity with @build.process annotation pointing to the process ID
+ * 1. An entity with @bpm.process annotation pointing to the process ID
  * 2. A nested type named ProcessInputs containing the input fields
  *
  * The validation code looks for `${processDef.name}.ProcessInputs`
@@ -115,7 +115,7 @@ export function withProcessDefinition(
 ): string {
   return `
     // Process definition entity with nested ProcessInputs type
-    @build.process: '${processDefName}'
+    @bpm.process: '${processDefName}'
     service ${processDefName}Service {
       
       // Process inputs type - must be named {EntityName}.ProcessInputs

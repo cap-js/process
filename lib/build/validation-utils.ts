@@ -205,7 +205,7 @@ export function getElementNamesAndTypes(
 ): Record<string, ElementType> {
   const elements = def.elements ?? {};
 
-  // Check if at least one element has @build.process.input
+  // Check if at least one element has @bpm.process.input
   let hasInputAnnotation = false;
   for (const name in elements) {
     if (PROCESS_INPUT in elements[name]) {

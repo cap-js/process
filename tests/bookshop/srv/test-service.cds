@@ -1,6 +1,6 @@
 service TestService {
 
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'ShipmentProcess',
     on: 'UPDATE',
     if: (weight > 10)
@@ -10,15 +10,15 @@ service TestService {
       ID,
       address @mandatory @(build.process.input: 'Adresse'),
       date,
-      weight @build.process.input,
+      weight @bpm.process.input,
       items @(build.process.input: 'positionen'),
       home : Association to one Home
                on home.shipmentID = ID
-             @build.process.input
+             @bpm.process.input
     }
 
   entity Home {
-    key ID         : String @build.process.input;
+    key ID         : String @bpm.process.input;
         shipment   : Association to one Shipments
                        on shipment.ID = shipmentID;
         shipmentID : String;
@@ -40,20 +40,20 @@ service TestService {
   }
 
   entity Items {
-    key itemID      : String @build.process.input;
-        description : String @build.process.input;
-        quantity    : Integer @build.process.input;
+    key itemID      : String @bpm.process.input;
+        description : String @bpm.process.input;
+        quantity    : Integer @bpm.process.input;
         shipmentID  : String;
         shipment    : Association to Shipments
                         on shipment.ID = shipmentID;
         materialID  : String;
         material    : Association to one Material
                         on material.materialID = materialID
-                      @build.process.input;
+                      @bpm.process.input;
   }
 
   entity Material {
-    key materialID : String @build.process.input;
-        unit       : String @build.process.input;
+    key materialID : String @bpm.process.input;
+        unit       : String @bpm.process.input;
   }
 }
