@@ -217,6 +217,43 @@ entity OrderItems {
 // Context: { ID, businesskey, OrderLines: [{ ID, ProductName }, ...] }
 ```
 
+**Combining wildcards with aliases:**
+
+You can combine wildcard expansion (`$self` or `$self.items`) with specific field aliases. The wildcard expands all fields, and the alias adds the field again with the new name.
+
+```cds
+@build.process.start: {
+    id: 'orderProcess',
+    on: 'CREATE',
+    inputs: [
+        $self,                                // All scalar fields: ID, status, total
+        { path: $self.ID, as: 'OrderId' },    // Add ID again as 'OrderId'
+        $self.items,                          // All child fields: ID, product, quantity
+        { path: $self.items.ID, as: 'ItemId' } // Add items.ID again as 'ItemId'
+    ]
+}
+entity Orders {
+    key ID     : UUID;
+        status : String(20);
+        total  : Decimal(15, 2);
+        items  : Composition of many OrderItems on items.order = $self;
+};
+
+entity OrderItems {
+    key ID       : UUID;
+        product  : String(200);
+        quantity : Integer;
+};
+// Context: {
+//   ID, OrderId,        // ID appears twice (original + alias)
+//   status, total, businesskey,
+//   items: [{
+//     ID, ItemId,       // ID appears twice in each item
+//     product, quantity
+//   }, ...]
+// }
+```
+
 #### Deep Paths (Cyclic Relationships)
 
 For entities with cyclic relationships, explicit deep paths let you control exactly how deep to traverse without infinite loops.

@@ -388,9 +388,6 @@ describe('Integration tests for START annotation with inputs array', () => {
 
       const context = getStartContext();
       expect(context).toBeDefined();
-
-      // $self includes all scalar fields: ID, status, shipmentDate, totalValue
-      // $self.items includes all scalar fields of items: ID, title, quantity, parent_ID
       expect(context).toEqual({
         ID: order.ID,
         status: order.status,
@@ -398,6 +395,177 @@ describe('Integration tests for START annotation with inputs array', () => {
         totalValue: order.totalValue,
         businesskey: order.ID,
         items: [
+          {
+            ID: order.items[0].ID,
+            title: order.items[0].title,
+            quantity: order.items[0].quantity,
+            parent_ID: order.ID,
+          },
+          {
+            ID: order.items[1].ID,
+            title: order.items[1].title,
+            quantity: order.items[1].quantity,
+            parent_ID: order.ID,
+          },
+        ],
+      });
+    });
+  });
+
+  describe('Test 9: $self wildcard with field alias override', () => {
+    it('should include all scalar fields AND the aliased field (ID appears twice: as ID and as OrderId)', async () => {
+      const order = {
+        ID: '550e8400-e29b-41d4-a716-446655440009',
+        status: 'NEW',
+        shipmentDate: '2026-02-20',
+        totalValue: 999.99,
+        items: [{ ID: 'item-a01', title: 'Widget', quantity: 10 }],
+      };
+
+      const response = await POST('/odata/v4/annotation/StartSelfWildcardAlias', order);
+
+      expect(response.status).toBe(201);
+      expect(foundMessages.length).toBe(1);
+
+      const context = getStartContext();
+      expect(context).toBeDefined();
+
+      expect(context).toEqual({
+        ID: order.ID,
+        OrderId: order.ID,
+        status: order.status,
+        shipmentDate: order.shipmentDate,
+        totalValue: order.totalValue,
+        businesskey: order.ID,
+        items: [
+          {
+            ID: order.items[0].ID,
+            title: order.items[0].title,
+            quantity: order.items[0].quantity,
+            parent_ID: order.ID,
+          },
+        ],
+      });
+    });
+  });
+
+  describe('Test 10: $self.items (composition wildcard) with child field alias', () => {
+    it('should include all composition fields AND the aliased field (ID appears twice in items)', async () => {
+      const order = {
+        ID: '550e8400-e29b-41d4-a716-446655440010',
+        status: 'PROCESSING',
+        shipmentDate: '2026-03-15',
+        totalValue: 1500.0,
+        items: [
+          { ID: 'item-b01', title: 'Gadget', quantity: 7 },
+          { ID: 'item-b02', title: 'Gizmo', quantity: 3 },
+        ],
+      };
+
+      const response = await POST('/odata/v4/annotation/StartCompositionWildcardAlias', order);
+
+      expect(response.status).toBe(201);
+      expect(foundMessages.length).toBe(1);
+
+      const context = getStartContext();
+      expect(context).toBeDefined();
+
+      expect(context).toEqual({
+        ID: order.ID,
+        status: order.status,
+        businesskey: order.ID,
+        items: [
+          {
+            ID: order.items[0].ID,
+            ItemId: order.items[0].ID,
+            title: order.items[0].title,
+            quantity: order.items[0].quantity,
+            parent_ID: order.ID,
+          },
+          {
+            ID: order.items[1].ID,
+            ItemId: order.items[1].ID,
+            title: order.items[1].title,
+            quantity: order.items[1].quantity,
+            parent_ID: order.ID,
+          },
+        ],
+      });
+    });
+  });
+
+  // ================================================
+  // Test 11: Multiple aliases on same scalar field
+  // Same field (ID) should appear under two different names
+  // ================================================
+  describe('Test 11: Multiple aliases on same scalar field', () => {
+    it('should include same scalar field under multiple aliases', async () => {
+      const order = {
+        ID: '550e8400-e29b-41d4-a716-446655440011',
+        status: 'NEW',
+        shipmentDate: '2026-04-01',
+        totalValue: 1234.56,
+      };
+
+      const response = await POST('/odata/v4/annotation/StartMultipleAliasScalar', order);
+
+      expect(response.status).toBe(201);
+      expect(foundMessages.length).toBe(1);
+
+      const context = getStartContext();
+      expect(context).toBeDefined();
+
+      // ID should appear under both aliases: OrderId and ReferenceId
+      expect(context).toEqual({
+        OrderId: order.ID,
+        ReferenceId: order.ID,
+        businesskey: order.ID,
+      });
+    });
+  });
+
+  // ================================================
+  // Test 12: Multiple aliases on same composition
+  // Same composition (items) should appear under two different names
+  // ================================================
+  describe('Test 12: Multiple aliases on same composition', () => {
+    it('should include same composition under multiple aliases', async () => {
+      const order = {
+        ID: '550e8400-e29b-41d4-a716-446655440012',
+        status: 'PROCESSING',
+        items: [
+          { ID: 'item-c01', title: 'Alpha', quantity: 5 },
+          { ID: 'item-c02', title: 'Beta', quantity: 10 },
+        ],
+      };
+
+      const response = await POST('/odata/v4/annotation/StartMultipleAliasComposition', order);
+
+      expect(response.status).toBe(201);
+      expect(foundMessages.length).toBe(1);
+
+      const context = getStartContext();
+      expect(context).toBeDefined();
+
+      // items should appear under both aliases: Orders and LineItems
+      expect(context).toEqual({
+        ID: order.ID,
+        businesskey: order.ID,
+        Orders: [
+          {
+            ID: order.items[0].ID,
+            title: order.items[0].title,
+            quantity: order.items[0].quantity,
+            parent_ID: order.ID,
+          },
+          {
+            ID: order.items[1].ID,
+            title: order.items[1].title,
+            quantity: order.items[1].quantity,
+            parent_ID: order.ID,
+          },
+        ],
+        LineItems: [
           {
             ID: order.items[0].ID,
             title: order.items[0].title,

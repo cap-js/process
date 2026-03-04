@@ -390,4 +390,270 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       expect(result.buildSucceeded).toBe(false);
     });
   });
+
+  describe('Wildcard and alias validation', () => {
+    it('should PASS when using $self wildcard with process definition matching all fields', async () => {
+      const processId = 'wildcardProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [$self]
+                }
+                entity WildcardEntity { 
+                    key ID: UUID; 
+                    name: String;
+                    status: String;
+                }
+            `;
+      // Process definition has all entity fields plus businesskey
+      const processInputs = `ID: UUID; name: String; status: String; businesskey: String;`;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
+    });
+
+    it('should PASS when using $self wildcard with field alias', async () => {
+      const processId = 'wildcardAliasProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [
+                        $self,
+                        { path: $self.ID, as: 'EntityId' }
+                    ]
+                }
+                entity WildcardAliasEntity { 
+                    key ID: UUID; 
+                    name: String;
+                }
+            `;
+      // Process definition should have: ID (from wildcard), EntityId (alias), name, businesskey
+      const processInputs = `ID: UUID; EntityId: UUID; name: String; businesskey: String;`;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
+    });
+
+    it('should PASS when using $self.items composition wildcard with nested field alias', async () => {
+      const processId = 'compositionWildcardAliasProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        $self.items,
+                        { path: $self.items.ID, as: 'ItemId' }
+                    ]
+                }
+                entity CompositionWildcardEntity { 
+                    key ID: UUID; 
+                    items: Composition of many CompositionWildcardItems on items.parent = $self;
+                }
+                entity CompositionWildcardItems {
+                    key ID: UUID;
+                    parent: Association to CompositionWildcardEntity;
+                    title: String;
+                    quantity: Integer;
+                }
+            `;
+      // Process definition should have: ID, items with all fields (ID, ItemId, title, quantity, parent_ID)
+      const processInputs = `
+                ID: UUID; 
+                businesskey: String;
+                items: many {
+                    ID: UUID;
+                    ItemId: UUID;
+                    title: String;
+                    quantity: Integer;
+                    parent_ID: UUID;
+                };
+            `;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      console.log('DEBUG composition - errors:', JSON.stringify(result.errors, null, 2));
+      console.log('DEBUG composition - warnings:', JSON.stringify(result.warnings, null, 2));
+      console.log('DEBUG composition - buildSucceeded:', result.buildSucceeded);
+      console.log('DEBUG composition - buildError:', result.buildError?.message, result.buildError?.stack);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
+    });
+
+    it('should ERROR when $self wildcard is used but process definition is missing a field', async () => {
+      const processId = 'wildcardMissingFieldProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [$self]
+                }
+                entity WildcardMissingEntity { 
+                    key ID: UUID; 
+                    name: String;
+                    status: String;
+                }
+            `;
+      // Process definition is missing 'status' field
+      const processInputs = `ID: UUID; name: String; businesskey: String;`;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      // Should error because 'status' from entity is not in process definition
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(
+        result.errors.some(
+          (e) => e.msg.includes('status') && e.msg.includes('not defined in process definition'),
+        ),
+      ).toBe(true);
+      expect(result.buildSucceeded).toBe(false);
+    });
+
+    it('should ERROR when alias field is missing from process definition', async () => {
+      const processId = 'aliasMissingProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        { path: $self.ID, as: 'EntityId' }
+                    ]
+                }
+                entity AliasMissingEntity { 
+                    key ID: UUID; 
+                }
+            `;
+      // Process definition is missing 'EntityId' alias
+      const processInputs = `ID: UUID; businesskey: String;`;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      // Should error because 'EntityId' (alias) is not in process definition
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(
+        result.errors.some(
+          (e) => e.msg.includes('EntityId') && e.msg.includes('not defined in process definition'),
+        ),
+      ).toBe(true);
+      expect(result.buildSucceeded).toBe(false);
+    });
+
+    it('should PASS when using multiple aliases on the same scalar field', async () => {
+      const processId = 'multipleAliasScalarProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [
+                        { path: $self.ID, as: 'OrderId' },
+                        { path: $self.ID, as: 'ReferenceId' }
+                    ]
+                }
+                entity MultipleAliasScalarEntity { 
+                    key ID: UUID; 
+                    name: String;
+                }
+            `;
+      // Process definition should have both aliases
+      const processInputs = `OrderId: UUID; ReferenceId: UUID; businesskey: String;`;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
+    });
+
+    it('should PASS when using multiple aliases on the same composition', async () => {
+      const processId = 'multipleAliasCompositionProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        { path: $self.items, as: 'Orders' },
+                        { path: $self.items, as: 'LineItems' }
+                    ]
+                }
+                entity MultipleAliasCompositionEntity { 
+                    key ID: UUID; 
+                    items: Composition of many MultipleAliasCompositionItems on items.parent = $self;
+                }
+                entity MultipleAliasCompositionItems {
+                    key ID: UUID;
+                    parent: Association to MultipleAliasCompositionEntity;
+                    title: String;
+                    quantity: Integer;
+                }
+            `;
+      // Process definition should have both composition aliases
+      const processInputs = `
+                ID: UUID; 
+                businesskey: String;
+                Orders: many {
+                    ID: UUID;
+                    title: String;
+                    quantity: Integer;
+                    parent_ID: UUID;
+                };
+                LineItems: many {
+                    ID: UUID;
+                    title: String;
+                    quantity: Integer;
+                    parent_ID: UUID;
+                };
+            `;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
+    });
+
+    it('should ERROR when one of multiple aliases is missing from process definition', async () => {
+      const processId = 'multipleAliasMissingProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [
+                        { path: $self.ID, as: 'OrderId' },
+                        { path: $self.ID, as: 'ReferenceId' }
+                    ]
+                }
+                entity MultipleAliasMissingEntity { 
+                    key ID: UUID; 
+                }
+            `;
+      // Process definition is missing 'ReferenceId' alias
+      const processInputs = `OrderId: UUID; businesskey: String;`;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      // Should error because 'ReferenceId' (alias) is not in process definition
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(
+        result.errors.some(
+          (e) => e.msg.includes('ReferenceId') && e.msg.includes('not defined in process definition'),
+        ),
+      ).toBe(true);
+      expect(result.buildSucceeded).toBe(false);
+    });
+  });
 });

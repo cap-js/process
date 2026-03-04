@@ -1127,4 +1127,105 @@ service AnnotationService {
         title    : String(200);
         quantity : Integer;
   }
+
+  // Test 9: $self wildcard with field alias override
+  // $self expands all scalar fields, but $self.ID with alias should rename ID to OrderId
+  // --------------------------------------------
+  @build.process.start: {
+    id: 'startSelfWildcardAliasProcess',
+    on: 'CREATE',
+    inputs: [
+      $self,                              // All scalar fields: ID, status, shipmentDate, totalValue
+      $self.items,                        // Composition with all its scalar fields
+      { path: $self.ID, as: 'OrderId' }   // Rename ID to OrderId
+    ]
+  }
+  entity StartSelfWildcardAlias {
+    key ID           : UUID;
+        status       : String(20) default 'PENDING';
+        shipmentDate : Date;
+        totalValue   : Decimal(15, 2);
+        items        : Composition of many StartSelfWildcardAliasItems
+                         on items.parent = $self;
+  }
+
+  entity StartSelfWildcardAliasItems {
+    key ID       : UUID;
+        parent   : Association to StartSelfWildcardAlias;
+        title    : String(200);
+        quantity : Integer;
+  }
+
+  // Test 10: $self.items (composition wildcard) with child field alias
+  // $self.items expands all child fields, but $self.items.ID with alias should add ItemId
+  // --------------------------------------------
+  @build.process.start: {
+    id: 'startCompositionWildcardAliasProcess',
+    on: 'CREATE',
+    inputs: [
+      $self.ID,
+      $self.status,
+      $self.items,                              // All scalar fields of items: ID, title, quantity, parent_ID
+      { path: $self.items.ID, as: 'ItemId' }    // Rename items.ID to ItemId (adds second copy)
+    ]
+  }
+  entity StartCompositionWildcardAlias {
+    key ID           : UUID;
+        status       : String(20) default 'PENDING';
+        shipmentDate : Date;
+        totalValue   : Decimal(15, 2);
+        items        : Composition of many StartCompositionWildcardAliasItems
+                         on items.parent = $self;
+  }
+
+  entity StartCompositionWildcardAliasItems {
+    key ID       : UUID;
+        parent   : Association to StartCompositionWildcardAlias;
+        title    : String(200);
+        quantity : Integer;
+  }
+
+  // Test 11: Multiple aliases on the same scalar field
+  // Same field (ID) should appear under two different names
+  // --------------------------------------------
+  @build.process.start: {
+    id: 'startMultipleAliasScalarProcess',
+    on: 'CREATE',
+    inputs: [
+      { path: $self.ID, as: 'OrderId' },    // ID as OrderId
+      { path: $self.ID, as: 'ReferenceId' } // ID as ReferenceId (same source, different alias)
+    ]
+  }
+  entity StartMultipleAliasScalar {
+    key ID           : UUID;
+        status       : String(20) default 'PENDING';
+        shipmentDate : Date;
+        totalValue   : Decimal(15, 2);
+  }
+
+  // Test 12: Multiple aliases on the same composition
+  // Same composition (items) should appear under two different names
+  // --------------------------------------------
+  @build.process.start: {
+    id: 'startMultipleAliasCompositionProcess',
+    on: 'CREATE',
+    inputs: [
+      $self.ID,
+      { path: $self.items, as: 'Orders' },     // items as Orders
+      { path: $self.items, as: 'LineItems' }   // items as LineItems (same source, different alias)
+    ]
+  }
+  entity StartMultipleAliasComposition {
+    key ID           : UUID;
+        status       : String(20) default 'PENDING';
+        items        : Composition of many StartMultipleAliasCompositionItems
+                         on items.parent = $self;
+  }
+
+  entity StartMultipleAliasCompositionItems {
+    key ID       : UUID;
+        parent   : Association to StartMultipleAliasComposition;
+        title    : String(200);
+        quantity : Integer;
+  }
 }

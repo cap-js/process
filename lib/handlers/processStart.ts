@@ -21,7 +21,7 @@ import {
   InputTreeNode,
   parseInputsArray,
   buildInputTree,
-  ElementResolver,
+  EntityContext,
   WILDCARD,
 } from '../shared/input-parser';
 
@@ -114,23 +114,28 @@ function initStartSpecs(target: Target): ProcessStartSpec {
 }
 
 /**
- * Element resolver for runtime cds.entity
+ * Creates an EntityContext for runtime cds.entity
  */
-const runtimeElementResolver: ElementResolver<cds.entity> = {
-  getElements: (entity) => entity.elements,
-  isAssocOrComp: (element) => {
-    const el = element as { type?: string };
-    return el?.type === 'cds.Association' || el?.type === 'cds.Composition';
-  },
-  getTargetEntity: (element, currentEntity) => {
-    return (element as { _target?: cds.entity })?._target ?? currentEntity;
-  },
-};
+function createRuntimeEntityContext(entity: cds.entity): EntityContext {
+  return {
+    getElement: (name: string) => {
+      const element = entity.elements?.[name] as { type?: string; _target?: cds.entity } | undefined;
+      if (!element) return undefined;
+
+      const isAssocOrComp = element.type === 'cds.Association' || element.type === 'cds.Composition';
+      const targetEntity = element._target
+        ? createRuntimeEntityContext(element._target)
+        : createRuntimeEntityContext(entity);
+
+      return { isAssocOrComp, targetEntity };
+    },
+  };
+}
 
 function parseInput(target: Target): ProcessStartInput[] {
   const inputsCSN = target[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
   const parsedEntries = parseInputsArray(inputsCSN);
-  return buildInputTree(parsedEntries, target as cds.entity, runtimeElementResolver);
+  return buildInputTree(parsedEntries, createRuntimeEntityContext(target as cds.entity));
 }
 
 function convertToColumnsExpr(array: ProcessStartInput[]): (column_expr | string)[] {

@@ -5,7 +5,8 @@ import {
   InputTreeNode,
   parseInputsArray,
   buildInputTree,
-  ElementResolver,
+  EntityContext,
+  WILDCARD,
 } from '../shared/input-parser';
 
 export type ElementType = {
@@ -16,35 +17,29 @@ export type ElementType = {
 };
 
 /**
- * Context for CSN-based element resolution (used at build time)
+ * Creates an EntityContext for build-time CSN entities
  */
-type CsnEntityContext = {
-  elements: Record<string, CsnElement>;
-  allDefinitions: Record<string, CsnDefinition>;
-};
+function createCsnEntityContext(
+  elements: Record<string, CsnElement>,
+  allDefinitions: Record<string, CsnDefinition>,
+): EntityContext {
+  return {
+    getElement: (name: string) => {
+      const element = elements[name];
+      if (!element) return undefined;
 
-/**
- * Element resolver for build-time CSN entities
- */
-const csnElementResolver: ElementResolver<CsnEntityContext> = {
-  getElements: (ctx) => ctx.elements,
-  isAssocOrComp: (element) => {
-    const el = element as CsnElement;
-    return el?.type === 'cds.Association' || el?.type === 'cds.Composition';
-  },
-  getTargetEntity: (element, currentCtx) => {
-    const el = element as CsnElement;
-    const targetDef = el.target ? currentCtx.allDefinitions[el.target] : undefined;
-    const childElements =
-      targetDef && targetDef.kind === 'entity'
-        ? (targetDef.elements as Record<string, CsnElement>)
-        : {};
-    return {
-      elements: childElements,
-      allDefinitions: currentCtx.allDefinitions,
-    };
-  },
-};
+      const isAssocOrComp = element.type === 'cds.Association' || element.type === 'cds.Composition';
+      const targetDef = element.target ? allDefinitions[element.target] : undefined;
+      const childElements =
+        targetDef && targetDef.kind === 'entity'
+          ? (targetDef.elements as Record<string, CsnElement>)
+          : {};
+      const targetEntity = createCsnEntityContext(childElements, allDefinitions);
+
+      return { isAssocOrComp, targetEntity };
+    },
+  };
+}
 
 /**
  * Checks if a type name is a complex (non-CDS built-in) type
@@ -69,16 +64,32 @@ function hasItems(obj: unknown): obj is { items: { type?: string } } {
 
 /**
  * Resolves an inline array element (has items but no type) to ElementType
+ * Handles two cases:
+ * 1. `items: many TypeName` -> items.type is set
+ * 2. `items: many { ID: UUID; }` -> items.elements is set (anonymous inline type)
  */
 function resolveInlineArrayElement(
-  element: { items?: { type?: string }; notNull?: boolean },
+  element: { items?: { type?: string; elements?: Record<string, unknown> }; notNull?: boolean },
   allDefinitions: Record<string, CsnDefinition>,
   visited: Set<string>,
 ): ElementType | null {
-  const itemType = element.items?.type;
-  if (!itemType) return null;
+  if (!element.items) return null;
 
   const isMandatory = element.notNull ?? false;
+  const itemType = element.items.type;
+
+  // Case 1: Anonymous inline array type with elements directly (e.g., `items: many { ID: UUID; }`)
+  if (!itemType && element.items.elements) {
+    const nestedElements = getProcessDefInputsAndTypes(
+      { elements: element.items.elements } as CsnDefinition,
+      allDefinitions,
+      visited,
+    );
+    return { type: 'anonymous', isMandatory, isArray: true, properties: nestedElements };
+  }
+
+  // Case 2: Named type reference (e.g., `items: many ItemType`)
+  if (!itemType) return null;
 
   // Complex array item type - need to resolve nested elements
   if (isComplexType(itemType) && !visited.has(itemType)) {
@@ -168,7 +179,7 @@ function resolveComplexTypeElement(
  * Resolves a single element to its ElementType representation
  */
 function resolveElementToType(
-  element: { type?: string; items?: { type?: string }; notNull?: boolean },
+  element: { type?: string; items?: { type?: string; elements?: Record<string, unknown> }; notNull?: boolean },
   allDefinitions: Record<string, CsnDefinition>,
   visited: Set<string>,
 ): ElementType | null {
@@ -214,7 +225,7 @@ export function getProcessDefInputsAndTypes(
     if (Object.hasOwn(elements, name)) {
       const element = elements[name];
       const resolvedType = resolveElementToType(
-        element as { type?: string; items?: { type?: string }; notNull?: boolean },
+        element as { type?: string; items?: { type?: string; elements?: Record<string, unknown> }; notNull?: boolean },
         allDefinitions,
         visited,
       );
@@ -265,11 +276,11 @@ export function getElementNamesAndTypes(
   // If inputs array is defined, parse it to get specific fields
   if (inputsCSN && inputsCSN.length > 0) {
     const parsedEntries = parseInputsArray(inputsCSN);
-    const ctx: CsnEntityContext = {
-      elements: elements as Record<string, CsnElement>,
+    const entityContext = createCsnEntityContext(
+      elements as Record<string, CsnElement>,
       allDefinitions,
-    };
-    const inputTree = buildInputTree(parsedEntries, ctx, csnElementResolver);
+    );
+    const inputTree = buildInputTree(parsedEntries, entityContext);
     return convertTreeToElementTypes(
       inputTree,
       elements as Record<string, CsnElement>,
@@ -292,6 +303,13 @@ function convertTreeToElementTypes(
   const result: Record<string, ElementType> = {};
 
   for (const node of tree) {
+    // Handle wildcard '*' (from $self) - expand all elements
+    if (node.sourceElement === WILDCARD) {
+      const allTypes = getAllElementTypes(elements, allDefinitions);
+      Object.assign(result, allTypes);
+      continue;
+    }
+
     const element = elements[node.sourceElement];
     if (!element) continue;
 
@@ -338,32 +356,59 @@ function convertTreeToElementTypes(
 
 /**
  * Gets all element types from an elements record (no filtering)
+ * Skips associations (they're structural, not data fields - their managed foreign keys are separate)
+ * @param visitedTargets - Set of already visited target entity names (to prevent infinite recursion)
  */
 function getAllElementTypes(
   elements: Record<string, CsnElement>,
   allDefinitions: Record<string, CsnDefinition>,
+  visitedTargets: Set<string> = new Set(),
 ): Record<string, ElementType> {
   const result: Record<string, ElementType> = {};
 
   for (const name in elements) {
     const element = elements[name];
-    const isAssociationOrComposition =
-      element.type === 'cds.Association' || element.type === 'cds.Composition';
+    const isAssociation = element.type === 'cds.Association';
+    const isComposition = element.type === 'cds.Composition';
     const isMandatory = element['@mandatory'] === true;
 
-    if (isAssociationOrComposition) {
-      // For associations/compositions, get the target entity's elements
+    // Skip associations - they're structural metadata, not data fields
+    // Their managed foreign keys (e.g., parent_ID) are separate elements
+    if (isAssociation) {
+      continue;
+    }
+
+    if (isComposition) {
+      // For compositions, get the target entity's elements
       const targetDef = element.target ? allDefinitions[element.target] : undefined;
+      
+      // Skip if we've already visited this target (cyclic reference)
+      if (element.target && visitedTargets.has(element.target)) {
+        result[name] = {
+          type: element.type,
+          isMandatory,
+          isArray: element.cardinality?.max === '*',
+          properties: {}, // Don't expand cyclic references
+        };
+        continue;
+      }
+
       const childElements =
         targetDef && targetDef.kind === 'entity'
           ? (targetDef.elements as Record<string, CsnElement>)
           : {};
 
+      // Track visited target to prevent cycles
+      const newVisited = new Set(visitedTargets);
+      if (element.target) {
+        newVisited.add(element.target);
+      }
+
       result[name] = {
         type: element.type,
         isMandatory,
         isArray: element.cardinality?.max === '*',
-        properties: getAllElementTypes(childElements, allDefinitions),
+        properties: getAllElementTypes(childElements, allDefinitions, newVisited),
       };
     } else {
       result[name] = { type: element.type, isMandatory };
