@@ -1,7 +1,7 @@
 import cds from '@sap/cds';
 import { ProcessValidationPlugin } from './plugin';
 import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
-import { PROCESS_START_ID, PROCESS_START_ON } from '../constants';
+import { PROCESS_START_ID } from '../constants';
 import {
   ElementType,
   getElementNamesAndTypes,
@@ -95,17 +95,19 @@ export function validateRequiredStartAnnotations(
   hasOn: boolean,
   hasId: boolean,
   entityName: string,
+  idKey: string,
+  onKey: string,
   buildPlugin: ProcessValidationPlugin,
 ) {
   if (hasOn && !hasId) {
     buildPlugin.pushMessage(
-      ERROR_START_ON_REQUIRES_ID(entityName, PROCESS_START_ON, PROCESS_START_ID),
+      ERROR_START_ON_REQUIRES_ID(entityName, onKey, idKey),
       ERROR,
     );
   }
   if (hasId && !hasOn) {
     buildPlugin.pushMessage(
-      ERROR_START_ID_REQUIRES_ON(entityName, PROCESS_START_ID, PROCESS_START_ON),
+      ERROR_START_ID_REQUIRES_ON(entityName, idKey, onKey),
       ERROR,
     );
   }
@@ -114,16 +116,17 @@ export function validateRequiredStartAnnotations(
 export function validateIdAnnotation(
   def: CsnEntity,
   entityName: string,
+  idKey: string,
   processDef: CsnDefinition | undefined,
   buildPlugin: ProcessValidationPlugin,
 ) {
-  if (typeof def[PROCESS_START_ID] !== 'string') {
-    buildPlugin.pushMessage(ERROR_START_ID_MUST_BE_STRING(entityName, PROCESS_START_ID), ERROR);
+  if (typeof def[idKey as `@${string}`] !== 'string') {
+    buildPlugin.pushMessage(ERROR_START_ID_MUST_BE_STRING(entityName, idKey), ERROR);
   }
 
   if (!processDef) {
     buildPlugin.pushMessage(
-      WARNING_NO_PROCESS_DEFINITION(entityName, PROCESS_START_ID, def[PROCESS_START_ID]),
+      WARNING_NO_PROCESS_DEFINITION(entityName, idKey, def[idKey as `@${string}`]),
       WARNING,
     );
   }
@@ -148,6 +151,7 @@ export function validateInputTypes(
   def: CsnDefinition,
   processDef: CsnDefinition,
   allDefinitions: Record<string, CsnDefinition> | undefined,
+  idKey: string = PROCESS_START_ID,
 ) {
   // entity attributes from annotations
   const entityAttributes = getElementNamesAndTypes(
@@ -161,8 +165,8 @@ export function validateInputTypes(
   const processDefInputs = getProcessDefInputsAndTypes(processDef, allDefinitions || {});
   if (!processDefInputs['businesskey']) {
     buildPlugin.pushMessage(
-      ERROR_START_BUSINESSKEY_INPUT_MISSING(entityName, def[PROCESS_START_ID]),
-      ERROR,
+      ERROR_START_BUSINESSKEY_INPUT_MISSING(entityName, def[idKey as `@${string}`]),
+      ERROR, 
     );
   } else {
     delete processDefInputs['businesskey'];
@@ -174,7 +178,7 @@ export function validateInputTypes(
     entityName,
     entityAttributes,
     processDefInputs,
-    def[PROCESS_START_ID],
+    def[idKey as `@${string}`],
   );
 }
 

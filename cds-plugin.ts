@@ -8,8 +8,6 @@ import {
   handleProcessSuspend,
   ProcessValidationPlugin,
   registerProcessServiceHandlers,
-  PROCESS_START_ID,
-  PROCESS_START_ON,
   PROCESS_CANCEL_ON,
   PROCESS_SUSPEND_ON,
   PROCESS_RESUME_ON,
@@ -78,13 +76,13 @@ function expandEvent(event: string | undefined, entity: cds.entity): string[] {
 function buildAnnotationCache(service: cds.Service) {
   const cache = new Map<string, EntityEventCache>();
   for (const entity of Object.values(service.entities)) {
-    const startEvent = entity[PROCESS_START_ON];
+    const startEvents = getStartEvents(entity);
     const cancelEvent = entity[PROCESS_CANCEL_ON];
     const suspendEvent = entity[PROCESS_SUSPEND_ON];
     const resumeEvent = entity[PROCESS_RESUME_ON];
 
     const events = new Set<string>();
-    for (const ev of expandEvent(startEvent, entity)) events.add(ev);
+    for (const ev of startEvents) events.add(ev);
     for (const ev of expandEvent(cancelEvent, entity)) events.add(ev);
     for (const ev of expandEvent(suspendEvent, entity)) events.add(ev);
     for (const ev of expandEvent(resumeEvent, entity)) events.add(ev);
@@ -93,7 +91,7 @@ function buildAnnotationCache(service: cds.Service) {
       const matchesEvent = (annotationEvent: string | undefined) =>
         annotationEvent === event || annotationEvent === '*';
 
-      const hasStart = !!(matchesEvent(startEvent) && entity[PROCESS_START_ID]);
+      const hasStart = startEvents.includes(event);
       const hasCancel = !!matchesEvent(cancelEvent);
       const hasSuspend = !!matchesEvent(suspendEvent);
       const hasResume = !!matchesEvent(resumeEvent);
@@ -108,6 +106,24 @@ function buildAnnotationCache(service: cds.Service) {
     }
   }
   return cache;
+}
+
+function getStartEvents(entity: cds.entity): string[] {
+  const events: string[] = [];
+  for (const key of Object.keys(entity)) {
+    // Match both @build.process.start.on  and  @build.process.start#<q>.on
+    const match = key.match(/^@build\.process\.start(#[^.]+)?\.on$/);
+    if (!match) continue;
+    const qualifier = match[1] ?? ''; // '' means unqualified
+    const idKey = `@build.process.start${qualifier}.id` as `@${string}`;
+    const onValue = entity[key as `@${string}`] as string | undefined;
+    if (onValue && entity[idKey]) {
+      for (const ev of expandEvent(onValue, entity)) {
+        if (!events.includes(ev)) events.push(ev);
+      }
+    }
+  }
+  return events;
 }
 
 cds.on('served', async (services) => {

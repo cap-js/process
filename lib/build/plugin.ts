@@ -128,40 +128,54 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     processDefinitions: Map<string, CsnDefinition>,
     allDefinitions: Record<string, CsnDefinition>,
   ) {
-    // check unknown annotations
-    const allowedAnnotations = [
-      PROCESS_START_ID,
-      PROCESS_START_ON,
-      PROCESS_START_IF,
-      PROCESS_INPUT,
-    ];
-    validateAllowedAnnotations(allowedAnnotations, def, entityName, PROCESS_START, this);
-
-    const hasId = def[PROCESS_START_ID] !== undefined;
-    const hasOn = def[PROCESS_START_ON] !== undefined;
-    const hasIf = def[PROCESS_START_IF] !== undefined;
-
-    // required fields
-    validateRequiredStartAnnotations(hasOn, hasId, entityName, this);
-
-    const processDef = processDefinitions.get(def[PROCESS_START_ID]);
-
-    if (hasId) {
-      validateIdAnnotation(def, entityName, processDef, this);
+    const qualifiers = new Set<string>();
+    for (const key of Object.keys(def)) {
+      const match = key.match(/^@build\.process\.start(#[^.]+)?\.(?:id|on|if)$/);
+      if (match) qualifiers.add(match[1] ?? '');
     }
 
-    if (hasOn) {
-      validateOnAnnotation(def, entityName, PROCESS_START_ON, this);
+    if (qualifiers.size === 0) {
+      const allowedAnnotations = [PROCESS_START_ID, PROCESS_START_ON, PROCESS_START_IF, PROCESS_INPUT];
+      validateAllowedAnnotations(allowedAnnotations, def, entityName, PROCESS_START, this);
+      return;
     }
 
-    if (hasIf) {
-      validateIfAnnotation(def, entityName, PROCESS_START_IF, this);
-    }
+    for (const qualifier of qualifiers) {
+      const idKey = PROCESS_START_ID.replace('.id', `${qualifier}.id`) as `@${string}`;
+      const onKey = PROCESS_START_ON.replace('.on', `${qualifier}.on`) as `@${string}`;
+      const ifKey = PROCESS_START_IF.replace('.if', `${qualifier}.if`) as `@${string}`;
 
-    if (hasId && hasOn && processDef) {
-      const processInputs = allDefinitions[`${processDef.name}.ProcessInputs`];
-      if (typeof processInputs !== 'undefined') {
-        validateInputTypes(this, entityName, def, processInputs, allDefinitions);
+      const allowedAnnotations = [idKey, onKey, ifKey, PROCESS_INPUT];
+      if (qualifier === '') {
+        validateAllowedAnnotations(allowedAnnotations, def, entityName, PROCESS_START, this);
+      }
+
+      const hasId = def[idKey] !== undefined;
+      const hasOn = def[onKey] !== undefined;
+      const hasIf = def[ifKey] !== undefined;
+
+      // required fields
+      validateRequiredStartAnnotations(hasOn, hasId, entityName, idKey, onKey, this);
+
+      const processDef = processDefinitions.get(def[idKey] as string);
+
+      if (hasId) {
+        validateIdAnnotation(def, entityName, idKey, processDef, this);
+      }
+
+      if (hasOn) {
+        validateOnAnnotation(def, entityName, onKey, this);
+      }
+
+      if (hasIf) {
+        validateIfAnnotation(def, entityName, ifKey, this);
+      }
+
+      if (hasId && hasOn && processDef) {
+        const processInputs = allDefinitions[`${processDef.name}.ProcessInputs`];
+        if (typeof processInputs !== 'undefined') {
+          validateInputTypes(this, entityName, def, processInputs, allDefinitions, idKey);
+        }
       }
     }
   }

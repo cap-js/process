@@ -39,13 +39,13 @@ export function getColumnsForProcessStart(
   target: Target,
   req: cds.Request,
 ): column_expr[] | string[] {
-  const startSpecs = initStartSpecs(target, req);
-  if (startSpecs.inputs.length === 0) {
+  const allSpecs = getAllStartSpecs(target, req);
+  if (allSpecs.some((s) => s.inputs.length === 0)) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
     return ['*'];
-  } else {
-    return convertToColumnsExpr(startSpecs.inputs);
   }
+  const allInputs = allSpecs.flatMap((s) => s.inputs);
+  return convertToColumnsExpr(allInputs);
 }
 
 export async function handleProcessStart(req: cds.Request): Promise<void> {
@@ -55,70 +55,104 @@ export async function handleProcessStart(req: cds.Request): Promise<void> {
   const data = ((req as ProcessDeleteRequest)._Process ??
     getEntityDataFromRequest(req)) as EntityRow;
 
-  const startSpecs = initStartSpecs(target, req);
+  const allSpecs = getAllStartSpecs(target, req, req.event);
 
-  // if startSpecs.input = [] --> no input defined, fetch entire row
-  let columns: column_expr[] | string[] = [];
-  if (startSpecs.inputs.length === 0) {
-    columns = ['*'];
-    LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
-  } else {
-    columns = convertToColumnsExpr(startSpecs.inputs);
+  for (const startSpecs of allSpecs) {
+    // if startSpecs.input = [] --> no input defined, fetch entire row
+    let columns: column_expr[] | string[] = [];
+    if (startSpecs.inputs.length === 0) {
+      columns = ['*'];
+      LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
+    } else {
+      columns = convertToColumnsExpr(startSpecs.inputs);
+    }
+
+    // fetch entity
+    const row = await resolveEntityRowOrReject(
+      req,
+      data,
+      startSpecs.conditionExpr,
+      'Failed to fetch entity for process start.',
+      LOG_MESSAGES.PROCESS_NOT_STARTED,
+      columns,
+    );
+    if (!row) continue; 
+
+    // get business key
+    const businessKey = getBusinessKeyOrReject(
+      target as cds.entity,
+      row,
+      req,
+      'Failed to build business key for process start.',
+      'Business key is empty for process start.',
+    );
+    if (!businessKey) continue;
+
+    const context = { ...row, businesskey: businessKey };
+
+    // emit process start
+    const payload = { definitionId: startSpecs.id!, context };
+    await emitProcessEvent(
+      'start',
+      req,
+      payload,
+      `Failed to start process with definition ID ${startSpecs.id!}.`,
+      startSpecs.id!,
+    );
   }
-
-  // fetch entity
-  const row = await resolveEntityRowOrReject(
-    req,
-    data,
-    startSpecs.conditionExpr,
-    'Failed to fetch entity for process start.',
-    LOG_MESSAGES.PROCESS_NOT_STARTED,
-    columns,
-  );
-  if (!row) return;
-
-  // get business key
-  const businessKey = getBusinessKeyOrReject(
-    target as cds.entity,
-    row,
-    req,
-    'Failed to build business key for process start.',
-    'Business key is empty for process start.',
-  );
-  if (!businessKey) return;
-
-  const context = { ...row, businesskey: businessKey };
-
-  // emit process start
-  const payload = { definitionId: startSpecs.id!, context };
-  await emitProcessEvent(
-    'start',
-    req,
-    payload,
-    `Failed to start process with definition ID ${startSpecs.id!}.`,
-    startSpecs.id!,
-  );
 }
 
-function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
-  const startSpecs: ProcessStartSpec = {
-    id: target[PROCESS_START_ID] as string,
-    on: target[PROCESS_START_ON] as string,
-    inputs: [],
-    conditionExpr: target[PROCESS_START_IF]
-      ? ((target[PROCESS_START_IF] as unknown as { xpr: expr }).xpr as expr)
-      : undefined,
-  };
-  const elementAnnotations = getElementAnnotations(target as cds.entity);
-  const entityName = (target as cds.entity).name;
-  startSpecs.inputs = getInputElements(
-    elementAnnotations,
-    new Set([entityName]),
-    [entityName],
-    req,
-  );
+/**
+ * Returns all ProcessStartSpecs for the target entity, covering both the
+ * unqualified annotation (@build.process.start.*) and every #-qualified
+ * variant (@build.process.start#<qualifier>.*).
+ *
+ * When `eventFilter` is provided, only specs whose `.on` matches the event
+ * (exact match or wildcard '*') are returned.
+ */
+function getAllStartSpecs(
+  target: Target,
+  req: cds.Request,
+  eventFilter?: string,
+): ProcessStartSpec[] {
+  const specs: ProcessStartSpec[] = [];
 
-  return startSpecs;
+  const qualifiers = new Set<string>();
+  for (const key of Object.keys(target)) {
+    const match = key.match(/^@build\.process\.start(#[^.]+)?\.(?:id|on|if)$/);
+    if (match) qualifiers.add(match[1] ?? '');
+  }
+
+  const targetRecord = target as unknown as Record<string, unknown>;
+
+  for (const qualifier of qualifiers) {
+    const idKey = `${PROCESS_START_ID.replace('.id', `${qualifier}.id`)}`;
+    const onKey = `${PROCESS_START_ON.replace('.on', `${qualifier}.on`)}`;
+    const ifKey = `${PROCESS_START_IF.replace('.if', `${qualifier}.if`)}`;
+
+    const id = targetRecord[idKey] as string | undefined;
+    const on = targetRecord[onKey] as string | undefined;
+
+    if (!id || !on) continue; 
+
+    if (eventFilter && on !== '*' && on !== eventFilter) continue;
+
+    const ifValue = targetRecord[ifKey] as { xpr: expr } | undefined;
+    const conditionExpr = ifValue ? (ifValue.xpr as expr) : undefined;
+
+    const elementAnnotations = getElementAnnotations(target as cds.entity);
+    const entityName = (target as cds.entity).name;
+    const inputs = getInputElements(
+      elementAnnotations,
+      new Set([entityName]),
+      [entityName],
+      req,
+    );
+
+    specs.push({ id, on, inputs, conditionExpr });
+  }
+
+  return specs;
 }
 
 function getInputElements(

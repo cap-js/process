@@ -1,20 +1,24 @@
 @server = http://localhost:4004
 
 # @name createShipment with annotation
-POST {{server}}/odata/v4/test/AnnotatedShipments
+POST {{server}}/odata/v4/annotation/Shipments
 Content-Type: application/json
 
 {
-    "ID": "123456",
-    "address": "Germany",
-    "date": "2026",
-    "weight": 11,
+    "ID": "401e8400-e29b-41d4-a716-446655440007",
+    "status": "PENDING",
+    "shipmentDate": "2026-03-04",
+    "expectedDelivery": "2026-03-10",
+    "origin": "Germany",
+    "destination": "France",
+    "totalValue": 1200.00,
     "items": [
         {
-            "itemID": "item1",
-            "description": "Item 1 description",
-            "quantity": 5,
-            "materialID": "mat1"
+            "ID": "501e8400-e29b-41d4-a716-446655440011",
+            "title": "Laptop",
+            "quantity": 1,
+            "price": 1200.00,
+            "weight": 2.5
         }
     ]
 }
@@ -217,7 +221,7 @@ POST  {{server}}/odata/v4/shipment/getShipmentAttributes
 Content-Type: application/json
 
 {
-  "shipmentID": "401e8400-e29b-41d4-a716-446655440001"
+  "shipmentID": "401e8400-e29b-41d4-a716-446655440007"
 }
 
 
@@ -226,7 +230,7 @@ POST  {{server}}/odata/v4/shipment/getShipmentOutputs
 Content-Type: application/json
 
 {
-  "shipmentID": "401e8400-e29b-41d4-a716-446655440001"
+  "shipmentID": "401e8400-e29b-41d4-a716-446655440007"
 }
 
 

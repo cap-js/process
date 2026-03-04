@@ -2,7 +2,11 @@ using {sap.capire.bookshop as my} from '../db/shipment';
 
 service AnnotationService {
 
-  @build.process.start: {
+  @build.process.start #one: {
+    id: 'shipmentProcess',
+    on: 'CREATE',
+  }
+    @build.process.start #two: {
     id: 'shipmentProcess',
     on: 'CREATE',
   }
@@ -1057,5 +1061,55 @@ service AnnotationService {
     ID, model, manufacturer, mileage, year
   } actions {
     action triggerAction() returns CancelOnWildcardWhen;
+  }
+
+  // ============================================
+  // MULTI-PROCESS START TESTS (#-qualifier syntax)
+  // ============================================
+
+  // --------------------------------------------
+  // Two processes started on different events via #qualifiers
+  // --------------------------------------------
+  @build.process.start #create: {
+    id: 'multiStartCreateProcess',
+    on: 'CREATE',
+  }
+  @build.process.start #update: {
+    id: 'multiStartUpdateProcess',
+    on: 'UPDATE',
+  }
+  entity MultiStartOnDifferentEvents as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  }
+
+  // --------------------------------------------
+  // Two processes started on the same event via #qualifiers
+  // --------------------------------------------
+  @build.process.start #first: {
+    id: 'multiStartFirst',
+    on: 'CREATE',
+  }
+  @build.process.start #second: {
+    id: 'multiStartSecond',
+    on: 'CREATE',
+  }
+  entity MultiStartOnSameEvent as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  }
+
+  // --------------------------------------------
+  // Two processes started on CREATE, one with an if-condition
+  // --------------------------------------------
+  @build.process.start #always: {
+    id: 'multiStartAlways',
+    on: 'CREATE',
+  }
+  @build.process.start #conditional: {
+    id: 'multiStartConditional',
+    on: 'CREATE',
+    if: (mileage > 500)
+  }
+  entity MultiStartWithCondition as projection on my.Car {
+    ID, model, manufacturer, mileage, year
   }
 }

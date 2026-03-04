@@ -243,9 +243,21 @@ export async function addDeletedEntityToRequest(
     PROCESS_SUSPEND_ON,
     PROCESS_RESUME_ON,
   ];
-  for (const annotationKey of onAnnotations) {
+
+  const qualifiedStartOnAnnotations: string[] = [];
+  for (const key of Object.keys(annotatedTarget)) {
+    if (/^@build\.process\.start#[^.]+\.on$/.test(key)) {
+      qualifiedStartOnAnnotations.push(key);
+    }
+  }
+
+  for (const annotationKey of [...onAnnotations, ...qualifiedStartOnAnnotations]) {
     if (annotatedTarget[annotationKey] && annotatedTarget[annotationKey] === 'DELETE') {
-      const annotationIf = ANNOTATION_ON_TO_IF_MAP[annotationKey];
+      let annotationIf = ANNOTATION_ON_TO_IF_MAP[annotationKey];
+      if (!annotationIf && annotationKey.startsWith('@build.process.start#')) {
+        annotationIf = annotationKey.replace(/\.on$/, '.if');
+      }
+      if (!annotationIf) continue;
       const conditionExpr = annotatedTarget[annotationIf] as { xpr: expr } | undefined;
       if (conditionExpr) {
         where =
