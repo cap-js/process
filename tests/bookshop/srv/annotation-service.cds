@@ -39,7 +39,7 @@ service AnnotationService {
         status           : String(20) default 'PENDING';
         shipmentDate     : Date @bpm.process.input;
         expectedDelivery : Date;
-        origin           : String(200) @(build.process.input: 'OriginCountry');
+        origin           : String(200) @(bpm.process.input: 'OriginCountry');
         destination      : String(200);
         items            : Composition of many InputShipmentItems
                              on items.shipment = $self
@@ -751,11 +751,11 @@ service AnnotationService {
   entity StartAliasInput {
     key ID               : UUID @bpm.process.input;
         status           : String(20) default 'PENDING';
-        shipmentDate     : Date @(build.process.input: 'ProcessStartDate');
+        shipmentDate     : Date @(bpm.process.input: 'ProcessStartDate');
         expectedDelivery : Date;
-        origin           : String(200) @(build.process.input: 'SourceLocation');
-        destination      : String(200) @(build.process.input: 'TargetLocation');
-        totalValue       : Decimal(15, 2) @(build.process.input: 'Amount');
+        origin           : String(200) @(bpm.process.input: 'SourceLocation');
+        destination      : String(200) @(bpm.process.input: 'TargetLocation');
+        totalValue       : Decimal(15, 2) @(bpm.process.input: 'Amount');
   }
 
   // --------------------------------------------
@@ -821,18 +821,18 @@ service AnnotationService {
   entity StartNestedAlias {
     key ID        : UUID @bpm.process.input;
         status    : String(20) default 'PENDING';
-        orderDate : Date @(build.process.input: 'ProcessDate');
+        orderDate : Date @(bpm.process.input: 'ProcessDate');
         items     : Composition of many StartNestedAliasItems
                       on items.parent = $self
-                    @(build.process.input: 'OrderLines');
+                    @(bpm.process.input: 'OrderLines');
   }
 
   entity StartNestedAliasItems {
     key ID          : UUID @bpm.process.input;
         parent      : Association to StartNestedAlias;
-        productName : String(200) @(build.process.input: 'Product');
-        quantity    : Integer @(build.process.input: 'Qty');
-        unitPrice   : Decimal(15, 2) @(build.process.input: 'Price');
+        productName : String(200) @(bpm.process.input: 'Product');
+        quantity    : Integer @(bpm.process.input: 'Qty');
+        unitPrice   : Decimal(15, 2) @(bpm.process.input: 'Price');
   }
 
   // --------------------------------------------

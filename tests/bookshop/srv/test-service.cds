@@ -8,10 +8,10 @@ service TestService {
   entity AnnotatedShipments   as
     projection on Shipments {
       ID,
-      address @mandatory @(build.process.input: 'Adresse'),
+      address @mandatory @(bpm.process.input: 'Adresse'),
       date,
       weight @bpm.process.input,
-      items @(build.process.input: 'positionen'),
+      items @(bpm.process.input: 'positionen'),
       home : Association to one Home
                on home.shipmentID = ID
              @bpm.process.input

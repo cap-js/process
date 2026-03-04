@@ -37,7 +37,7 @@ Start developing 🙂
   - `@bpm.process.start.on`
   - `@bpm.process.start.if` -- only starting process if expression is true
 - `@bpm.process.input` -- includes this element in the process start assuming name equality
-- `@(build.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
+- `@(bpm.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
 - Important: the process that has been started needs to have an input attribute 'businesskey' of type string that is then assigned to the businessKey in process configuration so that the process can be later CANCELLED/SUSPENDED/RESUMED
 
 Example:
@@ -52,7 +52,7 @@ service MyService {
     }
     entity MyProjection as projection on MyEntity {
       myElement @bpm.process.input,
-      myElement2 @(build.process.input: 'targetVariable')
+      myElement2 @(bpm.process.input: 'targetVariable')
       myElement3
     };
 
