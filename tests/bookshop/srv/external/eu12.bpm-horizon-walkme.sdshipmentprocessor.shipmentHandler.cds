@@ -3,7 +3,7 @@ namespace eu12.![bpm-horizon-walkme].sdshipmentprocessor;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
 @protocol : 'none'
-@build.process : 'eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler'
+@bpm.process : 'eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler'
 service ShipmentHandlerService {
   type ShipmentProcessResult_itemProcessResults_Array : many ItemProcessResult;
 
@@ -48,9 +48,12 @@ service ShipmentHandlerService {
     definitionId : String;
     definitionVersion : String;
     id : String;
+    status: String;
     startedAt : String;
     startedBy : String;
   };
+
+  type ProcessInstances : many ProcessInstance;
 
   action start(
     inputs : ProcessInputs not null
@@ -63,6 +66,10 @@ service ShipmentHandlerService {
   function getOutputs(
     processInstanceId : String not null
   ) returns ProcessOutputs;
+
+  function getInstancesByBusinessKey(
+    businessKey : String not null
+  ) returns ProcessInstances;
 
   action suspend(
     businessKey : String not null,

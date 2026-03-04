@@ -15,9 +15,9 @@ export const handleProcessCancel = createProcessActionHandler({
   },
   logMessages: {
     NOT_TRIGGERED: LOG_MESSAGES.PROCESS_NOT_CANCELLED,
-    FETCH_FAILED: 'PROCESS_CANCEL_FETCH_FAILED',
-    INVALID_KEY: 'PROCESS_CANCEL_INVALID_KEY',
-    EMPTY_KEY: 'PROCESS_CANCEL_EMPTY_KEY',
-    FAILED: 'PROCESS_CANCEL_FAILED',
+    FETCH_FAILED: 'Failed to fetch entity for process cancellation.',
+    INVALID_KEY: 'Failed to build business key for process cancellation.',
+    EMPTY_KEY: 'Business key is empty for process cancellation.',
+    FAILED: 'Failed to cancel process with business key',
   },
 });

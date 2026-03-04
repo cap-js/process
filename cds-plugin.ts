@@ -1,4 +1,5 @@
 import cds, { Results } from '@sap/cds';
+import { EntityEventCache } from './types/cds-plugin';
 import {
   addDeletedEntityToRequest,
   handleProcessCancel,
@@ -13,15 +14,9 @@ import {
   PROCESS_SUSPEND_ON,
   PROCESS_RESUME_ON,
   PROCESS_PREFIX,
+  CUD_EVENTS,
 } from './lib/index';
 import { importProcess } from './lib/processImport';
-
-interface EntityEventCache {
-  hasStart: boolean;
-  hasCancel: boolean;
-  hasSuspend: boolean;
-  hasResume: boolean;
-}
 
 // Register build plugin for annotation validation during cds build
 cds.build?.register?.('process-validation', ProcessValidationPlugin);
@@ -37,7 +32,6 @@ cds.import.from.process = importProcess;
 cds.on('serving', async (service: cds.Service) => {
   if (service instanceof cds.ApplicationService == false) return;
 
-  // cache for entities
   const annotationCache = buildAnnotationCache(service);
 
   service.before('DELETE', async (req: cds.Request) => {
@@ -72,9 +66,22 @@ cds.on('serving', async (service: cds.Service) => {
   });
 });
 
+function expandEvent(event: string | undefined, entity: cds.entity): string[] {
+  if (!event) return [];
+  if (event === '*') {
+    const boundActions = entity.actions ? Object.keys(entity.actions) : [];
+    return [...CUD_EVENTS, ...boundActions];
+  }
+  return [event];
+}
+
 function buildAnnotationCache(service: cds.Service) {
   const cache = new Map<string, EntityEventCache>();
   for (const entity of Object.values(service.entities)) {
+    const startEvent = entity[PROCESS_START_ON];
+    const cancelEvent = entity[PROCESS_CANCEL_ON];
+    const suspendEvent = entity[PROCESS_SUSPEND_ON];
+    const resumeEvent = entity[PROCESS_RESUME_ON];
     // Collect all events that have a start annotation (non-qualified and qualified)
     const startEventsSet = new Set<string>();
 
@@ -84,6 +91,11 @@ function buildAnnotationCache(service: cds.Service) {
       startEventsSet.add(nonQualStartOn);
     }
 
+    const events = new Set<string>();
+    for (const ev of expandEvent(startEvent, entity)) events.add(ev);
+    for (const ev of expandEvent(cancelEvent, entity)) events.add(ev);
+    for (const ev of expandEvent(suspendEvent, entity)) events.add(ev);
+    for (const ev of expandEvent(resumeEvent, entity)) events.add(ev);
     // Qualified: @build.process.start #qualifier: { id, on }
     // CDS stores as @build.process.start#qualifier.on, @build.process.start#qualifier.id
     for (const key of Object.keys(entity)) {
@@ -111,6 +123,13 @@ function buildAnnotationCache(service: cds.Service) {
     ]);
 
     for (const event of events) {
+      const matchesEvent = (annotationEvent: string | undefined) =>
+        annotationEvent === event || annotationEvent === '*';
+
+      const hasStart = !!(matchesEvent(startEvent) && entity[PROCESS_START_ID]);
+      const hasCancel = !!matchesEvent(cancelEvent);
+      const hasSuspend = !!matchesEvent(suspendEvent);
+      const hasResume = !!matchesEvent(resumeEvent);
       const hasStart = startEventsSet.has(event);
       const hasCancel = cancelEvent === event;
       const hasSuspend = suspendEvent === event;

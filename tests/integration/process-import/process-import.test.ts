@@ -72,7 +72,7 @@ describe('Process Import Integration Tests', () => {
         expect(definitions[serviceName]).toBeDefined();
         expect(definitions[serviceName].kind).toBe('service');
         expect(definitions[serviceName]['@protocol']).toBe('none');
-        expect(definitions[serviceName]['@build.process']).toBe('test.project.simpleProcess');
+        expect(definitions[serviceName]['@bpm.process']).toBe('test.project.simpleProcess');
       });
 
       it('should generate ProcessInputs type with correct elements', async () => {
@@ -104,7 +104,7 @@ describe('Process Import Integration Tests', () => {
         expect(outputsType.elements.result.type).toBe('cds.String');
       });
 
-      it('should generate ProcessInstance type', async () => {
+      it('should generate ProcessInstance type with correct elements', async () => {
         const csn = await importProcess(simpleProcessPath);
         const definitions = getDefinitions(csn);
         const instanceType = definitions[
@@ -114,9 +114,56 @@ describe('Process Import Integration Tests', () => {
         expect(instanceType).toBeDefined();
         expect(instanceType.kind).toBe('type');
         expect(instanceType.elements.id).toBeDefined();
+        expect(instanceType.elements.id.type).toBe('cds.String');
+        expect(instanceType.elements.status).toBeDefined();
+        expect(instanceType.elements.status.type).toBe('cds.String');
         expect(instanceType.elements.definitionId).toBeDefined();
+        expect(instanceType.elements.definitionId.type).toBe('cds.String');
+        expect(instanceType.elements.definitionVersion).toBeDefined();
+        expect(instanceType.elements.definitionVersion.type).toBe('cds.String');
         expect(instanceType.elements.startedAt).toBeDefined();
+        expect(instanceType.elements.startedAt.type).toBe('cds.String');
         expect(instanceType.elements.startedBy).toBeDefined();
+        expect(instanceType.elements.startedBy.type).toBe('cds.String');
+      });
+
+      it('should generate ProcessInstances type with correct element', async () => {
+        const csn = await importProcess(simpleProcessPath);
+        const definitions = getDefinitions(csn);
+        const serviceName = 'test.project.SimpleProcessService';
+        const instancesType = definitions[`${serviceName}.ProcessInstances`] as any;
+
+        expect(instancesType).toBeDefined();
+        expect(instancesType.items).toBeDefined();
+        expect(instancesType.items.type).toBe(`${serviceName}.ProcessInstance`);
+      });
+
+      it('should generate ProcessAttribute type with correct elements', async () => {
+        const csn = await importProcess(simpleProcessPath);
+        const definitions = getDefinitions(csn);
+        const serviceName = 'test.project.SimpleProcessService';
+        const attributeType = definitions[`${serviceName}.ProcessAttribute`] as any;
+
+        expect(attributeType).toBeDefined();
+        expect(attributeType.elements.id).toBeDefined();
+        expect(attributeType.elements.id.type).toBe('cds.String');
+        expect(attributeType.elements.label).toBeDefined();
+        expect(attributeType.elements.label.type).toBe('cds.String');
+        expect(attributeType.elements.value).toBeDefined();
+        expect(attributeType.elements.value.type).toBe('cds.String');
+        expect(attributeType.elements.type).toBeDefined();
+        expect(attributeType.elements.type.type).toBe('cds.String');
+      });
+
+      it('should generate ProcessAttributes type with correct element', async () => {
+        const csn = await importProcess(simpleProcessPath);
+        const definitions = getDefinitions(csn);
+        const serviceName = 'test.project.SimpleProcessService';
+        const attributesType = definitions[`${serviceName}.ProcessAttributes`] as any;
+
+        expect(attributesType).toBeDefined();
+        expect(attributesType.items).toBeDefined();
+        expect(attributesType.items.type).toBe(`${serviceName}.ProcessAttribute`);
       });
 
       it('should generate all required actions', async () => {
@@ -153,6 +200,13 @@ describe('Process Import Integration Tests', () => {
         expect(getOutputs).toBeDefined();
         expect(getOutputs.kind).toBe('function');
         expect(getOutputs.returns.type).toBe(`${serviceName}.ProcessOutputs`);
+
+        const getInstancesByBusinessKey = definitions[
+          `${serviceName}.getInstancesByBusinessKey`
+        ] as any;
+        expect(getInstancesByBusinessKey).toBeDefined();
+        expect(getInstancesByBusinessKey.kind).toBe('function');
+        expect(getInstancesByBusinessKey.returns.type).toBe(`${serviceName}.ProcessInstances`);
       });
     });
 
@@ -220,17 +274,6 @@ describe('Process Import Integration Tests', () => {
         expect(itemsArrayType.items.elements.quantity).toBeDefined();
         expect(itemsArrayType.items.elements.price).toBeDefined();
       });
-
-      it('should generate ProcessAttributes type', async () => {
-        const csn = await importProcess(complexProcessPath);
-        const definitions = getDefinitions(csn);
-        const serviceName = 'test.company.orders.ComplexProcessService';
-        const attributesType = definitions[`${serviceName}.ProcessAttributes`] as any;
-
-        expect(attributesType).toBeDefined();
-        expect(attributesType.elements.processedBy).toBeDefined();
-        expect(attributesType.elements.processedBy.type).toBe('cds.String');
-      });
     });
 
     describe('Process with No Inputs', () => {
@@ -241,7 +284,7 @@ describe('Process Import Integration Tests', () => {
 
         expect(definitions[serviceName]).toBeDefined();
         expect(definitions[serviceName].kind).toBe('service');
-        expect(definitions[serviceName]['@build.process']).toBe('test.scheduled.noInputsProcess');
+        expect(definitions[serviceName]['@bpm.process']).toBe('test.scheduled.noInputsProcess');
       });
 
       it('should create empty ProcessInputs type when inputs section is missing', async () => {
@@ -267,17 +310,6 @@ describe('Process Import Integration Tests', () => {
         expect(outputsType.elements.status.type).toBe('cds.String');
         expect(outputsType.elements.processedCount).toBeDefined();
         expect(outputsType.elements.processedCount.type).toBe('cds.Integer');
-      });
-
-      it('should generate ProcessAttributes type', async () => {
-        const csn = await importProcess(noInputsProcessPath);
-        const definitions = getDefinitions(csn);
-        const serviceName = 'test.scheduled.NoInputsProcessService';
-        const attributesType = definitions[`${serviceName}.ProcessAttributes`] as any;
-
-        expect(attributesType).toBeDefined();
-        expect(attributesType.elements.lastRunTime).toBeDefined();
-        expect(attributesType.elements.lastRunTime.type).toBe('cds.String');
       });
 
       it('should generate start action with empty inputs parameter', async () => {
@@ -313,10 +345,19 @@ describe('Process Import Integration Tests', () => {
         const getAttributes = definitions[`${serviceName}.getAttributes`] as any;
         expect(getAttributes).toBeDefined();
         expect(getAttributes.kind).toBe('function');
+        expect(getAttributes.returns.type).toBe(`${serviceName}.ProcessAttributes`);
 
         const getOutputs = definitions[`${serviceName}.getOutputs`] as any;
         expect(getOutputs).toBeDefined();
         expect(getOutputs.kind).toBe('function');
+        expect(getOutputs.returns.type).toBe(`${serviceName}.ProcessOutputs`);
+
+        const getInstancesByBusinessKey = definitions[
+          `${serviceName}.getInstancesByBusinessKey`
+        ] as any;
+        expect(getInstancesByBusinessKey).toBeDefined();
+        expect(getInstancesByBusinessKey.kind).toBe('function');
+        expect(getInstancesByBusinessKey.returns.type).toBe(`${serviceName}.ProcessInstances`);
       });
     });
   });

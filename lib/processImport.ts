@@ -2,7 +2,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import cds from '@sap/cds';
 import * as csn from '../types/csn-extensions';
-import { getServiceCredentials, getServiceToken } from './auth';
+import { getServiceCredentials, CachingTokenProvider, createXsuaaTokenProvider } from './auth';
 import {
   createProcessApiClient,
   IProcessApiClient,
@@ -88,19 +88,19 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
 async function createApiClient(): Promise<IProcessApiClient> {
   const credentials = getServiceCredentials(PROCESS_SERVICE);
   if (!credentials) {
-    throw new Error(cds.i18n.messages.at('IMPORT_NO_CREDENTIALS'));
+    throw new Error('No ProcessService credentials found. Run with: cds bind --exec -- ...');
   }
 
   const apiUrl = credentials.endpoints?.api;
   if (!apiUrl) {
-    throw new Error(cds.i18n.messages.at('IMPORT_NO_API_URL'));
+    throw new Error('No API URL found in ProcessService credentials.');
   }
 
   LOG.debug('Creating API client...');
-  return createProcessApiClient(apiUrl, async () => {
-    const tokenInfo = await getServiceToken(PROCESS_SERVICE);
-    return tokenInfo.jwt;
-  });
+  const tokenProvider = createXsuaaTokenProvider(credentials);
+  const cachingTokenProvider = new CachingTokenProvider(tokenProvider);
+
+  return createProcessApiClient(apiUrl, () => cachingTokenProvider.getToken());
 }
 
 // ============================================================================
@@ -135,7 +135,14 @@ function getModelPathFromFilePath(filePath: string): string {
   }
 
   // Normalize path separators
-  return relativePath.replace(/\\/g, '/');
+  relativePath = relativePath.replace(/\\/g, '/');
+
+  // Replace "workflows" prefix with "srv/external"
+  if (relativePath.startsWith('workflows/')) {
+    relativePath = 'srv/external/' + relativePath.slice('workflows/'.length);
+  }
+
+  return relativePath;
 }
 
 function loadProcessHeader(filePath: string): ProcessHeader {
@@ -177,7 +184,7 @@ function createServiceDefinition(serviceName: string, process: ProcessHeader): c
     name: serviceName,
     doc: 'DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT.',
     '@protocol': 'none',
-    '@build.process': `${process.projectId}.${process.identifier}`,
+    '@bpm.process': `${process.projectId}.${process.identifier}`,
   };
 }
 
@@ -207,8 +214,10 @@ function addProcessTypes(
 ): void {
   const inputsName = fqn(serviceName, 'ProcessInputs');
   const outputsName = fqn(serviceName, 'ProcessOutputs');
+  const attributeName = fqn(serviceName, 'ProcessAttribute');
   const attributesName = fqn(serviceName, 'ProcessAttributes');
   const instanceName = fqn(serviceName, 'ProcessInstance');
+  const instancesName = fqn(serviceName, 'ProcessInstances');
 
   definitions[inputsName] = buildTypeFromSchema(
     inputsName,
@@ -222,12 +231,25 @@ function addProcessTypes(
     serviceName,
     definitions,
   );
-  definitions[attributesName] = buildTypeFromSchema(
-    attributesName,
-    ensureObjectSchema(process.header?.processAttributes),
-    serviceName,
-    definitions,
-  );
+
+  definitions[attributeName] = {
+    kind: 'type',
+    name: attributeName,
+    elements: {
+      id: { type: csn.CdsBuiltinType.String, notNull: true },
+      label: { type: csn.CdsBuiltinType.String, notNull: true },
+      value: { type: csn.CdsBuiltinType.String },
+      type: { type: csn.CdsBuiltinType.String, notNull: true },
+    },
+  };
+
+  definitions[attributesName] = {
+    kind: 'type',
+    name: attributesName,
+    items: {
+      type: attributeName,
+    },
+  };
 
   definitions[instanceName] = {
     kind: 'type',
@@ -236,9 +258,16 @@ function addProcessTypes(
       definitionId: { type: csn.CdsBuiltinType.String },
       definitionVersion: { type: csn.CdsBuiltinType.String },
       id: { type: csn.CdsBuiltinType.String },
+      status: { type: csn.CdsBuiltinType.String },
       startedAt: { type: csn.CdsBuiltinType.String },
       startedBy: { type: csn.CdsBuiltinType.String },
     },
+  };
+
+  definitions[instancesName] = {
+    kind: 'type',
+    name: instancesName,
+    items: { type: instanceName },
   };
 }
 
@@ -253,6 +282,7 @@ function addProcessActions(
   const inputsType = fqn(serviceName, 'ProcessInputs');
   const outputsType = fqn(serviceName, 'ProcessOutputs');
   const attributesType = fqn(serviceName, 'ProcessAttributes');
+  const instancesType = fqn(serviceName, 'ProcessInstances');
 
   // Start action
   definitions[fqn(serviceName, 'start')] = {
@@ -280,6 +310,15 @@ function addProcessActions(
       processInstanceId: { type: csn.CdsBuiltinType.String, notNull: true },
     },
     returns: { type: outputsType },
+  };
+
+  definitions[fqn(serviceName, 'getInstancesByBusinessKey')] = {
+    kind: 'function',
+    name: fqn(serviceName, 'getInstancesByBusinessKey'),
+    params: {
+      businessKey: { type: csn.CdsBuiltinType.String, notNull: true },
+    },
+    returns: { type: instancesType },
   };
 
   // Lifecycle actions
@@ -375,10 +414,7 @@ function mapSchemaPropertyToElement(
       ctx.serviceName,
       sanitizeName(`${baseName(ctx.parentTypeName)}_${propName}_Array`),
     );
-    if (!schema.items)
-      throw new Error(
-        cds.i18n.messages.at('IMPORT_ARRAY_NO_ITEMS', [ctx.parentTypeName, propName]),
-      );
+    if (!schema.items) throw new Error(`Array ${ctx.parentTypeName}.${propName} has no 'items'.`);
 
     ctx.definitions[arrayName] = {
       kind: 'type',
@@ -434,7 +470,7 @@ function buildArrayItemsSpec(itemsSchema: JsonSchema, ctx: SchemaMapContext): cs
   // Nested array
   if (itemsSchema.type === 'array') {
     if (!itemsSchema.items)
-      throw new Error(cds.i18n.messages.at('IMPORT_NESTED_ARRAY_NO_ITEMS', [ctx.parentTypeName]));
+      throw new Error(`Nested array under ${ctx.parentTypeName} missing 'items'.`);
     return { items: buildArrayItemsSpec(itemsSchema.items, ctx) };
   }
 
@@ -447,9 +483,7 @@ function resolveTypeReference(
 ): string {
   const ref = schema.$ref;
   if (!ref)
-    throw new Error(
-      cds.i18n.messages.at('IMPORT_INVALID_REF', [serviceName, schema.refName ?? 'unknown']),
-    );
+    throw new Error(`Invalid reference in ${serviceName} for ${schema.refName ?? 'unknown'}`);
 
   // Internal reference: #/definitions/date
   if (ref.startsWith('#/')) {

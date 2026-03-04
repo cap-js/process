@@ -5,7 +5,7 @@ const { join } = cds.utils.path;
 const app = join(__dirname, '../../bookshop');
 const { test, POST } = cds.test(app);
 
-describe('Integration tests for START annotation with @build.process.input', () => {
+describe('Integration tests for START annotation with @bpm.process.input', () => {
   let foundMessages: any[] = [];
 
   beforeAll(async () => {
@@ -30,10 +30,10 @@ describe('Integration tests for START annotation with @build.process.input', () 
   };
 
   // ================================================
-  // Test 1: No @build.process.input
+  // Test 1: No @bpm.process.input
   // All entity fields should be included in context
   // ================================================
-  describe('Test 1: No @build.process.input (all fields included)', () => {
+  describe('Test 1: No @bpm.process.input (all fields included)', () => {
     it('should include all entity fields in process context', async () => {
       const shipment = {
         ID: '550e8400-e29b-41d4-a716-446655440000',
@@ -60,10 +60,10 @@ describe('Integration tests for START annotation with @build.process.input', () 
   });
 
   // ================================================
-  // Test 2: With @build.process.input on selected fields
+  // Test 2: With @bpm.process.input on selected fields
   // Only annotated fields should be included in context
   // ================================================
-  describe('Test 2: @build.process.input on selected fields', () => {
+  describe('Test 2: @bpm.process.input on selected fields', () => {
     it('should include only annotated fields in process context', async () => {
       const shipment = {
         ID: '550e8400-e29b-41d4-a716-446655440001',
@@ -94,10 +94,10 @@ describe('Integration tests for START annotation with @build.process.input', () 
   });
 
   // ================================================
-  // Test 3: With @build.process.input with custom alias
+  // Test 3: With @bpm.process.input with custom alias
   // Field should be renamed in context
   // ================================================
-  describe('Test 3: @build.process.input with custom alias', () => {
+  describe('Test 3: @bpm.process.input with custom alias', () => {
     it('should rename fields according to alias in process context', async () => {
       const shipment = {
         ID: '550e8400-e29b-41d4-a716-446655440002',
@@ -133,7 +133,7 @@ describe('Integration tests for START annotation with @build.process.input', () 
   // Test 4: With nested Composition (all child fields)
   // Include composition items with all their fields
   // ================================================
-  describe('Test 4: Nested Composition with @build.process.input (all child fields)', () => {
+  describe('Test 4: Nested Composition with @bpm.process.input (all child fields)', () => {
     it('should include composition items with all their fields', async () => {
       const order = {
         ID: '550e8400-e29b-41d4-a716-446655440003',
@@ -290,7 +290,7 @@ describe('Integration tests for START annotation with @build.process.input', () 
         await POST('/odata/v4/annotation/StartCycleA', object);
       } catch (error: any) {
         expect(error.status).toBe(400);
-        expect(error.message).toContain('Cycle detected in @build.process.input annotations:');
+        expect(error.message).toContain('Cycle detected in @bpm.process.input annotations:');
       }
     });
   });

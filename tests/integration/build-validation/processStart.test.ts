@@ -3,7 +3,7 @@ import { validateModel, withProcessDefinition, wrapEntity } from './helpers';
 
 // Tests additional annotation validation specific for start annotation
 
-describe(`Build Validation: @build.process.start annotations`, () => {
+describe(`Build Validation: @bpm.process.start annotations`, () => {
   describe('Required annotations', () => {
     it('should PASS when both ID and on are present', async () => {
       const cdsSource = wrapEntity(`

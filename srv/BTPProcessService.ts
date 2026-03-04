@@ -1,10 +1,5 @@
 import cds from '@sap/cds';
-import {
-  getServiceCredentials,
-  TokenCache,
-  ITokenProvider,
-  createXsuaaTokenProvider,
-} from '../lib/auth';
+import { getServiceCredentials, CachingTokenProvider, createXsuaaTokenProvider } from '../lib/auth';
 import { IWorkflowInstanceClient, createWorkflowInstanceClient, WorkflowStatus } from '../lib/api';
 import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from '../lib';
 
@@ -12,15 +7,14 @@ const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 class ProcessService extends cds.ApplicationService {
   private workflowInstanceClient!: IWorkflowInstanceClient;
-  private tokenProvider!: ITokenProvider;
-  private tokenCache = new TokenCache();
+  private cachingTokenProvider!: CachingTokenProvider;
 
   async init() {
     LOG.debug('Initializing Process Service...');
 
     const credentials = getServiceCredentials(PROCESS_SERVICE);
-
-    this.tokenProvider = createXsuaaTokenProvider(credentials);
+    const tokenProvider = createXsuaaTokenProvider(credentials);
+    this.cachingTokenProvider = new CachingTokenProvider(tokenProvider);
 
     this.workflowInstanceClient = createWorkflowInstanceClient(credentials?.endpoints.api, () =>
       this.getToken(cds.context?.tenant),
@@ -90,26 +84,61 @@ class ProcessService extends cds.ApplicationService {
         cascade,
       );
     });
+
+    this.on('getInstancesByBusinessKey', async (request: cds.Request) => {
+      const { businessKey } = request.data;
+
+      if (!businessKey) {
+        return request.reject({ status: 400, message: 'Missing required parameter: businessKey' });
+      }
+
+      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
+        WorkflowStatus.RUNNING,
+        WorkflowStatus.SUSPENDED,
+        WorkflowStatus.COMPLETED,
+        WorkflowStatus.ERRONEOUS,
+      ]);
+
+      return instances;
+    });
+
+    this.on('getAttributes', async (request: cds.Request) => {
+      const { processInstanceId } = request.data;
+
+      if (!processInstanceId) {
+        return request.reject({
+          status: 400,
+          message: 'Missing required parameter: processInstanceId',
+        });
+      }
+
+      const attributes = await this.workflowInstanceClient.getAttributes(processInstanceId);
+      return attributes;
+    });
+
+    this.on('getOutputs', async (request: cds.Request) => {
+      const { processInstanceId } = request.data;
+
+      if (!processInstanceId) {
+        return request.reject({
+          status: 400,
+          message: 'Missing required parameter: processInstanceId',
+        });
+      }
+
+      const outputs = await this.workflowInstanceClient.getOutputs(processInstanceId);
+      return outputs;
+    });
+
     return super.init();
   }
 
   private async getToken(tenant: string | undefined): Promise<string> {
-    const tenantId = tenant ?? 'single-tenant';
-    const cachedToken = this.tokenCache.get(tenantId);
-
-    if (cachedToken) {
-      LOG.trace(`Using cached token for tenant: ${tenantId}`);
-      return cachedToken;
-    }
-
     try {
-      const { jwt, expires_in } = await this.tokenProvider.fetchToken(tenant);
-      this.tokenCache.set?.(tenantId, jwt, expires_in);
-      LOG.debug(`Token fetched and cached for tenant: ${tenantId}`);
-      return jwt;
+      return await this.cachingTokenProvider.getToken(tenant);
     } catch (error) {
       LOG.error('Error fetching token for Process Service:', error);
-      throw new Error(cds.i18n.messages.at('AUTH_TOKEN_FETCH_FAILED'));
+      throw new Error('Error during token fetching.');
     }
   }
 }

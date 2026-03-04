@@ -2,7 +2,7 @@ using {sap.capire.bookshop as my} from '../db/shipment';
 
 service AnnotationService {
 
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'shipmentProcess',
     on: 'CREATE',
   }
@@ -30,20 +30,20 @@ service AnnotationService {
       weight,
     }
 
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'shipmentProcess',
     on: 'CREATE',
   }
   entity InputShipments {
-    key ID               : UUID @build.process.input;
+    key ID               : UUID @bpm.process.input;
         status           : String(20) default 'PENDING';
-        shipmentDate     : Date @build.process.input;
+        shipmentDate     : Date @bpm.process.input;
         expectedDelivery : Date;
-        origin           : String(200) @(build.process.input: 'OriginCountry');
+        origin           : String(200) @(bpm.process.input: 'OriginCountry');
         destination      : String(200);
         items            : Composition of many InputShipmentItems
                              on items.shipment = $self
-                           @build.process.input;
+                           @bpm.process.input;
   }
 
 
@@ -57,12 +57,12 @@ service AnnotationService {
         price      : Decimal(15, 2);
   }
 
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'carProcess',
     on: 'CREATE',
     if: (mileage > 1000)
   }
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'UPDATE',
     cascade: false,
     if: (mileage > 1000)
@@ -76,7 +76,7 @@ service AnnotationService {
       year
     }
 
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'carProcess',
     on: 'DELETE',
   }
@@ -94,7 +94,7 @@ service AnnotationService {
   // ============================================
 
   // Start on CREATE without when condition
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startOnCreateProcess',
     on: 'CREATE',
   }
@@ -108,7 +108,7 @@ service AnnotationService {
     }
 
   // Start on CREATE with if condition
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startOnCreateWhenProcess',
     on: 'CREATE',
     if: (mileage > 500)
@@ -123,7 +123,7 @@ service AnnotationService {
     }
 
   // Start on UPDATE without when condition
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startOnUpdateProcess',
     on: 'UPDATE',
   }
@@ -137,7 +137,7 @@ service AnnotationService {
     }
 
   // Start on UPDATE with if condition
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startOnUpdateWhenProcess',
     on: 'UPDATE',
     if: (mileage > 500)
@@ -152,7 +152,7 @@ service AnnotationService {
     }
 
   // Start on DELETE without when condition
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startOnDeleteProcess',
     on: 'DELETE',
   }
@@ -166,7 +166,7 @@ service AnnotationService {
     }
 
   // Start on DELETE with if condition
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startOnDeleteWhenProcess',
     on: 'DELETE',
     if: (mileage > 500)
@@ -185,7 +185,7 @@ service AnnotationService {
   // ============================================
 
   // Cancel on CREATE without when condition
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'CREATE',
     cascade: false,
   }
@@ -199,7 +199,7 @@ service AnnotationService {
     }
 
   // Cancel on CREATE with if condition
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'CREATE',
     cascade: true,
     if: (mileage > 500)
@@ -214,7 +214,7 @@ service AnnotationService {
     }
 
   // Cancel on UPDATE without when condition
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'UPDATE',
     cascade: false,
   }
@@ -228,7 +228,7 @@ service AnnotationService {
     }
 
   // Cancel on UPDATE with if condition
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'UPDATE',
     cascade: true,
     if: (mileage > 500)
@@ -243,7 +243,7 @@ service AnnotationService {
     }
 
   // Cancel on DELETE without when condition
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'DELETE',
     cascade: false,
   }
@@ -257,7 +257,7 @@ service AnnotationService {
     }
 
   // Cancel on DELETE with if condition
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'DELETE',
     cascade: true,
     if: (mileage > 500)
@@ -276,7 +276,7 @@ service AnnotationService {
   // ============================================
 
   // Suspend on CREATE without when condition
-  @build.process.suspend: {
+  @bpm.process.suspend: {
     on: 'CREATE',
     cascade: false,
   }
@@ -290,7 +290,7 @@ service AnnotationService {
     }
 
   // Suspend on CREATE with if condition
-  @build.process.suspend: {
+  @bpm.process.suspend: {
     on: 'CREATE',
     cascade: true,
     if: (mileage > 500)
@@ -305,7 +305,7 @@ service AnnotationService {
     }
 
   // Suspend on UPDATE without when condition
-  @build.process.suspend: {
+  @bpm.process.suspend: {
     on: 'UPDATE',
     cascade: false,
   }
@@ -319,7 +319,7 @@ service AnnotationService {
     }
 
   // Suspend on UPDATE with if condition
-  @build.process.suspend: {
+  @bpm.process.suspend: {
     on: 'UPDATE',
     cascade: true,
     if: (mileage > 500)
@@ -334,7 +334,7 @@ service AnnotationService {
     }
 
   // Suspend on DELETE without when condition
-  @build.process.suspend: {
+  @bpm.process.suspend: {
     on: 'DELETE',
     cascade: false,
   }
@@ -348,7 +348,7 @@ service AnnotationService {
     }
 
   // Suspend on DELETE with if condition
-  @build.process.suspend: {
+  @bpm.process.suspend: {
     on: 'DELETE',
     cascade: true,
     if: (mileage > 500)
@@ -367,7 +367,7 @@ service AnnotationService {
   // ============================================
 
   // Resume on CREATE without when condition
-  @build.process.resume: {
+  @bpm.process.resume: {
     on: 'CREATE',
     cascade: false,
   }
@@ -381,7 +381,7 @@ service AnnotationService {
     }
 
   // Resume on CREATE with if condition
-  @build.process.resume: {
+  @bpm.process.resume: {
     on: 'CREATE',
     cascade: true,
     if: (mileage > 500)
@@ -396,7 +396,7 @@ service AnnotationService {
     }
 
   // Resume on UPDATE without when condition
-  @build.process.resume: {
+  @bpm.process.resume: {
     on: 'UPDATE',
     cascade: false,
   }
@@ -410,7 +410,7 @@ service AnnotationService {
     }
 
   // Resume on UPDATE with if condition
-  @build.process.resume: {
+  @bpm.process.resume: {
     on: 'UPDATE',
     cascade: true,
     if: (mileage > 500)
@@ -425,7 +425,7 @@ service AnnotationService {
     }
 
   // Resume on DELETE without when condition
-  @build.process.resume: {
+  @bpm.process.resume: {
     on: 'DELETE',
     cascade: false,
   }
@@ -439,7 +439,7 @@ service AnnotationService {
     }
 
   // Resume on DELETE with if condition
-  @build.process.resume: {
+  @bpm.process.resume: {
     on: 'DELETE',
     cascade: true,
     if: (mileage > 500)
@@ -458,7 +458,7 @@ service AnnotationService {
   // ============================================
 
   // Cancel on CREATE without cascade (should default to false)
-  @build.process.cancel: {on: 'CREATE', }
+  @bpm.process.cancel: {on: 'CREATE', }
   entity CancelOnCreateDefaultCascade  as
     projection on my.Car {
       ID,
@@ -469,7 +469,7 @@ service AnnotationService {
     }
 
   // Cancel on UPDATE without cascade (should default to false)
-  @build.process.cancel: {on: 'UPDATE', }
+  @bpm.process.cancel: {on: 'UPDATE', }
   entity CancelOnUpdateDefaultCascade  as
     projection on my.Car {
       ID,
@@ -480,7 +480,7 @@ service AnnotationService {
     }
 
   // Cancel on DELETE without cascade (should default to false)
-  @build.process.cancel: {on: 'DELETE', }
+  @bpm.process.cancel: {on: 'DELETE', }
   entity CancelOnDeleteDefaultCascade  as
     projection on my.Car {
       ID,
@@ -491,7 +491,7 @@ service AnnotationService {
     }
 
   // Suspend on CREATE without cascade (should default to false)
-  @build.process.suspend: {on: 'CREATE', }
+  @bpm.process.suspend: {on: 'CREATE', }
   entity SuspendOnCreateDefaultCascade as
     projection on my.Car {
       ID,
@@ -502,7 +502,7 @@ service AnnotationService {
     }
 
   // Suspend on UPDATE without cascade (should default to false)
-  @build.process.suspend: {on: 'UPDATE', }
+  @bpm.process.suspend: {on: 'UPDATE', }
   entity SuspendOnUpdateDefaultCascade as
     projection on my.Car {
       ID,
@@ -513,7 +513,7 @@ service AnnotationService {
     }
 
   // Resume on CREATE without cascade (should default to false)
-  @build.process.resume: {on: 'CREATE', }
+  @bpm.process.resume: {on: 'CREATE', }
   entity ResumeOnCreateDefaultCascade  as
     projection on my.Car {
       ID,
@@ -524,7 +524,7 @@ service AnnotationService {
     }
 
   // Resume on UPDATE without cascade (should default to false)
-  @build.process.resume: {on: 'UPDATE', }
+  @bpm.process.resume: {on: 'UPDATE', }
   entity ResumeOnUpdateDefaultCascade  as
     projection on my.Car {
       ID,
@@ -543,11 +543,11 @@ service AnnotationService {
   // Start process on CREATE, Cancel on DELETE
   // Use case: Order processing, ticket management
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'basicLifecycleProcess',
     on: 'CREATE',
   }
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'DELETE',
     cascade: true,
   }
@@ -565,11 +565,11 @@ service AnnotationService {
   // Start on CREATE, Cancel on UPDATE when mileage exceeds threshold
   // Use case: Auto-cancel workflow when entity reaches terminal state
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'statusCancelProcess',
     on: 'CREATE',
   }
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'UPDATE',
     cascade: false,
     if: (mileage > 1000)
@@ -589,16 +589,16 @@ service AnnotationService {
   // Resume on UPDATE (if mileage <= 500)
   // Use case: Pause processing when item is on hold
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'suspendResumeProcess',
     on: 'CREATE',
   }
-  @build.process.suspend: {
+  @bpm.process.suspend: {
     on: 'UPDATE',
     cascade: false,
     if: (mileage > 500)
   }
-  @build.process.resume: {
+  @bpm.process.resume: {
     on: 'UPDATE',
     cascade: false,
     if: (mileage <= 500)
@@ -617,21 +617,21 @@ service AnnotationService {
   // Start on CREATE, Suspend/Resume on UPDATE, Cancel on DELETE
   // Use case: Complete workflow control with pause capability
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'fullLifecycleProcess',
     on: 'CREATE',
   }
-  @build.process.suspend: {
+  @bpm.process.suspend: {
     on: 'UPDATE',
     cascade: false,
     if: (mileage > 800)
   }
-  @build.process.resume: {
+  @bpm.process.resume: {
     on: 'UPDATE',
     cascade: false,
     if: (mileage <= 800)
   }
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'DELETE',
     cascade: true,
   }
@@ -649,12 +649,12 @@ service AnnotationService {
   // Start on UPDATE when condition met, Cancel on UPDATE when different condition
   // Use case: Workflow triggered by status change, cancelled by another status
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'conditionalStartCancelProcess',
     on: 'UPDATE',
     if: (mileage > 500)
   }
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'UPDATE',
     cascade: false,
     if: (mileage > 1500)
@@ -674,17 +674,17 @@ service AnnotationService {
   // Suspend/Resume on UPDATE, Cancel on DELETE
   // Use case: Entity linked to externally triggered workflow
   // --------------------------------------------
-  @build.process.suspend: {
+  @bpm.process.suspend: {
     on: 'UPDATE',
     cascade: false,
     if: (mileage > 500)
   }
-  @build.process.resume: {
+  @bpm.process.resume: {
     on: 'UPDATE',
     cascade: false,
     if: (mileage <= 500)
   }
-  @build.process.cancel: {
+  @bpm.process.cancel: {
     on: 'DELETE',
     cascade: true,
   }
@@ -699,14 +699,14 @@ service AnnotationService {
 
   // ============================================
   // START INPUT ANNOTATION TESTS
-  // Testing @build.process.input variations
+  // Testing @bpm.process.input variations
   // ============================================
 
   // --------------------------------------------
-  // Test 1: No @build.process.input
+  // Test 1: No @bpm.process.input
   // All entity fields should be included in context
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startNoInputProcess',
     on: 'CREATE',
   }
@@ -723,56 +723,56 @@ service AnnotationService {
     }
 
   // --------------------------------------------
-  // Test 2: With @build.process.input on selected fields
+  // Test 2: With @bpm.process.input on selected fields
   // Only annotated fields should be included in context
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startSelectedInputProcess',
     on: 'CREATE',
   }
   entity StartSelectedInput {
-    key ID               : UUID @build.process.input;
+    key ID               : UUID @bpm.process.input;
         status           : String(20) default 'PENDING';
-        shipmentDate     : Date @build.process.input;
+        shipmentDate     : Date @bpm.process.input;
         expectedDelivery : Date;
-        origin           : String(200) @build.process.input;
+        origin           : String(200) @bpm.process.input;
         destination      : String(200);
         totalValue       : Decimal(15, 2);
   }
 
   // --------------------------------------------
-  // Test 3: With @build.process.input with custom alias
+  // Test 3: With @bpm.process.input with custom alias
   // Field should be renamed in context
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startAliasInputProcess',
     on: 'CREATE',
   }
   entity StartAliasInput {
-    key ID               : UUID @build.process.input;
+    key ID               : UUID @bpm.process.input;
         status           : String(20) default 'PENDING';
-        shipmentDate     : Date @(build.process.input: 'ProcessStartDate');
+        shipmentDate     : Date @(bpm.process.input: 'ProcessStartDate');
         expectedDelivery : Date;
-        origin           : String(200) @(build.process.input: 'SourceLocation');
-        destination      : String(200) @(build.process.input: 'TargetLocation');
-        totalValue       : Decimal(15, 2) @(build.process.input: 'Amount');
+        origin           : String(200) @(bpm.process.input: 'SourceLocation');
+        destination      : String(200) @(bpm.process.input: 'TargetLocation');
+        totalValue       : Decimal(15, 2) @(bpm.process.input: 'Amount');
   }
 
   // --------------------------------------------
-  // Test 4: With nested Composition and @build.process.input
+  // Test 4: With nested Composition and @bpm.process.input
   // Include composition items in context (all fields)
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startNestedCompositionProcess',
     on: 'CREATE',
   }
   entity StartNestedComposition {
-    key ID           : UUID @build.process.input;
+    key ID           : UUID @bpm.process.input;
         status       : String(20) default 'PENDING';
-        shipmentDate : Date @build.process.input;
+        shipmentDate : Date @bpm.process.input;
         items        : Composition of many StartNestedCompositionItems
                          on items.parent = $self
-                       @build.process.input;
+                       @bpm.process.input;
   }
 
   entity StartNestedCompositionItems {
@@ -786,53 +786,53 @@ service AnnotationService {
   }
 
   // --------------------------------------------
-  // Test 5: With nested Composition and @build.process.input on child elements
+  // Test 5: With nested Composition and @bpm.process.input on child elements
   // Include only selected fields from composition items
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startNestedSelectedProcess',
     on: 'CREATE',
   }
   entity StartNestedSelected {
-    key ID           : UUID @build.process.input;
+    key ID           : UUID @bpm.process.input;
         status       : String(20) default 'PENDING';
-        shipmentDate : Date @build.process.input;
+        shipmentDate : Date @bpm.process.input;
         items        : Composition of many StartNestedSelectedItems
                          on items.parent = $self
-                       @build.process.input;
+                       @bpm.process.input;
   }
 
   entity StartNestedSelectedItems {
-    key ID       : UUID @build.process.input;
+    key ID       : UUID @bpm.process.input;
         parent   : Association to StartNestedSelected;
-        title    : String(200) @build.process.input;
+        title    : String(200) @bpm.process.input;
         quantity : Integer;
-        price    : Decimal(15, 2) @build.process.input;
+        price    : Decimal(15, 2) @bpm.process.input;
   }
 
   // --------------------------------------------
   // Test 6: With nested Composition and aliases in child elements
   // Child fields should be renamed in context
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startNestedAliasProcess',
     on: 'CREATE',
   }
   entity StartNestedAlias {
-    key ID        : UUID @build.process.input;
+    key ID        : UUID @bpm.process.input;
         status    : String(20) default 'PENDING';
-        orderDate : Date @(build.process.input: 'ProcessDate');
+        orderDate : Date @(bpm.process.input: 'ProcessDate');
         items     : Composition of many StartNestedAliasItems
                       on items.parent = $self
-                    @(build.process.input: 'OrderLines');
+                    @(bpm.process.input: 'OrderLines');
   }
 
   entity StartNestedAliasItems {
-    key ID          : UUID @build.process.input;
+    key ID          : UUID @bpm.process.input;
         parent      : Association to StartNestedAlias;
-        productName : String(200) @(build.process.input: 'Product');
-        quantity    : Integer @(build.process.input: 'Qty');
-        unitPrice   : Decimal(15, 2) @(build.process.input: 'Price');
+        productName : String(200) @(bpm.process.input: 'Product');
+        quantity    : Integer @(bpm.process.input: 'Qty');
+        unitPrice   : Decimal(15, 2) @(bpm.process.input: 'Price');
   }
 
   // ============================================
@@ -931,28 +931,226 @@ service AnnotationService {
     }
 
   // --------------------------------------------
-  // Test 7: Cycles in composition with @build.process.input
+  // Test 7: Cycles in composition with @bpm.process.input
   // Should throw error
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startCycleProcess',
     on: 'CREATE',
   }
   entity StartCycleA {
-    key ID       : UUID @build.process.input;
-        name     : String @build.process.input;
+    key ID       : UUID @bpm.process.input;
+        name     : String @bpm.process.input;
         cycleB   : Association to StartCycleB
                      on cycleB.ID = $self.cycleBID
-                   @build.process.input;
-        cycleBID : UUID @build.process.input;
+                   @bpm.process.input;
+        cycleBID : UUID @bpm.process.input;
   }
 
   entity StartCycleB {
-    key ID       : UUID @build.process.input;
-        name     : String @build.process.input;
+    key ID       : UUID @bpm.process.input;
+        name     : String @bpm.process.input;
         cycleA   : Association to StartCycleA
                      on cycleA.ID = $self.cycleAID
-                   @build.process.input;
-        cycleAID : UUID @build.process.input;
+                   @bpm.process.input;
+        cycleAID : UUID @bpm.process.input;
+  }
+
+  // ============================================
+  // CUSTOM EVENT / BOUND ACTION TESTS
+  // Testing process annotations with custom events (bound actions)
+  // ============================================
+
+  // --------------------------------------------
+  // Start process on bound action (no condition)
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'startOnActionProcess',
+    on: 'triggerStart',
+  }
+  entity StartOnAction as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerStart() returns StartOnAction;
+  }
+
+  // --------------------------------------------
+  // Start process on bound action with condition
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'startOnActionWhenProcess',
+    on: 'triggerStartWhen',
+    if: (mileage > 500)
+  }
+  entity StartOnActionWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerStartWhen() returns StartOnActionWhen;
+  }
+
+  // --------------------------------------------
+  // Cancel process on bound action (no condition)
+  // --------------------------------------------
+  @bpm.process.cancel: {
+    on: 'triggerCancel',
+    cascade: false,
+  }
+  entity CancelOnAction as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerCancel() returns CancelOnAction;
+  }
+
+  // --------------------------------------------
+  // Cancel process on bound action with condition
+  // --------------------------------------------
+  @bpm.process.cancel: {
+    on: 'triggerCancelWhen',
+    cascade: true,
+    if: (mileage > 500)
+  }
+  entity CancelOnActionWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerCancelWhen() returns CancelOnActionWhen;
+  }
+
+  // --------------------------------------------
+  // Suspend process on bound action (no condition)
+  // --------------------------------------------
+  @bpm.process.suspend: {
+    on: 'triggerSuspend',
+    cascade: false,
+  }
+  entity SuspendOnAction as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerSuspend() returns SuspendOnAction;
+  }
+
+  // --------------------------------------------
+  // Suspend process on bound action with condition
+  // --------------------------------------------
+  @bpm.process.suspend: {
+    on: 'triggerSuspendWhen',
+    cascade: true,
+    if: (mileage > 500)
+  }
+  entity SuspendOnActionWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerSuspendWhen() returns SuspendOnActionWhen;
+  }
+
+  // --------------------------------------------
+  // Resume process on bound action (no condition)
+  // --------------------------------------------
+  @bpm.process.resume: {
+    on: 'triggerResume',
+    cascade: false,
+  }
+  entity ResumeOnAction as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerResume() returns ResumeOnAction;
+  }
+
+  // --------------------------------------------
+  // Resume process on bound action with condition
+  // --------------------------------------------
+  @bpm.process.resume: {
+    on: 'triggerResumeWhen',
+    cascade: true,
+    if: (mileage > 500)
+  }
+  entity ResumeOnActionWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerResumeWhen() returns ResumeOnActionWhen;
+  }
+
+  // ============================================
+  // WILDCARD EVENT TESTS
+  // Testing process annotations with '*' to trigger on all events
+  // ============================================
+
+  // --------------------------------------------
+  // Start process on wildcard '*' (all CUD events + bound actions)
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'startOnWildcardProcess',
+    on: '*',
+  }
+  entity StartOnWildcard as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns StartOnWildcard;
+  }
+
+  // --------------------------------------------
+  // Start process on wildcard '*' with condition
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'startOnWildcardWhenProcess',
+    on: '*',
+    if: (mileage > 500)
+  }
+  entity StartOnWildcardWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns StartOnWildcardWhen;
+  }
+
+  // --------------------------------------------
+  // Cancel process on wildcard '*' (all CUD events + bound actions)
+  // --------------------------------------------
+  @bpm.process.cancel: {
+    on: '*',
+    cascade: false,
+  }
+  entity CancelOnWildcard as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns CancelOnWildcard;
+  }
+
+  // --------------------------------------------
+  // Suspend process on wildcard '*' (all CUD events + bound actions)
+  // --------------------------------------------
+  @bpm.process.suspend: {
+    on: '*',
+    cascade: false,
+  }
+  entity SuspendOnWildcard as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns SuspendOnWildcard;
+  }
+
+  // --------------------------------------------
+  // Resume process on wildcard '*' (all CUD events + bound actions)
+  // --------------------------------------------
+  @bpm.process.resume: {
+    on: '*',
+    cascade: false,
+  }
+  entity ResumeOnWildcard as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns ResumeOnWildcard;
+  }
+
+  // --------------------------------------------
+  // Wildcard with condition
+  // --------------------------------------------
+  @bpm.process.cancel: {
+    on: '*',
+    cascade: true,
+    if: (mileage > 500)
+  }
+  entity CancelOnWildcardWhen as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  } actions {
+    action triggerAction() returns CancelOnWildcardWhen;
   }
 }

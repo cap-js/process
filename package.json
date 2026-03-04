@@ -55,7 +55,7 @@
           "model": "@cap-js/process/srv/BTPProcessService",
           "outbox": true,
           "vcap": {
-            "tag": "process-automation-service"
+            "tag": "process"
           }
         }
       }
