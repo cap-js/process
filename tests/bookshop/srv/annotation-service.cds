@@ -704,7 +704,7 @@ service AnnotationService {
 
   // ============================================
   // START INPUT ANNOTATION TESTS
-  // Testing inputs array in @build.process.start
+  // Testing inputs array in @bpm.process.start
   // ============================================
 
   // --------------------------------------------
@@ -1072,7 +1072,7 @@ service AnnotationService {
   // Test 7: Deep cyclic path in inputs array
   // Demonstrates that explicit paths avoid cycle issues
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startCyclicPathProcess',
     on: 'CREATE',
     inputs: [
@@ -1104,7 +1104,7 @@ service AnnotationService {
   // Test 8: $self wildcard - all scalar fields
   // Using $self alone to include all scalar fields plus composition
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startSelfWildcardProcess',
     on: 'CREATE',
     inputs: [
@@ -1131,7 +1131,7 @@ service AnnotationService {
   // Test 9: $self wildcard with field alias override
   // $self expands all scalar fields, but $self.ID with alias should rename ID to OrderId
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startSelfWildcardAliasProcess',
     on: 'CREATE',
     inputs: [
@@ -1159,7 +1159,7 @@ service AnnotationService {
   // Test 10: $self.items (composition wildcard) with child field alias
   // $self.items expands all child fields, but $self.items.ID with alias should add ItemId
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startCompositionWildcardAliasProcess',
     on: 'CREATE',
     inputs: [
@@ -1188,7 +1188,7 @@ service AnnotationService {
   // Test 11: Multiple aliases on the same scalar field
   // Same field (ID) should appear under two different names
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startMultipleAliasScalarProcess',
     on: 'CREATE',
     inputs: [
@@ -1206,7 +1206,7 @@ service AnnotationService {
   // Test 12: Multiple aliases on the same composition
   // Same composition (items) should appear under two different names
   // --------------------------------------------
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'startMultipleAliasCompositionProcess',
     on: 'CREATE',
     inputs: [
