@@ -75,24 +75,46 @@ cds.on('serving', async (service: cds.Service) => {
 function buildAnnotationCache(service: cds.Service) {
   const cache = new Map<string, EntityEventCache>();
   for (const entity of Object.values(service.entities)) {
-    // Get the actual events from annotations (could be any event, not just CRUD)
-    const startEvent = entity[PROCESS_START_ON];
-    const cancelEvent = entity[PROCESS_CANCEL_ON];
-    const suspendEvent = entity[PROCESS_SUSPEND_ON];
-    const resumeEvent = entity[PROCESS_RESUME_ON];
+    // Collect all events that have a start annotation (non-qualified and qualified)
+    const startEventsSet = new Set<string>();
 
-    // Collect unique events that have annotations
-    const events = new Set<string>();
-    if (startEvent) events.add(startEvent);
-    if (cancelEvent) events.add(cancelEvent);
-    if (suspendEvent) events.add(suspendEvent);
-    if (resumeEvent) events.add(resumeEvent);
+    // Non-qualified: @build.process.start: { id, on }
+    const nonQualStartOn = entity[PROCESS_START_ON] as string | undefined;
+    if (nonQualStartOn && entity[PROCESS_START_ID]) {
+      startEventsSet.add(nonQualStartOn);
+    }
+
+    // Qualified: @build.process.start #qualifier: { id, on }
+    // CDS stores as @build.process.start#qualifier.on, @build.process.start#qualifier.id
+    for (const key of Object.keys(entity)) {
+      const match = key.match(/^@build\.process\.start#(\w+)\.on$/);
+      if (match) {
+        const qualifier = match[1];
+        const onValue = entity[key as keyof typeof entity] as string | undefined;
+        const hasId = !!(entity[`@build.process.start#${qualifier}.id` as keyof typeof entity]);
+        if (onValue && hasId) {
+          startEventsSet.add(onValue);
+        }
+      }
+    }
+
+    const cancelEvent = entity[PROCESS_CANCEL_ON] as string | undefined;
+    const suspendEvent = entity[PROCESS_SUSPEND_ON] as string | undefined;
+    const resumeEvent = entity[PROCESS_RESUME_ON] as string | undefined;
+
+    // Collect unique events across all annotation types
+    const events = new Set<string>([
+      ...startEventsSet,
+      ...(cancelEvent ? [cancelEvent] : []),
+      ...(suspendEvent ? [suspendEvent] : []),
+      ...(resumeEvent ? [resumeEvent] : []),
+    ]);
 
     for (const event of events) {
-      const hasStart = !!(startEvent === event && entity[PROCESS_START_ID]);
-      const hasCancel = !!(cancelEvent === event);
-      const hasSuspend = !!(suspendEvent === event);
-      const hasResume = !!(resumeEvent === event);
+      const hasStart = startEventsSet.has(event);
+      const hasCancel = cancelEvent === event;
+      const hasSuspend = suspendEvent === event;
+      const hasResume = resumeEvent === event;
 
       const cacheKey = `${entity.name}:${event}`;
       cache.set(cacheKey, {

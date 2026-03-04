@@ -236,6 +236,24 @@ export async function addDeletedEntityToRequest(
     }
   }
 
+  // Handle qualified start annotations: @build.process.start #qualifier: { on: 'DELETE', if: ... }
+  // CDS stores as @build.process.start#qualifier.on, @build.process.start#qualifier.if
+  for (const key of Object.keys(annotatedTarget)) {
+    const match = key.match(/^@build\.process\.start#(\w+)\.on$/);
+    if (match && annotatedTarget[key] === 'DELETE') {
+      const qualifier = match[1];
+      const conditionExpr = annotatedTarget[`@build.process.start#${qualifier}.if`] as
+        | { xpr: expr }
+        | undefined;
+      if (conditionExpr) {
+        where =
+          Array.isArray(where) && where.length
+            ? [{ xpr: where }, 'and', { xpr: conditionExpr.xpr }]
+            : conditionExpr.xpr;
+      }
+    }
+  }
+
   if (where) {
     // Safeguard: use ['*'] if columns array is empty to avoid invalid SQL
     const selectColumns = columns.length > 0 ? columns : ['*'];

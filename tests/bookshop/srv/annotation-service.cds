@@ -835,6 +835,101 @@ service AnnotationService {
         unitPrice   : Decimal(15, 2) @(build.process.input: 'Price');
   }
 
+  // ============================================
+  // MULTIPLE START ANNOTATIONS VIA QUALIFIERS
+  // Testing @build.process.start #qualifier support
+  // ============================================
+
+  // --------------------------------------------
+  // Test: Two processes start on same event (no conditions)
+  // Both approvalProcess and notificationProcess should start on CREATE
+  // --------------------------------------------
+  @build.process.start #approval: {
+    id: 'approvalProcess',
+    on: 'CREATE',
+  }
+  @build.process.start #notification: {
+    id: 'notificationProcess',
+    on: 'CREATE',
+  }
+  entity MultiStartOnCreate                as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // --------------------------------------------
+  // Test: Two processes start on different events
+  // approvalProcess starts on CREATE, auditProcess starts on UPDATE
+  // --------------------------------------------
+  @build.process.start #approvalCreate: {
+    id: 'approvalProcess',
+    on: 'CREATE',
+  }
+  @build.process.start #auditUpdate: {
+    id: 'auditProcess',
+    on: 'UPDATE',
+  }
+  entity MultiStartDifferentEvents         as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // --------------------------------------------
+  // Test: Two processes with conditions on same event
+  // highMileageProcess starts if mileage > 500, lowMileageProcess if mileage <= 500
+  // --------------------------------------------
+  @build.process.start #highMileage: {
+    id: 'highMileageProcess',
+    on: 'CREATE',
+    if: (mileage > 500)
+  }
+  @build.process.start #lowMileage: {
+    id: 'lowMileageProcess',
+    on: 'CREATE',
+    if: (mileage <= 500)
+  }
+  entity MultiStartWithCondition           as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // --------------------------------------------
+  // Test: Three processes start on same event (no conditions)
+  // processA, processB, processC should all start on CREATE
+  // --------------------------------------------
+  @build.process.start #procA: {
+    id: 'processA',
+    on: 'CREATE',
+  }
+  @build.process.start #procB: {
+    id: 'processB',
+    on: 'CREATE',
+  }
+  @build.process.start #procC: {
+    id: 'processC',
+    on: 'CREATE',
+  }
+  entity MultiStartThreeProcesses          as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
   // --------------------------------------------
   // Test 7: Cycles in composition with @build.process.input
   // Should throw error

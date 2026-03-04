@@ -889,4 +889,123 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
     });
   });
+
+  // ================================================
+  // MULTIPLE START ANNOTATIONS VIA QUALIFIERS
+  // ================================================
+  describe('Multiple Process START annotations via qualifiers', () => {
+    describe('Two processes start on the same event (no conditions)', () => {
+      it('should start both processes on CREATE', async () => {
+        const car = createTestCar();
+
+        const response = await POST('/odata/v4/annotation/MultiStartOnCreate', car);
+
+        expect(response.status).toBe(201);
+        expect(foundMessages.length).toBe(2);
+
+        const startMessages = foundMessages.filter((m) => m.event === 'start');
+        expect(startMessages.length).toBe(2);
+
+        const definitionIds = startMessages.map((m: any) => m.data.definitionId).sort();
+        expect(definitionIds).toEqual(['approvalProcess', 'notificationProcess']);
+
+        // Both should carry the entity context
+        for (const msg of startMessages) {
+          expect(msg.data.context.businesskey).toBe(car.ID);
+          expect(msg.data.context.ID).toBe(car.ID);
+        }
+      });
+    });
+
+    describe('Two processes start on different events', () => {
+      it('should start only approvalProcess on CREATE', async () => {
+        const car = createTestCar();
+
+        const response = await POST('/odata/v4/annotation/MultiStartDifferentEvents', car);
+
+        expect(response.status).toBe(201);
+        expect(foundMessages.length).toBe(1);
+        expect(foundMessages[0].event).toBe('start');
+        expect(foundMessages[0].data.definitionId).toBe('approvalProcess');
+        expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
+      });
+
+      it('should start only auditProcess on UPDATE', async () => {
+        const car = createTestCar();
+
+        // Create first
+        const createResponse = await POST('/odata/v4/annotation/MultiStartDifferentEvents', car);
+        expect(createResponse.status).toBe(201);
+        foundMessages = [];
+
+        // Update
+        const updateResponse = await PATCH(
+          `/odata/v4/annotation/MultiStartDifferentEvents('${car.ID}')`,
+          { mileage: 200 },
+        );
+
+        expect(updateResponse.status).toBe(200);
+        expect(foundMessages.length).toBe(1);
+        expect(foundMessages[0].event).toBe('start');
+        expect(foundMessages[0].data.definitionId).toBe('auditProcess');
+        expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
+      });
+    });
+
+    describe('Two processes with different conditions on the same event', () => {
+      it('should start only highMileageProcess when mileage > 500', async () => {
+        const car = createTestCar(undefined, 600); // mileage 600 > 500
+
+        const response = await POST('/odata/v4/annotation/MultiStartWithCondition', car);
+
+        expect(response.status).toBe(201);
+        expect(foundMessages.length).toBe(1);
+        expect(foundMessages[0].event).toBe('start');
+        expect(foundMessages[0].data.definitionId).toBe('highMileageProcess');
+        expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
+      });
+
+      it('should start only lowMileageProcess when mileage <= 500', async () => {
+        const car = createTestCar(undefined, 400); // mileage 400 <= 500
+
+        const response = await POST('/odata/v4/annotation/MultiStartWithCondition', car);
+
+        expect(response.status).toBe(201);
+        expect(foundMessages.length).toBe(1);
+        expect(foundMessages[0].event).toBe('start');
+        expect(foundMessages[0].data.definitionId).toBe('lowMileageProcess');
+        expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
+      });
+
+      it('should start only lowMileageProcess when mileage exactly equals 500', async () => {
+        const car = createTestCar(undefined, 500); // mileage 500 — only <= 500 matches
+
+        const response = await POST('/odata/v4/annotation/MultiStartWithCondition', car);
+
+        expect(response.status).toBe(201);
+        expect(foundMessages.length).toBe(1);
+        expect(foundMessages[0].event).toBe('start');
+        expect(foundMessages[0].data.definitionId).toBe('lowMileageProcess');
+      });
+    });
+
+    describe('Three processes start on the same event', () => {
+      it('should start all three processes on CREATE', async () => {
+        const car = createTestCar();
+
+        const response = await POST('/odata/v4/annotation/MultiStartThreeProcesses', car);
+
+        expect(response.status).toBe(201);
+        expect(foundMessages.length).toBe(3);
+
+        const definitionIds = foundMessages.map((m: any) => m.data.definitionId).sort();
+        expect(definitionIds).toEqual(['processA', 'processB', 'processC']);
+
+        for (const msg of foundMessages) {
+          expect(msg.event).toBe('start');
+          expect(msg.data.context.businesskey).toBe(car.ID);
+        }
+      });
+    });
+  });
 });

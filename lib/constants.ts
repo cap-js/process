@@ -52,6 +52,13 @@ export const BUILD_PREFIX = '@build' as const;
 export const PROCESS_PREFIX = '@build.process' as const;
 
 /**
+ * Qualifier prefix for multiple process start annotations
+ * Usage: @build.process.start #qualifier: { id: '...', on: '...' }
+ * Stored in CDS as: @build.process.start#qualifier.id, @build.process.start#qualifier.on, etc.
+ */
+export const PROCESS_START_QUALIFIER_PREFIX = '@build.process.start#' as const;
+
+/**
  * Process Event Annotations (Runtime)
  * These annotations are used on dynamically created ProcessService events
  */
