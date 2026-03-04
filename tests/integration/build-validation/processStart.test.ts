@@ -320,4 +320,101 @@ describe(`Build Validation: @build.process.start annotations`, () => {
       expect(result.buildSucceeded).toBe(false);
     });
   });
+
+  // ===========================================================
+  // #-qualifier (multi-process start) validation tests
+  // ===========================================================
+  describe('#-qualifier (multi-process start) annotations', () => {
+    it('should PASS with two valid #-qualified start annotations', async () => {
+      const cdsSource = wrapEntity(`
+        @build.process.start #one: { id: 'proc1', on: 'CREATE' }
+        @build.process.start #two: { id: 'proc2', on: 'UPDATE' }
+        entity MultiStartEntity { key ID: UUID; }
+      `);
+
+      const result = await validateModel(cdsSource);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
+    });
+
+    it('should PASS mixing unqualified and #-qualified annotations', async () => {
+      const cdsSource = wrapEntity(`
+        ${PROCESS_START}: { id: 'proc0', on: 'DELETE' }
+        @build.process.start #one: { id: 'proc1', on: 'CREATE' }
+        entity MixedStartEntity { key ID: UUID; }
+      `);
+
+      const result = await validateModel(cdsSource);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
+    });
+
+    it('should ERROR when a #-qualified annotation has id but no on', async () => {
+      const cdsSource = wrapEntity(`
+        @build.process.start #one: { id: 'proc1' }
+        entity InvalidMultiEntity { key ID: UUID; }
+      `);
+
+      const result = await validateModel(cdsSource);
+
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(
+        result.errors.some(
+          (e) =>
+            e.msg.includes('@build.process.start#one.id') &&
+            e.msg.includes('requires') &&
+            e.msg.includes('@build.process.start#one.on'),
+        ),
+      ).toBe(true);
+      expect(result.buildSucceeded).toBe(false);
+    });
+
+    it('should ERROR when a #-qualified annotation has on but no id', async () => {
+      const cdsSource = wrapEntity(`
+        @build.process.start #one: { on: 'CREATE' }
+        entity InvalidMultiEntity { key ID: UUID; }
+      `);
+
+      const result = await validateModel(cdsSource);
+
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(
+        result.errors.some(
+          (e) =>
+            e.msg.includes('@build.process.start#one.on') &&
+            e.msg.includes('requires') &&
+            e.msg.includes('@build.process.start#one.id'),
+        ),
+      ).toBe(true);
+      expect(result.buildSucceeded).toBe(false);
+    });
+
+    it('should WARN when a #-qualified id does not match an imported process', async () => {
+      const cdsSource = wrapEntity(`
+        @build.process.start #one: { id: 'unknownProcess', on: 'CREATE' }
+        entity WarnMultiEntity { key ID: UUID; }
+      `);
+
+      const result = await validateModel(cdsSource);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
+      expect(result.warnings.some((w) => w.msg.includes('unknownProcess'))).toBe(true);
+    });
+
+    it('should ERROR independently per qualifier when multiple are invalid', async () => {
+      const cdsSource = wrapEntity(`
+        @build.process.start #one: { id: 'proc1' }
+        @build.process.start #two: { on: 'UPDATE' }
+        entity MultiInvalidEntity { key ID: UUID; }
+      `);
+
+      const result = await validateModel(cdsSource);
+
+      expect(result.errors.length).toBeGreaterThanOrEqual(2);
+      expect(result.buildSucceeded).toBe(false);
+    });
+  });
 });
