@@ -16,45 +16,45 @@ export const CUD_EVENTS = ['CREATE', 'UPDATE', 'DELETE'] as const;
 /**
  * Process Start Annotations
  */
-export const PROCESS_START = '@build.process.start' as const;
-export const PROCESS_START_ID = '@build.process.start.id' as const;
-export const PROCESS_START_ON = '@build.process.start.on' as const;
-export const PROCESS_START_IF = '@build.process.start.if' as const;
+export const PROCESS_START = '@bpm.process.start' as const;
+export const PROCESS_START_ID = '@bpm.process.start.id' as const;
+export const PROCESS_START_ON = '@bpm.process.start.on' as const;
+export const PROCESS_START_IF = '@bpm.process.start.if' as const;
 
 /**
  * Process Cancel Annotations
  */
-export const PROCESS_CANCEL = '@build.process.cancel' as const;
-export const PROCESS_CANCEL_ON = '@build.process.cancel.on' as const;
-export const PROCESS_CANCEL_CASCADE = '@build.process.cancel.cascade' as const;
-export const PROCESS_CANCEL_IF = '@build.process.cancel.if' as const;
+export const PROCESS_CANCEL = '@bpm.process.cancel' as const;
+export const PROCESS_CANCEL_ON = '@bpm.process.cancel.on' as const;
+export const PROCESS_CANCEL_CASCADE = '@bpm.process.cancel.cascade' as const;
+export const PROCESS_CANCEL_IF = '@bpm.process.cancel.if' as const;
 
 /**
  * Process Suspend Annotations
  */
-export const PROCESS_SUSPEND = '@build.process.suspend' as const;
-export const PROCESS_SUSPEND_ON = '@build.process.suspend.on' as const;
-export const PROCESS_SUSPEND_CASCADE = '@build.process.suspend.cascade' as const;
-export const PROCESS_SUSPEND_IF = '@build.process.suspend.if' as const;
+export const PROCESS_SUSPEND = '@bpm.process.suspend' as const;
+export const PROCESS_SUSPEND_ON = '@bpm.process.suspend.on' as const;
+export const PROCESS_SUSPEND_CASCADE = '@bpm.process.suspend.cascade' as const;
+export const PROCESS_SUSPEND_IF = '@bpm.process.suspend.if' as const;
 
 /**
  * Process Resume Annotations
  */
-export const PROCESS_RESUME = '@build.process.resume' as const;
-export const PROCESS_RESUME_ON = '@build.process.resume.on' as const;
-export const PROCESS_RESUME_CASCADE = '@build.process.resume.cascade' as const;
-export const PROCESS_RESUME_IF = '@build.process.resume.if' as const;
+export const PROCESS_RESUME = '@bpm.process.resume' as const;
+export const PROCESS_RESUME_ON = '@bpm.process.resume.on' as const;
+export const PROCESS_RESUME_CASCADE = '@bpm.process.resume.cascade' as const;
+export const PROCESS_RESUME_IF = '@bpm.process.resume.if' as const;
 
 /**
  * Process Input Annotation
  */
-export const PROCESS_INPUT = '@build.process.input' as const;
+export const PROCESS_INPUT = '@bpm.process.input' as const;
 
 /**
  * Annotation prefix for filtering
  */
-export const BUILD_PREFIX = '@build' as const;
-export const PROCESS_PREFIX = '@build.process' as const;
+export const BUILD_PREFIX = '@bpm' as const;
+export const PROCESS_PREFIX = '@bpm.process' as const;
 
 /**
  * Process Event Annotations (Runtime)

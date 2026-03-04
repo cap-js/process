@@ -31,13 +31,13 @@ Start developing 🙂
 
 ## For starting a process:
 
-- `@build.process.start` -- Start a process (or classic workflow), either after entity creation, update, deletion, or any custom action including all entity elements unless at least one `@build.process.input` is given
-  - if no attribute is annotated with`@build.process.input`, all attributes of that entity will be fetched and are part of the context for process input. Associations will not be expanded in that case
-  - `@build.process.start.id` -- definition ID for deployed process
-  - `@build.process.start.on`
-  - `@build.process.start.if` -- only starting process if expression is true
-- `@build.process.input` -- includes this element in the process start assuming name equality
-- `@(build.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
+- `@bpm.process.start` -- Start a process (or classic workflow), either after entity creation, update, deletion, or any custom action including all entity elements unless at least one `@bpm.process.input` is given
+  - if no attribute is annotated with`@bpm.process.input`, all attributes of that entity will be fetched and are part of the context for process input. Associations will not be expanded in that case
+  - `@bpm.process.start.id` -- definition ID for deployed process
+  - `@bpm.process.start.on`
+  - `@bpm.process.start.if` -- only starting process if expression is true
+- `@bpm.process.input` -- includes this element in the process start assuming name equality
+- `@(bpm.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
 - Important: the process that has been started needs to have an input attribute 'businesskey' of type string that is then assigned to the businessKey in process configuration so that the process can be later CANCELLED/SUSPENDED/RESUMED
 
 Example:
@@ -45,14 +45,14 @@ Example:
 ```cds
 service MyService {
 
-    @build.process.start: {
+    @bpm.process.start: {
         id: '<projectId>.<processId>',
         on: 'CREATE | UPDATE | DELETE | boundAction',
         when: (<expression>)
     }
     entity MyProjection as projection on MyEntity {
-      myElement @build.process.input,
-      myElement2 @(build.process.input: 'targetVariable')
+      myElement @bpm.process.input,
+      myElement2 @(bpm.process.input: 'targetVariable')
       myElement3
     };
 
@@ -62,18 +62,18 @@ service MyService {
 
 ## For cancelling/resuming/suspending a process
 
-- `@build.process.<cancel|resume|suspend>` -- Cancel/Suspend/Resume any processes bound to the entity (using entityKey as businessKey in SBPA)
-  - `@build.process.<cancel|resume|suspend>.on`
-  - `@build.process.<cancel|resume|suspend>.cascade` -- boolean (optional, defaults to false)
-  - `@build.process.<cancel|resume|suspend>.if` -- only starting process if expression is true
-    - example: `@build.process.suspend.if: (weight > 10)`
+- `@bpm.process.<cancel|resume|suspend>` -- Cancel/Suspend/Resume any processes bound to the entity (using entityKey as businessKey in SBPA)
+  - `@bpm.process.<cancel|resume|suspend>.on`
+  - `@bpm.process.<cancel|resume|suspend>.cascade` -- boolean (optional, defaults to false)
+  - `@bpm.process.<cancel|resume|suspend>.if` -- only starting process if expression is true
+    - example: `@bpm.process.suspend.if: (weight > 10)`
 
 Example:
 
 ```cds
 service MyService {
 
-    @build.process.<cancel|suspend|resume>: {
+    @bpm.process.<cancel|suspend|resume>: {
         on: 'CREATE | UPDATE | DELETE | boundAction',
         cascade: true | false,  // optional, defaults to false
         when: (<expression>)
@@ -96,26 +96,26 @@ Validation occurs during `cds build` and produces **errors** (hard failures that
 
 ### Required Annotations (Errors)
 
-- `@build.process.start.id` and `@build.process.start.on` are mutually required — if one is present, the other must also be present
-- `@build.process.start.id` must be a string
-- `@build.process.start.on` must be a string representing either:
+- `@bpm.process.start.id` and `@bpm.process.start.on` are mutually required — if one is present, the other must also be present
+- `@bpm.process.start.id` must be a string
+- `@bpm.process.start.on` must be a string representing either:
   - A CRUD operation: `CREATE`, `READ`, `UPDATE`, or `DELETE`
   - A bound action defined on the entity
-- `@build.process.start.if` must be a valid CDS expression (if present)
+- `@bpm.process.start.if` must be a valid CDS expression (if present)
 
 ### Warnings
 
-- Unknown annotations under `@build.process.start.*` trigger a warning listing allowed annotations
+- Unknown annotations under `@bpm.process.start.*` trigger a warning listing allowed annotations
 - If no imported process definition is found for the given `id`, a warning is issued as input validation is skipped
 
 ### Input Validation (when process definition is found)
 
-When both `@build.process.start.id` and `@build.process.start.on` are present and the process definition is imported:
+When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and the process definition is imported:
 
 **Errors:**
 
 - The process definition must have a `businesskey` input
-- Entity attributes marked with `@build.process.input` (or all attributes if none are marked) must exist in the process definition inputs
+- Entity attributes marked with `@bpm.process.input` (or all attributes if none are marked) must exist in the process definition inputs
 - Mandatory inputs from the process definition must be present in the entity
 
 **Warnings:**
@@ -130,15 +130,15 @@ When both `@build.process.start.id` and `@build.process.start.on` are present an
 
 ### Required Annotations (Errors)
 
-- `@build.process.<cancel|suspend|resume>.on` is required for cancel/suspend/resume operations and must be a string representing either:
+- `@bpm.process.<cancel|suspend|resume>.on` is required for cancel/suspend/resume operations and must be a string representing either:
   - A CRUD operation: `CREATE`, `READ`, `UPDATE`, or `DELETE`
   - A bound action defined on the entity
-- `@build.process.<cancel|suspend|resume>.cascade` is optional (defaults to false); if provided, must be a boolean
-- `@build.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
+- `@bpm.process.<cancel|suspend|resume>.cascade` is optional (defaults to false); if provided, must be a boolean
+- `@bpm.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
 
 ### Warnings
 
-- Unknown annotations under `@build.process.<cancel|suspend|resume>.*` trigger a warning listing allowed annotations
+- Unknown annotations under `@bpm.process.<cancel|suspend|resume>.*` trigger a warning listing allowed annotations
 
 # Current programmatic approach
 
