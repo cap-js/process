@@ -15,6 +15,7 @@ import {
   PROCESS_RESUME_ON,
   PROCESS_PREFIX,
   CUD_EVENTS,
+  EntityRow,
 } from './lib/index';
 import { importProcess } from './lib/processImport';
 
@@ -52,7 +53,7 @@ cds.on('serving', async (service: cds.Service) => {
     if (!cached) return; // Fast exit - no annotations
 
     if (results.length > 0) {
-      results.forEach(async (result) => {
+      results.forEach(async (result: EntityRow) => {
         req.data = result;
         await handleRequest(cached, req);
       });

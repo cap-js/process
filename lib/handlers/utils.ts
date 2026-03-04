@@ -115,8 +115,11 @@ export function concatenateBusinessKey(target: cds.entity, row: EntityRow): stri
  * For bound actions, merges req.params (entity keys) with req.data (action inputs).
  */
 export function getEntityDataFromRequest(req: cds.Request): EntityRow {
-  const reqData = req.data as EntityRow;
-  const data = reqData && Object.keys(reqData).length > 0 ? reqData : (req as any).results;
+  const reqData = (req.data as EntityRow) ?? {};
+  const data =
+    Object.keys(reqData).length > 0
+      ? reqData
+      : ((req as unknown as { results: EntityRow }).results ?? {});
 
   if (req.params && Array.isArray(req.params) && req.params.length > 0) {
     const paramsData = req.params.reduce((acc: EntityRow, param) => {
