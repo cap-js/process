@@ -1,6 +1,6 @@
 service BulkService {
 
-  @build.process.start: {
+  @bpm.process.start: {
     id: 'someProcess',
     on: 'READ'
   }

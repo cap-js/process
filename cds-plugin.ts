@@ -54,30 +54,29 @@ cds.on('serving', async (service: cds.Service) => {
 
     const rows: EntityRow[] = Array.isArray(results) ? results : [results];
     if (rows.length > 0) {
-      for (const row of rows) {
-        req.data = row;
-        // disable eslint as await is needed to ensure sequential processing of handlers for each row
-        // eslint-disable-next-line no-await-in-loop
-        await dispatchProcessHandlers(cached, req);
-      }
+      await Promise.all(rows.map((row) => dispatchProcessHandlers(cached, req, row)));
     } else {
-      await dispatchProcessHandlers(cached, req);
+      await dispatchProcessHandlers(cached, req, req.data);
     }
   });
 });
 
-async function dispatchProcessHandlers(cached: EntityEventCache, req: cds.Request) {
+async function dispatchProcessHandlers(
+  cached: EntityEventCache,
+  req: cds.Request,
+  data: EntityRow,
+) {
   if (cached.hasStart) {
-    await handleProcessStart(req);
+    await handleProcessStart(req, data);
   }
   if (cached.hasCancel) {
-    await handleProcessCancel(req);
+    await handleProcessCancel(req, data);
   }
   if (cached.hasSuspend) {
-    await handleProcessSuspend(req);
+    await handleProcessSuspend(req, data);
   }
   if (cached.hasResume) {
-    await handleProcessResume(req);
+    await handleProcessResume(req, data);
   }
 }
 
