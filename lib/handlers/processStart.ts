@@ -56,7 +56,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
     getEntityDataFromRequest(data, req.params)) as EntityRow;
 
   const startSpecs = initStartSpecs(target);
-  startSpecs.inputs = parseInput(target);
+  startSpecs.inputs = parseInputToTree(target);
 
   // if startSpecs.input = [] --> no input defined, fetch entire row
   let columns: (column_expr | string)[] = [];
@@ -135,10 +135,11 @@ function createRuntimeEntityContext(entity: cds.entity): EntityContext {
   };
 }
 
-function parseInput(target: Target): ProcessStartInput[] {
+function parseInputToTree(target: Target): ProcessStartInput[] {
   const inputsCSN = target[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
   const parsedEntries = parseInputsArray(inputsCSN);
-  return buildInputTree(parsedEntries, createRuntimeEntityContext(target as cds.entity));
+  const runtimeContext = createRuntimeEntityContext(target as cds.entity);
+  return buildInputTree(parsedEntries, runtimeContext);
 }
 
 function convertToColumnsExpr(array: ProcessStartInput[]): (column_expr | string)[] {
