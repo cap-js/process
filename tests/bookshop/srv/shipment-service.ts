@@ -43,6 +43,8 @@ class ShipmentService extends cds.ApplicationService {
           businessKey: shipmentID,
           cascade: false,
         });
+      } else {
+        throw cds.error(400, `Unsupported status: ${newStatus}`);
       }
 
       const shipment = await SELECT.one.from('Shipments').where({ ID: shipmentID });
