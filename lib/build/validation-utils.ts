@@ -28,7 +28,8 @@ function createCsnEntityContext(
       const element = elements[name];
       if (!element) return undefined;
 
-      const isAssocOrComp = element.type === 'cds.Association' || element.type === 'cds.Composition';
+      const isAssocOrComp =
+        element.type === 'cds.Association' || element.type === 'cds.Composition';
       const targetDef = element.target ? allDefinitions[element.target] : undefined;
       const childElements =
         targetDef && targetDef.kind === 'entity'
@@ -179,7 +180,11 @@ function resolveComplexTypeElement(
  * Resolves a single element to its ElementType representation
  */
 function resolveElementToType(
-  element: { type?: string; items?: { type?: string; elements?: Record<string, unknown> }; notNull?: boolean },
+  element: {
+    type?: string;
+    items?: { type?: string; elements?: Record<string, unknown> };
+    notNull?: boolean;
+  },
   allDefinitions: Record<string, CsnDefinition>,
   visited: Set<string>,
 ): ElementType | null {
@@ -225,7 +230,11 @@ export function getProcessDefInputsAndTypes(
     if (Object.hasOwn(elements, name)) {
       const element = elements[name];
       const resolvedType = resolveElementToType(
-        element as { type?: string; items?: { type?: string; elements?: Record<string, unknown> }; notNull?: boolean },
+        element as {
+          type?: string;
+          items?: { type?: string; elements?: Record<string, unknown> };
+          notNull?: boolean;
+        },
         allDefinitions,
         visited,
       );
@@ -381,7 +390,7 @@ function getAllElementTypes(
     if (isComposition) {
       // For compositions, get the target entity's elements
       const targetDef = element.target ? allDefinitions[element.target] : undefined;
-      
+
       // Skip if we've already visited this target (cyclic reference)
       if (element.target && visitedTargets.has(element.target)) {
         result[name] = {

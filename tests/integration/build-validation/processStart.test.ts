@@ -484,7 +484,11 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       console.log('DEBUG composition - errors:', JSON.stringify(result.errors, null, 2));
       console.log('DEBUG composition - warnings:', JSON.stringify(result.warnings, null, 2));
       console.log('DEBUG composition - buildSucceeded:', result.buildSucceeded);
-      console.log('DEBUG composition - buildError:', result.buildError?.message, result.buildError?.stack);
+      console.log(
+        'DEBUG composition - buildError:',
+        result.buildError?.message,
+        result.buildError?.stack,
+      );
 
       expect(result.errors).toHaveLength(0);
       expect(result.buildSucceeded).toBe(true);
@@ -650,7 +654,8 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       expect(result.errors.length).toBeGreaterThan(0);
       expect(
         result.errors.some(
-          (e) => e.msg.includes('ReferenceId') && e.msg.includes('not defined in process definition'),
+          (e) =>
+            e.msg.includes('ReferenceId') && e.msg.includes('not defined in process definition'),
         ),
       ).toBe(true);
       expect(result.buildSucceeded).toBe(false);

@@ -119,10 +119,13 @@ function initStartSpecs(target: Target): ProcessStartSpec {
 function createRuntimeEntityContext(entity: cds.entity): EntityContext {
   return {
     getElement: (name: string) => {
-      const element = entity.elements?.[name] as { type?: string; _target?: cds.entity } | undefined;
+      const element = entity.elements?.[name] as
+        | { type?: string; _target?: cds.entity }
+        | undefined;
       if (!element) return undefined;
 
-      const isAssocOrComp = element.type === 'cds.Association' || element.type === 'cds.Composition';
+      const isAssocOrComp =
+        element.type === 'cds.Association' || element.type === 'cds.Composition';
       const targetEntity = element._target
         ? createRuntimeEntityContext(element._target)
         : createRuntimeEntityContext(entity);
