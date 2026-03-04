@@ -52,18 +52,21 @@ cds.on('serving', async (service: cds.Service) => {
 
     if (!cached) return; // Fast exit - no annotations
 
-    if (results.length > 0) {
-      results.forEach(async (result: EntityRow) => {
-        req.data = result;
-        await handleRequest(cached, req);
-      });
+    const rows: EntityRow[] = Array.isArray(results) ? results : [results];
+    if (rows.length > 0) {
+      for (const row of rows) {
+        req.data = row;
+        // disable eslint as await is needed to ensure sequential processing of handlers for each row
+        // eslint-disable-next-line no-await-in-loop
+        await dispatchProcessHandlers(cached, req);
+      }
     } else {
-      await handleRequest(cached, req);
+      await dispatchProcessHandlers(cached, req);
     }
   });
 });
 
-async function handleRequest(cached: EntityEventCache, req: cds.Request) {
+async function dispatchProcessHandlers(cached: EntityEventCache, req: cds.Request) {
   if (cached.hasStart) {
     await handleProcessStart(req);
   }
