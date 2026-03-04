@@ -35,6 +35,7 @@ service ProcessService {
   )returns AnyType;
 
   function getInstancesByBusinessKey(
-    @mandatory businessKey : String(256)
+    @mandatory businessKey : String(256),
+    status : many String(256)
   )returns InstancesReturn;
 }

@@ -1,6 +1,7 @@
 import cds from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, PROCESS_SERVICE } from '../constants';
 import { emitProcessEvent, ProcessLifecyclePayload, ProcessStartPayload } from './utils';
+import { WorkflowStatus } from '../api';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -97,13 +98,22 @@ function registerGetInstancesByBusinessKeyHandler(
   service.on('getInstancesByBusinessKey', async (req) => {
     LOG.debug(`Getting instances by businessKey for process: ${definitionId}`);
 
-    const { businessKey } = req.data;
+    const { businessKey, status } = req.data;
+    let statusParam = status;
     if (!businessKey) {
       return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
     }
+    if (!status) {
+      statusParam = [
+        WorkflowStatus.RUNNING,
+        WorkflowStatus.SUSPENDED,
+        WorkflowStatus.COMPLETED,
+        WorkflowStatus.ERRONEOUS,
+      ];
+    }
 
     const processService = await cds.connect.to(PROCESS_SERVICE);
-    const result = await processService.send('getInstancesByBusinessKey', { businessKey });
+    const result = await processService.send('getInstancesByBusinessKey', { businessKey, status: statusParam });
 
     return result;
   });

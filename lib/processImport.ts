@@ -317,6 +317,7 @@ function addProcessActions(
     name: fqn(serviceName, 'getInstancesByBusinessKey'),
     params: {
       businessKey: { type: csn.CdsBuiltinType.String, notNull: true },
+      status: { items: { type: csn.CdsBuiltinType.String } },
     },
     returns: { type: instancesType },
   };
