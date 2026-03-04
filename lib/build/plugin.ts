@@ -83,7 +83,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     const model = await this.model();
     if (!model) return;
 
-    LOG.debug('Validating @build.process.* annotations...');
+    LOG.debug('Validating @bpm.process.* annotations...');
 
     const processDefinitions = getProcessDefinitions(model.definitions);
 

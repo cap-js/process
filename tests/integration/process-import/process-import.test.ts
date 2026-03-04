@@ -72,7 +72,7 @@ describe('Process Import Integration Tests', () => {
         expect(definitions[serviceName]).toBeDefined();
         expect(definitions[serviceName].kind).toBe('service');
         expect(definitions[serviceName]['@protocol']).toBe('none');
-        expect(definitions[serviceName]['@build.process']).toBe('test.project.simpleProcess');
+        expect(definitions[serviceName]['@bpm.process']).toBe('test.project.simpleProcess');
       });
 
       it('should generate ProcessInputs type with correct elements', async () => {
@@ -284,7 +284,7 @@ describe('Process Import Integration Tests', () => {
 
         expect(definitions[serviceName]).toBeDefined();
         expect(definitions[serviceName].kind).toBe('service');
-        expect(definitions[serviceName]['@build.process']).toBe('test.scheduled.noInputsProcess');
+        expect(definitions[serviceName]['@bpm.process']).toBe('test.scheduled.noInputsProcess');
       });
 
       it('should create empty ProcessInputs type when inputs section is missing', async () => {

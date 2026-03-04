@@ -145,12 +145,10 @@ function getInputElements(
 
           // Check for cycle: if we've already visited this entity, throw an error
           if (visitedEntities.has(associatedEntityName)) {
-            LOG.error(
-              `Cycle detected in @build.process.input annotations: ${associatedEntityName}`,
-            );
+            LOG.error(`Cycle detected in @bpm.process.input annotations: ${associatedEntityName}`);
             return req.reject({
               status: 400,
-              message: `Cycle detected in @build.process.input annotations: ${associatedEntityName}`,
+              message: `Cycle detected in @bpm.process.input annotations: ${associatedEntityName}`,
             });
           }
 
