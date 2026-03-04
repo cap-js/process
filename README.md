@@ -17,6 +17,7 @@ cd /tests/bookshop
 cds watch
 ```
 
+
 ## To use the plugin as a CAP developer:
 
 - (in future): run `npm add @cap-js/process`
