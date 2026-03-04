@@ -72,17 +72,10 @@ export async function handleProcessStart(req: cds.Request): Promise<void> {
     columns = convertToColumnsExpr(sharedInputs);
   }
 
-  // fetch entity
-  const row = await resolveEntityRowOrReject(
-    req,
-    data,
-    startSpecs.conditionExpr,
-    'Failed to fetch entity for process start.',
-    LOG_MESSAGES.PROCESS_NOT_STARTED,
-    columns,
-  );
-  if (!row) return;
   for (const startSpec of allStartSpecs) {
+    // Skip specs that don't apply to the current event
+    if (startSpec.on && startSpec.on !== req.event && startSpec.on !== '*') continue;
+
     // fetch entity (includes per-spec condition check for non-DELETE events)
     const row = await resolveEntityRowOrReject(
       req,
@@ -94,15 +87,6 @@ export async function handleProcessStart(req: cds.Request): Promise<void> {
     );
     if (!row) continue; // condition not met for this spec — try the next one
 
-  // get business key
-  const businessKey = getBusinessKeyOrReject(
-    target as cds.entity,
-    row,
-    req,
-    'Failed to build business key for process start.',
-    'Business key is empty for process start.',
-  );
-  if (!businessKey) return;
     // get business key
     const businessKey = getBusinessKeyOrReject(
       target as cds.entity,
@@ -115,15 +99,6 @@ export async function handleProcessStart(req: cds.Request): Promise<void> {
 
     const context = { ...row, businesskey: businessKey };
 
-  // emit process start
-  const payload = { definitionId: startSpecs.id!, context };
-  await emitProcessEvent(
-    'start',
-    req,
-    payload,
-    `Failed to start process with definition ID ${startSpecs.id!}.`,
-    startSpecs.id!,
-  );
     // emit process start for this spec
     const payload = { definitionId: startSpec.id!, context };
     await emitProcessEvent('start', req, payload, 'PROCESS_START_FAILED', startSpec.id!);
