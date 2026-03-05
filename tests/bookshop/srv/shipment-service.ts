@@ -123,8 +123,21 @@ class ShipmentService extends cds.ApplicationService {
       return JSON.stringify(allOutputs, null, 2);
     });
 
+    this.on('getInstancesByShipmentID', async (req: cds.Request) => {
+      const { shipmentID, status } = req.data;
+      
+      const processService = await cds.connect.to(ShipmentHandlerService);
+      const instances = await processService.getInstancesByBusinessKey({
+        businessKey: shipmentID,
+        status: status,
+      });
+      
+      return JSON.stringify(instances, null, 2);
+    });
+
     await super.init();
   }
+
 }
 
 export default ShipmentService;
