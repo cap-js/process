@@ -1,7 +1,6 @@
 import cds, { Results } from '@sap/cds';
 import { EntityEventCache } from './types/cds-plugin';
 import {
-  addDeletedEntityToRequest,
   handleProcessCancel,
   handleProcessResume,
   handleProcessStart,
@@ -18,6 +17,10 @@ import {
   EntityRow,
 } from './lib/index';
 import { importProcess } from './lib/processImport';
+import { addDeletedEntityToRequestCancel } from './lib/handlers/processCancel';
+import { addDeletedEntityToRequestCreate } from './lib/handlers/processStart';
+import { addDeletedEntityToRequestResume } from './lib/handlers/processResume';
+import { addDeletedEntityToRequestSuspend } from './lib/handlers/processSuspend';
 
 // Register build plugin for annotation validation during cds build
 cds.build?.register?.('process-validation', ProcessValidationPlugin);
@@ -40,9 +43,14 @@ cds.on('serving', async (service: cds.Service) => {
     const cached = annotationCache.get(cacheKey);
 
     if (!cached) return; // Fast exit - no annotations
-    if (cached.hasCancel || cached.hasSuspend || cached.hasStart || cached.hasResume) {
-      await addDeletedEntityToRequest(req, cached.hasStart);
-    }
+    await Promise.all(
+      [
+        cached.hasStart && addDeletedEntityToRequestCreate(req),
+        cached.hasCancel && addDeletedEntityToRequestCancel(req),
+        cached.hasResume && addDeletedEntityToRequestResume(req),
+        cached.hasSuspend && addDeletedEntityToRequestSuspend(req),
+      ].filter(Boolean),
+    );
   });
 
   service.after('*', async (results: Results, req: cds.Request) => {

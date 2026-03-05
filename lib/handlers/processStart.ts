@@ -5,6 +5,7 @@ import {
   getBusinessKeyOrReject,
   getEntityDataFromRequest,
   isDeleteWithoutProcess,
+  PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
   resolveEntityRowOrReject,
 } from './utils';
@@ -40,6 +41,7 @@ export type ProcessStartSpec = {
 
 export function getColumnsForProcessStart(target: Target): (column_expr | string)[] {
   const startSpecs = initStartSpecs(target);
+  startSpecs.inputs = parseInputToTree(target);
   if (startSpecs.inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
     return ['*'];
@@ -49,10 +51,11 @@ export function getColumnsForProcessStart(target: Target): (column_expr | string
 }
 
 export async function handleProcessStart(req: cds.Request, data: EntityRow): Promise<void> {
-  if (isDeleteWithoutProcess(req, LOG_MESSAGES.PROCESS_NOT_STARTED)) return;
+  if (isDeleteWithoutProcess(req, LOG_MESSAGES.PROCESS_NOT_STARTED, 'start')) return;
 
   const target = req.target as Target;
-  data = ((req as ProcessDeleteRequest)._Process ??
+  const processEventKey = PROCESS_EVENT_MAP['start'];
+  data = ((req as ProcessDeleteRequest)._Process?.[processEventKey] ??
     getEntityDataFromRequest(data, req.params)) as EntityRow;
 
   const startSpecs = initStartSpecs(target);
@@ -99,6 +102,40 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
     `Failed to start process with definition ID ${startSpecs.id!}.`,
     startSpecs.id!,
   );
+}
+
+/**
+ * Fetches and attaches entity data to the request for DELETE operations
+ */
+export async function addDeletedEntityToRequestCreate(req: cds.Request): Promise<void> {
+  const target = req.target as Target;
+  let columns: (column_expr | string)[] = [];
+
+  columns = getColumnsForProcessStart(target);
+
+  const deleteReq = req as ProcessDeleteRequest;
+  const deleteQuery = deleteReq.query?.DELETE as
+    | { from?: { ref?: Array<{ where?: unknown }> }; where?: unknown }
+    | undefined;
+  let where: unknown = deleteQuery?.from?.ref?.[0]?.where ?? deleteQuery?.where;
+
+  const annotatedTarget = target as unknown as Record<string, unknown>;
+
+  const conditionExpr = annotatedTarget[PROCESS_START_IF] as { xpr: expr } | undefined;
+  if (conditionExpr) {
+    where =
+      Array.isArray(where) && where.length
+        ? [{ xpr: where }, 'and', { xpr: conditionExpr.xpr }]
+        : conditionExpr.xpr;
+  }
+
+  if (where) {
+    // Safeguard: use ['*'] if columns array is empty to avoid invalid SQL
+    const selectColumns = columns.length > 0 ? columns : ['*'];
+    const entities = await SELECT.one.from(req.subject).columns(selectColumns).where(where);
+    const deleteReq = req as ProcessDeleteRequest;
+    deleteReq._Process = { ...deleteReq._Process, ProcessStart: entities };
+  }
 }
 
 function initStartSpecs(target: Target): ProcessStartSpec {

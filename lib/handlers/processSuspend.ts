@@ -1,4 +1,7 @@
-import { createProcessActionHandler } from './processActionHandler';
+import {
+  createProcessActionAddDeletedEntityHandler,
+  createProcessActionHandler,
+} from './processActionHandler';
 import {
   PROCESS_SUSPEND_ON,
   PROCESS_SUSPEND_CASCADE,
@@ -6,8 +9,10 @@ import {
   LOG_MESSAGES,
 } from '../constants';
 
+const action = 'suspend';
+
 export const handleProcessSuspend = createProcessActionHandler({
-  action: 'suspend',
+  action: action,
   annotations: {
     ON: PROCESS_SUSPEND_ON,
     CASCADE: PROCESS_SUSPEND_CASCADE,
@@ -19,5 +24,12 @@ export const handleProcessSuspend = createProcessActionHandler({
     INVALID_KEY: 'Failed to build business key for process suspend.',
     EMPTY_KEY: 'Business key is empty for process suspend.',
     FAILED: 'Failed to suspend process with business key',
+  },
+});
+
+export const addDeletedEntityToRequestSuspend = createProcessActionAddDeletedEntityHandler({
+  action: action,
+  annotations: {
+    IF: PROCESS_SUSPEND_IF,
   },
 });

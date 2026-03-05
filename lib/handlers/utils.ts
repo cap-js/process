@@ -1,17 +1,5 @@
 import cds, { column_expr, expr, Results, Target } from '@sap/cds';
-import {
-  PROCESS_CANCEL_IF,
-  PROCESS_CANCEL_ON,
-  PROCESS_LOGGER_PREFIX,
-  PROCESS_RESUME_IF,
-  PROCESS_RESUME_ON,
-  PROCESS_SERVICE,
-  PROCESS_START_IF,
-  PROCESS_START_ON,
-  PROCESS_SUSPEND_IF,
-  PROCESS_SUSPEND_ON,
-} from '../constants';
-import { getColumnsForProcessStart } from './processStart';
+import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from '../constants';
 const { SELECT } = cds.ql;
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -55,17 +43,14 @@ export type AnnotatedTarget = Target & {
  */
 
 export interface ProcessDeleteRequest extends cds.Request {
-  _Process?: Results;
+  _Process?: DeleteProcessObject;
 }
 
-/**
- * Mapping of annotation ON keys to their corresponding IF keys
- */
-const ANNOTATION_ON_TO_IF_MAP: Record<string, string> = {
-  [PROCESS_CANCEL_ON]: PROCESS_CANCEL_IF,
-  [PROCESS_START_ON]: PROCESS_START_IF,
-  [PROCESS_SUSPEND_ON]: PROCESS_SUSPEND_IF,
-  [PROCESS_RESUME_ON]: PROCESS_RESUME_IF,
+type DeleteProcessObject = {
+  ProcessStart?: Results;
+  ProcessCancel?: Results;
+  ProcessSuspend?: Results;
+  ProcessResume?: Results;
 };
 
 /**
@@ -174,64 +159,24 @@ function buildWhereClause(
   }
   return where;
 }
-
-/**
- * Fetches and attaches entity data to the request for DELETE operations
- */
-export async function addDeletedEntityToRequest(
-  req: cds.Request,
-  areStartAnnotationsDefined: boolean,
-): Promise<void> {
-  const target = req.target as Target;
-  let columns: (column_expr | string)[] = [];
-  if (areStartAnnotationsDefined) {
-    columns = getColumnsForProcessStart(target);
-  } else {
-    columns = getKeyFieldsForEntity(target as cds.entity);
-  }
-
-  const deleteReq = req as ProcessDeleteRequest;
-  const deleteQuery = deleteReq.query?.DELETE as
-    | { from?: { ref?: Array<{ where?: unknown }> }; where?: unknown }
-    | undefined;
-  let where: unknown = deleteQuery?.from?.ref?.[0]?.where ?? deleteQuery?.where;
-
-  const annotatedTarget = target as unknown as Record<string, unknown>;
-  const onAnnotations = [
-    PROCESS_CANCEL_ON,
-    PROCESS_START_ON,
-    PROCESS_SUSPEND_ON,
-    PROCESS_RESUME_ON,
-  ];
-  for (const annotationKey of onAnnotations) {
-    if (annotatedTarget[annotationKey] && annotatedTarget[annotationKey] === 'DELETE') {
-      const annotationIf = ANNOTATION_ON_TO_IF_MAP[annotationKey];
-      const conditionExpr = annotatedTarget[annotationIf] as { xpr: expr } | undefined;
-      if (conditionExpr) {
-        where =
-          Array.isArray(where) && where.length
-            ? [{ xpr: where }, 'and', { xpr: conditionExpr.xpr }]
-            : conditionExpr.xpr;
-      }
-    }
-  }
-
-  if (where) {
-    // Safeguard: use ['*'] if columns array is empty to avoid invalid SQL
-    const selectColumns = columns.length > 0 ? columns : ['*'];
-    const entities = await SELECT.one.from(req.subject).columns(selectColumns).where(where);
-    (req as ProcessDeleteRequest)._Process = entities;
-  }
-}
-
+export const PROCESS_EVENT_MAP: Record<string, keyof DeleteProcessObject> = {
+  start: 'ProcessStart',
+  cancel: 'ProcessCancel',
+  suspend: 'ProcessSuspend',
+  resume: 'ProcessResume',
+};
 /**
  * Checks if this is a DELETE request without process data (condition not met)
  */
-export function isDeleteWithoutProcess(req: cds.Request, notTriggeredMsg: string): boolean {
+export function isDeleteWithoutProcess(
+  req: cds.Request,
+  notTriggeredMsg: string,
+  processEvent: string,
+): boolean {
+  const processEventKey = PROCESS_EVENT_MAP[processEvent];
   if (
     req.event === 'DELETE' &&
-    ((req as ProcessDeleteRequest)._Process === undefined ||
-      (req as ProcessDeleteRequest)._Process?.length === 0)
+    (req as ProcessDeleteRequest)._Process?.[processEventKey] === undefined
   ) {
     // means: condition for process event is not met
     LOG.debug(notTriggeredMsg);
