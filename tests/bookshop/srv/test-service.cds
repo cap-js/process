@@ -1,5 +1,17 @@
 service TestService {
 
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    businessKey: (concat(ssn, concat('-', age)))
+  }
+  entity NewBusinessKey {
+    key ID: String;
+    name: String;
+    age: Integer;
+    testNum: Integer;
+    ssn: String;
+  }
+
   @bpm.process.start: {
     id: 'ShipmentProcess',
     on: 'UPDATE',
