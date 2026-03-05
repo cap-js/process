@@ -15,6 +15,11 @@ import {
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
+  BUSINESS_KEY_HEADERINFO,
+  BUSINESS_KEY_HEADERINFO_BPM,
+  BUSINESS_KEY_SEMANTICKEY,
+  BUSINESS_KEY_SEMANTICKEY_BPM,
+} from '../constants';
 
 type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
@@ -88,10 +93,10 @@ type AnnotationConfig = {
 };
 
 const PRIORITY_CHAIN: AnnotationConfig[] = [
-  { path: '@UI.HeaderInfo#bpm.Title.Value' },
-  { path: '@UI.HeaderInfo.Title.Value' },
-  { path: '@Common.SemanticKey#bpm', transform: formatSemanticKey },
-  { path: '@Common.SemanticKey', transform: formatSemanticKey },
+  { path: BUSINESS_KEY_HEADERINFO_BPM },
+  { path: BUSINESS_KEY_HEADERINFO },
+  { path: BUSINESS_KEY_SEMANTICKEY_BPM, transform: formatSemanticKey },
+  { path: BUSINESS_KEY_SEMANTICKEY, transform: formatSemanticKey },
 ];
 
 function formatSemanticKey(values: { '=': string }[]): string | undefined {
