@@ -13,6 +13,14 @@ export const PROCESS_LOGGER_PREFIX = 'process' as const;
  */
 export const CUD_EVENTS = ['CREATE', 'UPDATE', 'DELETE'] as const;
 
+/** Business Key Annotations
+ *
+ */
+export const BUSINESS_KEY_HEADERINFO_BPM = '@UI.HeaderInfo#bpm.Title.Value' as const;
+export const BUSINESS_KEY_HEADERINFO = '@UI.HeaderInfo.Title.Value' as const;
+export const BUSINESS_KEY_SEMANTICKEY_BPM = '@Common.SemanticKey#bpm' as const;
+export const BUSINESS_KEY_SEMANTICKEY = '@Common.SemanticKey' as const;
+
 /**
  * Process Start Annotations
  */
@@ -29,7 +37,6 @@ export const PROCESS_CANCEL = '@bpm.process.cancel' as const;
 export const PROCESS_CANCEL_ON = '@bpm.process.cancel.on' as const;
 export const PROCESS_CANCEL_CASCADE = '@bpm.process.cancel.cascade' as const;
 export const PROCESS_CANCEL_IF = '@bpm.process.cancel.if' as const;
-export const PROCESS_CANCEL_BUSINESS_KEY = '@bpm.process.cancel.businessKey' as const;
 
 /**
  * Process Suspend Annotations
@@ -38,7 +45,6 @@ export const PROCESS_SUSPEND = '@bpm.process.suspend' as const;
 export const PROCESS_SUSPEND_ON = '@bpm.process.suspend.on' as const;
 export const PROCESS_SUSPEND_CASCADE = '@bpm.process.suspend.cascade' as const;
 export const PROCESS_SUSPEND_IF = '@bpm.process.suspend.if' as const;
-export const PROCESS_SUSPEND_BUSINESS_KEY = '@bpm.process.suspend.businessKey' as const;
 
 /**
  * Process Resume Annotations
@@ -47,7 +53,6 @@ export const PROCESS_RESUME = '@bpm.process.resume' as const;
 export const PROCESS_RESUME_ON = '@bpm.process.resume.on' as const;
 export const PROCESS_RESUME_CASCADE = '@bpm.process.resume.cascade' as const;
 export const PROCESS_RESUME_IF = '@bpm.process.resume.if' as const;
-export const PROCESS_RESUME_BUSINESS_KEY = '@bpm.process.resume.businessKey' as const;
 
 /**
  * Annotation prefix for filtering
