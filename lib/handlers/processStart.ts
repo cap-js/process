@@ -2,8 +2,6 @@ import { column_expr, expr, Target } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
-  getBusinessKeyOrReject,
-  getElementAnnotations,
   getEntityDataFromRequest,
   resolveEntityRowOrReject,
 } from './utils';
