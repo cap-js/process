@@ -1,5 +1,9 @@
 service TestService {
 
+  @bpm.process.start: {
+    id: 'TestProcess',
+    on: 'CREATE'
+  }
   @bpm.process.cancel: {
     on: 'DELETE',
     businessKey: (concat(ssn, concat('-', age)))

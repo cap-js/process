@@ -56,7 +56,6 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
       expect(foundMessages[0].data.context).toBeDefined();
       expect(foundMessages[0].data.context).toEqual({
         ...car,
-        businesskey: car.ID,
       });
     });
 
@@ -80,7 +79,6 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
       expect(foundMessages[0].data.context).toBeDefined();
       expect(foundMessages[0].data.context).toEqual({
         ...car,
-        businesskey: car.ID,
       });
     });
 
