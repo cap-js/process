@@ -3,6 +3,7 @@ import { expr, Target } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
+  getBusinessKeyColumnOrReject,
   getEntityDataFromRequest,
   getKeyFieldsForEntity,
   ProcessLifecyclePayload,
@@ -75,8 +76,8 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
     // Initialize specifications from annotations
     const specs = initSpecs(target, config.annotations);
 
-    // TODO: error handling
-    const businessKeyColumn = `${specs.businessKey} as businessKey`;
+    // Get business key column
+    const businessKeyColumn = getBusinessKeyColumnOrReject(req, specs.businessKey);
 
     // fetch entity
     const row = await resolveEntityRowOrReject(

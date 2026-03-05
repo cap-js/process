@@ -223,6 +223,16 @@ export function getBusinessKeyOrReject(
   return businessKey;
 }
 
+export function getBusinessKeyColumnOrReject(req: cds.Request, businessKey: string | undefined) {
+  if (!businessKey) {
+    const msg = 'Business key is required but was not found in the entity.';
+    LOG.error(msg);
+    req.reject({ status: 400, message: msg });
+  } else {
+    return `${businessKey} as businessKey`;
+  }
+}
+
 /**
  * Emits a process event to the outboxed ProcessService
  */
