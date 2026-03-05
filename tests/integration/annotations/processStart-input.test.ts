@@ -304,7 +304,6 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toEqual({
         ID: shipment.ID,
         status: shipment.status,
-        businesskey: shipment.ID,
         items: [
           {
             ID: shipment.items[0].ID,
@@ -388,7 +387,6 @@ describe('Integration tests for START annotation with inputs array', () => {
         status: order.status,
         shipmentDate: order.shipmentDate,
         totalValue: order.totalValue,
-        businesskey: order.ID,
         items: [
           {
             ID: order.items[0].ID,
@@ -431,7 +429,6 @@ describe('Integration tests for START annotation with inputs array', () => {
         status: order.status,
         shipmentDate: order.shipmentDate,
         totalValue: order.totalValue,
-        businesskey: order.ID,
         items: [
           {
             ID: order.items[0].ID,
@@ -468,7 +465,6 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toEqual({
         ID: order.ID,
         status: order.status,
-        businesskey: order.ID,
         items: [
           {
             ID: order.items[0].ID,
@@ -514,7 +510,6 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toEqual({
         OrderId: order.ID,
         ReferenceId: order.ID,
-        businesskey: order.ID,
       });
     });
   });
@@ -545,7 +540,6 @@ describe('Integration tests for START annotation with inputs array', () => {
       // items should appear under both aliases: Orders and LineItems
       expect(context).toEqual({
         ID: order.ID,
-        businesskey: order.ID,
         Orders: [
           {
             ID: order.items[0].ID,
@@ -603,7 +597,6 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toEqual({
         ID: entity.ID,
         status: entity.status,
-        businesskey: entity.ID,
         author_ID: entity.author_ID,
       });
     });
@@ -640,7 +633,6 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toEqual({
         ID: entity.ID,
         status: entity.status,
-        businesskey: entity.ID,
         author_ID: author.ID,
       });
     });
@@ -680,7 +672,6 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toEqual({
         ID: entity.ID,
         status: entity.status,
-        businesskey: entity.ID,
         author_ID: author.ID,
         author: {
           ID: author.ID,
