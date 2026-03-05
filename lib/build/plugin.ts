@@ -14,6 +14,7 @@ import {
   PROCESS_START_ID,
   PROCESS_START_ON,
   PROCESS_START_IF,
+  PROCESS_START_INPUTS,
   PROCESS_CANCEL_ON,
   PROCESS_CANCEL_CASCADE,
   PROCESS_CANCEL_IF,
@@ -23,7 +24,6 @@ import {
   PROCESS_RESUME_ON,
   PROCESS_RESUME_CASCADE,
   PROCESS_RESUME_IF,
-  PROCESS_INPUT,
   PROCESS_CANCEL,
   PROCESS_SUSPEND,
   PROCESS_RESUME,
@@ -133,7 +133,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       PROCESS_START_ID,
       PROCESS_START_ON,
       PROCESS_START_IF,
-      PROCESS_INPUT,
+      PROCESS_START_INPUTS,
     ];
     validateAllowedAnnotations(allowedAnnotations, def, entityName, PROCESS_START, this);
 

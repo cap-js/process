@@ -155,14 +155,6 @@ export const ERROR_MISSING_MANDATORY_PROCESS_INPUT = (
 };
 
 // =============================================================================
-// Association Validation Messages
-// =============================================================================
-
-export const ERROR_CYCLE_DETECTED = (target: string): string => {
-  return `Cycle detected in entity associations at '${target}'. This is not supported.`;
-};
-
-// =============================================================================
 // Misc Build Warnings
 // =============================================================================
 

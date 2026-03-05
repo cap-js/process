@@ -1,6 +1,5 @@
 import cds, { column_expr, expr, Results, Target } from '@sap/cds';
 import {
-  BUILD_PREFIX,
   PROCESS_CANCEL_IF,
   PROCESS_CANCEL_ON,
   PROCESS_LOGGER_PREFIX,
@@ -40,16 +39,6 @@ export interface ProcessLifecyclePayload {
 }
 
 /**
- * Element annotation with metadata
- */
-export interface ElementAnnotation {
-  elementName: string;
-  annotationKey: string;
-  annotationValue: string;
-  associatedTarget?: cds.entity;
-}
-
-/**
  * Process event types supported by the system
  */
 export type ProcessEventType = 'start' | 'cancel' | 'suspend' | 'resume';
@@ -78,13 +67,6 @@ const ANNOTATION_ON_TO_IF_MAP: Record<string, string> = {
   [PROCESS_SUSPEND_ON]: PROCESS_SUSPEND_IF,
   [PROCESS_RESUME_ON]: PROCESS_RESUME_IF,
 };
-
-/**
- * Checks if an element is an association or composition type
- */
-function isAssociationType(element: cds.struct['elements'][string]): boolean {
-  return element.type === 'cds.Association' || element.type === 'cds.Composition';
-}
 
 /**
  * Extracts key field names from a CDS entity
@@ -135,39 +117,11 @@ export function getEntityDataFromRequest(
   return data;
 }
 
-/**
- * Extracts element annotations that start with BUILD_PREFIX from a CDS entity
- */
-export function getElementAnnotations(entity: cds.entity): ElementAnnotation[] {
-  const elementAnnotations: ElementAnnotation[] = [];
-  for (const elementName in entity.elements) {
-    const element = entity.elements[elementName];
-    for (const key in element) {
-      if (!key.startsWith(BUILD_PREFIX)) {
-        continue;
-      }
-      const value = element[key as keyof typeof element];
-      // for association elements: element._target.elements
-      let associatedTarget: cds.entity | undefined;
-      if (isAssociationType(element)) {
-        associatedTarget = element._target;
-      }
-      elementAnnotations.push({
-        elementName,
-        annotationKey: key,
-        annotationValue: String(value),
-        associatedTarget,
-      });
-    }
-  }
-  return elementAnnotations;
-}
-
 async function fetchEntity(
   results: EntityRow,
   request: cds.Request,
   condition: expr | undefined,
-  columns?: column_expr[] | string[],
+  columns?: (column_expr | string)[],
 ): Promise<EntityRow | undefined> {
   if (typeof results !== 'object') {
     results = {};
@@ -229,9 +183,9 @@ export async function addDeletedEntityToRequest(
   areStartAnnotationsDefined: boolean,
 ): Promise<void> {
   const target = req.target as Target;
-  let columns: column_expr[] | string[] = [];
+  let columns: (column_expr | string)[] = [];
   if (areStartAnnotationsDefined) {
-    columns = await getColumnsForProcessStart(target, req);
+    columns = getColumnsForProcessStart(target);
   } else {
     columns = getKeyFieldsForEntity(target as cds.entity);
   }
@@ -296,7 +250,7 @@ export async function resolveEntityRowOrReject(
   conditionExpr: expr | undefined,
   fetchFailedMsg: string,
   notTriggeredMsg: string,
-  columns?: column_expr[] | string[],
+  columns?: (column_expr | string)[],
 ): Promise<EntityRow | undefined> {
   let row: EntityRow | undefined;
   try {

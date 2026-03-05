@@ -38,28 +38,270 @@ Start developing 🙂
   - `@bpm.process.start.id` -- definition ID for deployed process
   - `@bpm.process.start.on`
   - `@bpm.process.start.if` -- only starting process if expression is true
-- `@bpm.process.input` -- includes this element in the process start assuming name equality
-- `@(bpm.process.input: 'targetVariable')` -- includes this element in the process start and maps 1:1 to target variable
-- Important: the process that has been started needs to have an input attribute 'businesskey' of type string that is then assigned to the businessKey in process configuration so that the process can be later CANCELLED/SUSPENDED/RESUMED
+- `@bpm.process.start.inputs` -- array of input mappings that control which entity fields are passed as process context (optional)
 
-Example:
+**Important:** The target process must have an input attribute `businesskey` of type string. The entity's key is used as the `businesskey` value, which links the process instance to the entity for later CANCEL/SUSPEND/RESUME operations.
+
+### Input Mapping
+
+The `inputs` array controls which entity fields are passed as context when starting a process.
+
+#### No `inputs` Array (Default Behavior)
+
+When `inputs` is not specified, **all direct attributes** of the entity are fetched and passed as process context. Associations and compositions are **not expanded** - only scalar fields are included.
+
+```cds
+@bpm.process.start: {
+    id: 'orderProcess',
+    on: 'CREATE'
+}
+entity Orders {
+    key ID       : UUID;
+        status   : String(20);
+        total    : Decimal(15, 2);
+        items    : Composition of many OrderItems on items.order = $self;
+};
+// Context: { ID, status, total, businesskey }
+// Note: 'items' composition is NOT included
+```
+
+#### Simple Field Selection
+
+Use `$self.fieldName` to include specific fields.
+
+```cds
+@bpm.process.start: {
+    id: 'orderProcess',
+    on: 'CREATE',
+    inputs: [
+        $self.ID,
+        $self.status
+    ]
+}
+entity Orders {
+    key ID       : UUID;
+        status   : String(20);
+        total    : Decimal(15, 2);  // Not included
+};
+// Context: { ID, status, businesskey }
+```
+
+#### Wildcard: All Scalar Fields (`$self`)
+
+Use `$self` alone (without a field name) to include **all scalar fields** of the entity. This is useful when you want all entity fields plus specific compositions.
+
+```cds
+@bpm.process.start: {
+    id: 'orderProcess',
+    on: 'CREATE',
+    inputs: [
+        $self,         // All scalar fields: ID, status, shipmentDate, totalValue
+        $self.items    // Plus the composition with all its scalar fields
+    ]
+}
+entity Orders {
+    key ID           : UUID;
+        status       : String(20);
+        shipmentDate : Date;
+        totalValue   : Decimal(15, 2);
+        items        : Composition of many OrderItems on items.parent = $self;
+};
+// Context: { ID, status, shipmentDate, totalValue, businesskey, items: [{ ID, title, quantity, parent_ID }, ...] }
+```
+
+**Note:** `$self` alone behaves identically to the default behavior (no `inputs` array), but allows you to combine it with explicit composition expansions in the same inputs array.
+
+#### Field Aliasing
+
+Use `{ path: $self.fieldName, as: 'TargetName' }` to rename fields for the process.
+
+```cds
+@bpm.process.start: {
+    id: 'orderProcess',
+    on: 'CREATE',
+    inputs: [
+        $self.ID,
+        { path: $self.total, as: 'OrderAmount' }
+    ]
+}
+entity Orders {
+    key ID    : UUID;
+        total : Decimal(15, 2);
+};
+// Context: { ID, OrderAmount, businesskey }
+```
+
+#### Compositions and Associations
+
+**Include composition without child field selection (`$self.items`):**
+
+When you include a composition without specifying any nested fields (e.g., `$self.items` alone), **all direct attributes** of the child entity are expanded. This behaves like the default behavior but for the nested entity.
+
+```cds
+@bpm.process.start: {
+    id: 'orderProcess',
+    on: 'CREATE',
+    inputs: [
+        $self.ID,
+        $self.items    // Expands all direct attributes of OrderItems
+    ]
+}
+entity Orders {
+    key ID    : UUID;
+        items : Composition of many OrderItems on items.order = $self;
+};
+
+entity OrderItems {
+    key ID       : UUID;
+        order    : Association to Orders;
+        product  : String(200);
+        quantity : Integer;
+};
+// Context: { ID, businesskey, items: [{ ID, product, quantity }, ...] }
+// Note: 'order' association in child is NOT included (associations not expanded)
+```
+
+**Include composition with selected child fields (`$self.items.field`):**
+
+When you specify nested field paths like `$self.items.ID` or `$self.items.product`, only those specific fields are included from the child entity.
+
+```cds
+@bpm.process.start: {
+    id: 'orderProcess',
+    on: 'CREATE',
+    inputs: [
+        $self.ID,
+        $self.items.ID,
+        $self.items.product
+        // quantity is NOT included
+    ]
+}
+entity Orders {
+    key ID    : UUID;
+        items : Composition of many OrderItems on items.order = $self;
+};
+
+entity OrderItems {
+    key ID       : UUID;
+        order    : Association to Orders;
+        product  : String(200);
+        quantity : Integer;
+};
+// Context: { ID, businesskey, items: [{ ID, product }, ...] }
+```
+
+**Alias composition and nested fields:**
+
+```cds
+@bpm.process.start: {
+    id: 'orderProcess',
+    on: 'CREATE',
+    inputs: [
+        $self.ID,
+        { path: $self.items, as: 'OrderLines' },
+        $self.items.ID,
+        { path: $self.items.product, as: 'ProductName' }
+    ]
+}
+entity Orders {
+    key ID    : UUID;
+        items : Composition of many OrderItems on items.order = $self;
+};
+
+entity OrderItems {
+    key ID      : UUID;
+        product : String(200);
+};
+// Context: { ID, businesskey, OrderLines: [{ ID, ProductName }, ...] }
+```
+
+**Combining wildcards with aliases:**
+
+You can combine wildcard expansion (`$self` or `$self.items`) with specific field aliases. The wildcard expands all fields, and the alias adds the field again with the new name.
+
+```cds
+@bpm.process.start: {
+    id: 'orderProcess',
+    on: 'CREATE',
+    inputs: [
+        $self,                                // All scalar fields: ID, status, total
+        { path: $self.ID, as: 'OrderId' },    // Add ID again as 'OrderId'
+        $self.items,                          // All child fields: ID, product, quantity
+        { path: $self.items.ID, as: 'ItemId' } // Add items.ID again as 'ItemId'
+    ]
+}
+entity Orders {
+    key ID     : UUID;
+        status : String(20);
+        total  : Decimal(15, 2);
+        items  : Composition of many OrderItems on items.order = $self;
+};
+
+entity OrderItems {
+    key ID       : UUID;
+        product  : String(200);
+        quantity : Integer;
+};
+// Context: {
+//   ID, OrderId,        // ID appears twice (original + alias)
+//   status, total, businesskey,
+//   items: [{
+//     ID, ItemId,       // ID appears twice in each item
+//     product, quantity
+//   }, ...]
+// }
+```
+
+#### Deep Paths (Cyclic Relationships)
+
+For entities with cyclic relationships, explicit deep paths let you control exactly how deep to traverse without infinite loops.
+
+```cds
+@bpm.process.start: {
+    id: 'shipmentProcess',
+    on: 'CREATE',
+    inputs: [
+        $self.ID,
+        $self.items.ID,
+        $self.items.shipment.ID,           // Back to parent
+        $self.items.shipment.items.ID      // Back to items again
+    ]
+}
+entity Shipments {
+    key ID    : UUID;
+        items : Composition of many ShipmentItems on items.shipment = $self;
+};
+
+entity ShipmentItems {
+    key ID       : UUID;
+        shipment : Association to Shipments;
+};
+```
+
+### Complete Example
 
 ```cds
 service MyService {
 
     @bpm.process.start: {
         id: '<projectId>.<processId>',
-        on: 'CREATE | UPDATE | DELETE | boundAction',
-        when: (<expression>)
+        on: 'CREATE | UPDATE | DELETE | boundAction',
+        if: (<expression>),
+        inputs: [
+            $self.field1,
+            { path: $self.field2, as: 'AliasName' },
+            $self.items,
+            $self.items.nestedField
+        ]
     }
-    entity MyProjection as projection on MyEntity {
-      myElement @bpm.process.input,
-      myElement2 @(bpm.process.input: 'targetVariable')
-      myElement3
+    entity MyEntity {
+        key ID     : UUID;
+            field1 : String;
+            field2 : String;
+            items  : Composition of many ChildEntity on items.parent = $self;
     };
 
 }
-
 ```
 
 ## For cancelling/resuming/suspending a process
@@ -117,7 +359,7 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
 **Errors:**
 
 - The process definition must have a `businesskey` input
-- Entity attributes marked with `@bpm.process.input` (or all attributes if none are marked) must exist in the process definition inputs
+- Entity attributes specified in `@bpm.process.start.inputs` (or all direct attributes if `inputs` is omitted) must exist in the process definition inputs
 - Mandatory inputs from the process definition must be present in the entity
 
 **Warnings:**

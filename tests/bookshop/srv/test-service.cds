@@ -3,22 +3,34 @@ service TestService {
   @bpm.process.start: {
     id: 'ShipmentProcess',
     on: 'UPDATE',
-    if: (weight > 10)
+    if: (weight > 10),
+    inputs: [
+      { path: $self.address, as: 'Adresse' },
+      $self.weight,
+      { path: $self.items, as: 'positionen' },
+      $self.items.itemID,
+      $self.items.description,
+      $self.items.quantity,
+      $self.items.material,
+      $self.items.material.materialID,
+      $self.items.material.unit,
+      $self.home,
+      $self.home.ID
+    ]
   }
   entity AnnotatedShipments   as
     projection on Shipments {
       ID,
-      address @mandatory @(bpm.process.input: 'Adresse'),
+      address @mandatory,
       date,
-      weight @bpm.process.input,
-      items @(bpm.process.input: 'positionen'),
+      weight,
+      items,
       home : Association to one Home
                on home.shipmentID = ID
-             @bpm.process.input
     }
 
   entity Home {
-    key ID         : String @bpm.process.input;
+    key ID         : String;
         shipment   : Association to one Shipments
                        on shipment.ID = shipmentID;
         shipmentID : String;
@@ -40,20 +52,19 @@ service TestService {
   }
 
   entity Items {
-    key itemID      : String @bpm.process.input;
-        description : String @bpm.process.input;
-        quantity    : Integer @bpm.process.input;
+    key itemID      : String;
+        description : String;
+        quantity    : Integer;
         shipmentID  : String;
         shipment    : Association to Shipments
                         on shipment.ID = shipmentID;
         materialID  : String;
         material    : Association to one Material
-                        on material.materialID = materialID
-                      @bpm.process.input;
+                        on material.materialID = materialID;
   }
 
   entity Material {
-    key materialID : String @bpm.process.input;
-        unit       : String @bpm.process.input;
+    key materialID : String;
+        unit       : String;
   }
 }

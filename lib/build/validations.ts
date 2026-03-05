@@ -149,13 +149,8 @@ export function validateInputTypes(
   processDef: CsnDefinition,
   allDefinitions: Record<string, CsnDefinition> | undefined,
 ) {
-  // entity attributes from annotations
-  const entityAttributes = getElementNamesAndTypes(
-    buildPlugin,
-    def as CsnEntity,
-    allDefinitions || {},
-    new Set<string>(),
-  );
+  // entity attributes from inputs array annotation
+  const entityAttributes = getElementNamesAndTypes(def as CsnEntity, allDefinitions || {});
 
   // process def inputs from csn model
   const processDefInputs = getProcessDefInputsAndTypes(processDef, allDefinitions || {});
@@ -192,12 +187,7 @@ function validateInputsMatch(
   // Check for entity attributes that don't exist in process definition
   for (const key of entityKeys) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
-    if (!(key in processDefInputs)) {
-      buildPlugin.pushMessage(
-        ERROR_ATTRIBUTE_NOT_IN_PROCESS_DEF(entityName, fullKey, processDefId),
-        ERROR,
-      );
-    } else {
+    if (key in processDefInputs) {
       // Check type compatibility
       const entityType = entityAttributes[key];
       const processType = processDefInputs[key];
@@ -209,6 +199,11 @@ function validateInputsMatch(
         entityType,
         processType,
         processDefId,
+      );
+    } else {
+      buildPlugin.pushMessage(
+        ERROR_ATTRIBUTE_NOT_IN_PROCESS_DEF(entityName, fullKey, processDefId),
+        ERROR,
       );
     }
   }
