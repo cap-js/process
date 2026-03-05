@@ -38,7 +38,6 @@ Start developing 🙂
   - `@bpm.process.start.id` -- definition ID for deployed process
   - `@bpm.process.start.on`
   - `@bpm.process.start.if` -- only starting process if expression is true
-- `@bpm.process.input` -- includes this element in the process start assuming name equality
 - `@bpm.process.start.inputs` -- array of input mappings that control which entity fields are passed as process context (optional)
 
 **Important:** The target process must have an input attribute `businesskey` of type string. The entity's key is used as the `businesskey` value, which links the process instance to the entity for later CANCEL/SUSPEND/RESUME operations.
