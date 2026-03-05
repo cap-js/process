@@ -67,7 +67,7 @@ function initSpecs(
   };
 }
 
-function retrieveBusinessKeyExpression(targetAnnotations: Record<string, unknown>) {
+export function retrieveBusinessKeyExpression(targetAnnotations: Record<string, unknown>) {
   /**
    * Hierarchy:
    *  prio0: @UI.HeaderInfo#bpm.Title.Value

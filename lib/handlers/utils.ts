@@ -2,21 +2,19 @@ import cds, { column_expr, expr, Target } from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from '../constants';
 import cds, { column_expr, expr, Results, Target } from '@sap/cds';
 import {
-  PROCESS_CANCEL_BUSINESS_KEY,
   PROCESS_CANCEL_IF,
   PROCESS_CANCEL_ON,
   PROCESS_LOGGER_PREFIX,
-  PROCESS_RESUME_BUSINESS_KEY,
   PROCESS_RESUME_IF,
   PROCESS_RESUME_ON,
   PROCESS_SERVICE,
   PROCESS_START_IF,
   PROCESS_START_ON,
-  PROCESS_SUSPEND_BUSINESS_KEY,
   PROCESS_SUSPEND_IF,
   PROCESS_SUSPEND_ON,
 } from '../constants';
 import { getColumnsForProcessStart } from './processStart';
+import { retrieveBusinessKeyExpression } from './processActionHandler';
 const { SELECT } = cds.ql;
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
