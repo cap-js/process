@@ -3,7 +3,6 @@ import { expr, Target } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
-  getBusinessKeyOrReject,
   getEntityDataFromRequest,
   getKeyFieldsForEntity,
   ProcessLifecyclePayload,
@@ -22,6 +21,7 @@ interface ProcessActionSpec {
   on?: string;
   cascade: boolean;
   conditionExpr: expr | undefined;
+  businessKey: string | undefined;
 }
 
 interface ProcessActionConfig {
@@ -30,6 +30,7 @@ interface ProcessActionConfig {
     ON: string;
     CASCADE: string;
     IF: string;
+    BUSINESS_KEY: string;
   };
   logMessages: {
     NOT_TRIGGERED: string;
@@ -57,6 +58,9 @@ function initSpecs(
     conditionExpr: targetAnnotations[annotations.IF]
       ? (targetAnnotations[annotations.IF] as { xpr: expr }).xpr
       : undefined,
+    businessKey: targetAnnotations[annotations.BUSINESS_KEY]
+      ? (targetAnnotations[annotations.BUSINESS_KEY] as { '=': string })['=']
+      : undefined,
   };
 }
 
@@ -71,6 +75,9 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
     // Initialize specifications from annotations
     const specs = initSpecs(target, config.annotations);
 
+    // TODO: error handling
+    const businessKeyColumn = `${specs.businessKey} as businessKey`;
+
     // fetch entity
     const row = await resolveEntityRowOrReject(
       req,
@@ -78,22 +85,22 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
       specs.conditionExpr,
       config.logMessages.FETCH_FAILED,
       config.logMessages.NOT_TRIGGERED,
+      [businessKeyColumn],
     );
     if (!row) return;
 
-    // Get business key
-    const businessKey = getBusinessKeyOrReject(
-      target as cds.entity,
-      row,
-      req,
-      config.logMessages.INVALID_KEY,
-      config.logMessages.EMPTY_KEY,
-    );
-    if (!businessKey) return;
-
     // Emit process event
-    const payload: ProcessLifecyclePayload = { businessKey, cascade: specs.cascade };
-    await emitProcessEvent(config.action, req, payload, config.logMessages.FAILED, businessKey);
+    const payload: ProcessLifecyclePayload = {
+      businessKey: (row as { businessKey: string }).businessKey,
+      cascade: specs.cascade,
+    };
+    await emitProcessEvent(
+      config.action,
+      req,
+      payload,
+      config.logMessages.FAILED,
+      (row as { businessKey: string }).businessKey,
+    );
   };
 }
 

@@ -66,12 +66,15 @@ declare module '@sap/cds' {
     '@bpm.process.cancel.on'?: string;
     '@bpm.process.cancel.cascade'?: boolean;
     '@bpm.process.cancel.if'?: object;
+    '@bpm.process.cancel.businessKey'?: object;
     '@bpm.process.suspend.on'?: string;
     '@bpm.process.suspend.cascade'?: boolean;
     '@bpm.process.suspend.if'?: object;
+    '@bpm.process.suspend.businessKey'?: object;
     '@bpm.process.resume.on'?: string;
     '@bpm.process.resume.cascade'?: boolean;
     '@bpm.process.resume.if'?: object;
+    '@bpm.process.resume.businessKey'?: object;
   }
 
   interface Results extends cds.ResultSet {
