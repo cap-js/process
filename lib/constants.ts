@@ -57,6 +57,22 @@ export const BUILD_PREFIX = '@bpm' as const;
 export const PROCESS_PREFIX = '@bpm.process' as const;
 
 /**
+ * Qualifier prefix for multiple process start annotations
+ * Usage: @bpm.process.start #qualifier: { id: '...', on: '...' }
+ * Stored in CDS as: @bpm.process.start#qualifier.id, @bpm.process.start#qualifier.on, etc.
+ */
+export const PROCESS_START_QUALIFIER_PREFIX = '@bpm.process.start#' as const;
+
+/**
+ * Regex to match qualified @bpm.process.start#qualifier.on keys on a CDS entity.
+ * Derived from PROCESS_START_QUALIFIER_PREFIX so it stays in sync if the prefix changes.
+ * Capture group 1: the qualifier name (e.g. "approval" from "@bpm.process.start#approval.on")
+ */
+export const PROCESS_START_QUALIFIER_PATTERN = new RegExp(
+  `^${PROCESS_START_QUALIFIER_PREFIX.replace(/\./g, '\\.')}(\\w+)\\.on$`,
+);
+
+/**
  * Process Event Annotations (Runtime)
  * These annotations are used on dynamically created ProcessService events
  */

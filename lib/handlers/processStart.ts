@@ -17,6 +17,8 @@ import {
   PROCESS_INPUT,
   LOG_MESSAGES,
   PROCESS_LOGGER_PREFIX,
+  PROCESS_START_QUALIFIER_PREFIX,
+  PROCESS_START_QUALIFIER_PATTERN,
 } from './../constants';
 
 import cds from '@sap/cds';
@@ -39,12 +41,12 @@ export function getColumnsForProcessStart(
   target: Target,
   req: cds.Request,
 ): column_expr[] | string[] {
-  const startSpecs = initStartSpecs(target, req);
-  if (startSpecs.inputs.length === 0) {
+  const sharedInputs = getSharedInputs(target, req);
+  if (sharedInputs.length === 0) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
     return ['*'];
   } else {
-    return convertToColumnsExpr(startSpecs.inputs);
+    return convertToColumnsExpr(sharedInputs);
   }
 }
 
@@ -55,70 +57,108 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   data = ((req as ProcessDeleteRequest)._Process ??
     getEntityDataFromRequest(data, req.params)) as EntityRow;
 
-  const startSpecs = initStartSpecs(target, req);
+  const allStartSpecs = getAllStartSpecs(target, req);
+  if (allStartSpecs.length === 0) {
+    LOG.debug(LOG_MESSAGES.PROCESS_NOT_STARTED);
+    return;
+  }
 
-  // if startSpecs.input = [] --> no input defined, fetch entire row
+  // @build.process.input annotations are element-level, shared across all start specs
+  const sharedInputs = allStartSpecs[0].inputs;
   let columns: column_expr[] | string[] = [];
-  if (startSpecs.inputs.length === 0) {
+  if (sharedInputs.length === 0) {
     columns = ['*'];
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
   } else {
-    columns = convertToColumnsExpr(startSpecs.inputs);
+    columns = convertToColumnsExpr(sharedInputs);
   }
 
-  // fetch entity
-  const row = await resolveEntityRowOrReject(
-    req,
-    data,
-    startSpecs.conditionExpr,
-    'Failed to fetch entity for process start.',
-    LOG_MESSAGES.PROCESS_NOT_STARTED,
-    columns,
-  );
-  if (!row) return;
+  for (const startSpec of allStartSpecs) {
+    // Skip specs that don't apply to the current event
+    if (startSpec.on && startSpec.on !== req.event && startSpec.on !== '*') continue;
 
-  // get business key
-  const businessKey = getBusinessKeyOrReject(
-    target as cds.entity,
-    row,
-    req,
-    'Failed to build business key for process start.',
-    'Business key is empty for process start.',
-  );
-  if (!businessKey) return;
+    // fetch entity (includes per-spec condition check for non-DELETE events)
+    const row = await resolveEntityRowOrReject(
+      req,
+      data,
+      startSpec.conditionExpr,
+      'PROCESS_START_FETCH_FAILED',
+      LOG_MESSAGES.PROCESS_NOT_STARTED,
+      columns,
+    );
+    if (!row) continue; // condition not met for this spec — try the next one
 
-  const context = { ...row, businesskey: businessKey };
+    // get business key
+    const businessKey = getBusinessKeyOrReject(
+      target as cds.entity,
+      row,
+      req,
+      'PROCESS_START_INVALID_KEY',
+      'PROCESS_START_EMPTY_KEY',
+    );
+    if (!businessKey) return; // invalid key is fatal for all specs
 
-  // emit process start
-  const payload = { definitionId: startSpecs.id!, context };
-  await emitProcessEvent(
-    'start',
-    req,
-    payload,
-    `Failed to start process with definition ID ${startSpecs.id!}.`,
-    startSpecs.id!,
-  );
+    const context = { ...row, businesskey: businessKey };
+
+    // emit process start for this spec
+    const payload = { definitionId: startSpec.id!, context };
+    await emitProcessEvent('start', req, payload, 'PROCESS_START_FAILED', startSpec.id!);
+  }
 }
 
-function initStartSpecs(target: Target, req: cds.Request): ProcessStartSpec {
-  const startSpecs: ProcessStartSpec = {
-    id: target[PROCESS_START_ID] as string,
-    on: target[PROCESS_START_ON] as string,
-    inputs: [],
-    conditionExpr: target[PROCESS_START_IF]
-      ? ((target[PROCESS_START_IF] as unknown as { xpr: expr }).xpr as expr)
-      : undefined,
-  };
+/**
+ * Returns all start specs for the target entity, including both non-qualified
+ * (@build.process.start) and qualified (@build.process.start #qualifier) annotations.
+ * Inputs (@build.process.input) are element-level and shared across all specs.
+ */
+function getAllStartSpecs(target: Target, req: cds.Request): ProcessStartSpec[] {
+  const specs: ProcessStartSpec[] = [];
+  const entityAnnotations = target as unknown as Record<string, unknown>;
+
+  // Shared inputs — element-level annotations, same for all start specs
+  const sharedInputs = getSharedInputs(target, req);
+
+  // Non-qualified annotation: @build.process.start: { id, on, if }
+  if (entityAnnotations[PROCESS_START_ON]) {
+    specs.push({
+      id: entityAnnotations[PROCESS_START_ID] as string,
+      on: entityAnnotations[PROCESS_START_ON] as string,
+      inputs: sharedInputs,
+      conditionExpr: entityAnnotations[PROCESS_START_IF]
+        ? ((entityAnnotations[PROCESS_START_IF] as unknown as { xpr: expr }).xpr as expr)
+        : undefined,
+    });
+  }
+
+  // Qualified annotations: @bpm.process.start #qualifier: { id, on, if }
+  // CDS stores these as @bpm.process.start#qualifier.id, @bpm.process.start#qualifier.on, etc.
+  for (const key of Object.keys(entityAnnotations)) {
+    const match = key.match(PROCESS_START_QUALIFIER_PATTERN);
+    if (match) {
+      const qualifier = match[1];
+      const prefix = `${PROCESS_START_QUALIFIER_PREFIX}${qualifier}`;
+      specs.push({
+        id: entityAnnotations[`${prefix}.id`] as string,
+        on: entityAnnotations[key] as string,
+        inputs: sharedInputs,
+        conditionExpr: entityAnnotations[`${prefix}.if`]
+          ? ((entityAnnotations[`${prefix}.if`] as unknown as { xpr: expr }).xpr as expr)
+          : undefined,
+      });
+    }
+  }
+
+  return specs;
+}
+
+/**
+ * Extracts shared process input elements from element-level @build.process.input annotations.
+ * These are the same for all start specs on an entity.
+ */
+function getSharedInputs(target: Target, req: cds.Request): ProcessStartInput[] {
   const elementAnnotations = getElementAnnotations(target as cds.entity);
   const entityName = (target as cds.entity).name;
-  startSpecs.inputs = getInputElements(
-    elementAnnotations,
-    new Set([entityName]),
-    [entityName],
-    req,
-  );
-
-  return startSpecs;
+  return getInputElements(elementAnnotations, new Set([entityName]), [entityName], req);
 }
 
 function getInputElements(
