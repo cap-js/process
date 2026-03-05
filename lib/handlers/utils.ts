@@ -7,7 +7,6 @@ import {
   PROCESS_CANCEL_IF,
   PROCESS_CANCEL_ON,
   PROCESS_LOGGER_PREFIX,
-  PROCESS_PREFIX,
   PROCESS_RESUME_BUSINESS_KEY,
   PROCESS_RESUME_IF,
   PROCESS_RESUME_ON,
@@ -193,34 +192,6 @@ export async function resolveEntityRowOrReject(
   }
 
   return row;
-}
-
-/**
- * Extracts business key from entity row or rejects the request
- * Returns undefined if request was rejected
- */
-export function getBusinessKeyOrReject(
-  target: cds.entity,
-  row: EntityRow,
-  req: cds.Request,
-  invalidKeyMsg: string,
-  emptyKeyMsg: string,
-): string | undefined {
-  let businessKey: string;
-  try {
-    businessKey = concatenateBusinessKey(target, { ...row, ...req.data });
-  } catch (error) {
-    LOG.error(invalidKeyMsg, error);
-    req.reject({ status: 400, message: invalidKeyMsg });
-    return undefined;
-  }
-
-  if (!businessKey) {
-    req.reject({ status: 400, message: emptyKeyMsg });
-    return undefined;
-  }
-
-  return businessKey;
 }
 
 export function getBusinessKeyColumnOrReject(req: cds.Request, businessKey: string | undefined) {
