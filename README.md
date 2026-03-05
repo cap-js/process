@@ -1,3 +1,4 @@
+[![REUSE status](https://api.reuse.software/badge/github.com/cap-js/process)](https://api.reuse.software/info/github.com/cap-js/process)
 # Setup
 
 ### Execute following commands to install dependencies after cloning the project:
