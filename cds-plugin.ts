@@ -40,6 +40,7 @@ cds.on('serving', async (service: cds.Service) => {
   const annotationCache = buildAnnotationCache(service);
 
   service.before('DELETE', async (req: cds.Request) => {
+    // TODO: rework .before logic for DELETE as a whole
     const cacheKey = `${req.target.name}:${req.event}`;
     const cached = annotationCache.get(cacheKey);
 
