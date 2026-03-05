@@ -21,6 +21,19 @@ export type ParsedInputEntry = {
   alias?: string;
 };
 
+type AnalyzeEntryGroupType = {
+  directEntries: ParsedInputEntry[];
+  nonAliasedDirect: ParsedInputEntry | undefined;
+  aliasedDirect: ParsedInputEntry[];
+  nestedEntries: ParsedInputEntry[];
+};
+
+type ClassifyElementResult = {
+  kind: ElementKind;
+  primaryAlias?: string;
+  additionalAliasedNodes: { alias: string }[];
+};
+
 /**
  * Type guard for alias input entries
  */
@@ -284,12 +297,7 @@ function groupEntriesByFirstSegment(entries: ParsedInputEntry[]): Map<string, Pa
  *    nestedEntries: []
  *  }
  */
-function analyzeEntryGroup(group: ParsedInputEntry[]): {
-  directEntries: ParsedInputEntry[];
-  nonAliasedDirect: ParsedInputEntry | undefined;
-  aliasedDirect: ParsedInputEntry[];
-  nestedEntries: ParsedInputEntry[];
-} {
+function analyzeEntryGroup(group: ParsedInputEntry[]): AnalyzeEntryGroupType {
   const directEntries = group.filter((e) => e.path.length === 1);
   const nonAliasedDirect = directEntries.find((e) => !e.alias);
   const aliasedDirect = directEntries.filter((e) => e.alias);
@@ -365,10 +373,9 @@ function analyzeEntryGroup(group: ParsedInputEntry[]): {
  *  Result: Simple { sourceElement: 'title' } node
  */
 function classifyElement(
-  elementName: string,
   analysis: ReturnType<typeof analyzeEntryGroup>,
   isAssocOrComp: boolean,
-): { kind: ElementKind; primaryAlias?: string; additionalAliasedNodes: { alias: string }[] } {
+): ClassifyElementResult {
   const { nonAliasedDirect, aliasedDirect, nestedEntries } = analysis;
 
   // Case 1: Multiple aliases without non-aliased entry → MULTI_ALIAS
@@ -519,7 +526,7 @@ function preprocessEntries(
     const targetEntity = element?.targetEntity ?? rootEntity;
 
     const analysis = analyzeEntryGroup(group);
-    const classification = classifyElement(elementName, analysis, isAssocOrComp);
+    const classification = classifyElement(analysis, isAssocOrComp);
 
     // Prepare nested entries with wildcard injection for composition expand-all + nested fields
     let nestedEntries = analysis.nestedEntries;
