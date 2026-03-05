@@ -50,12 +50,12 @@ function initSpecs(
 }
 
 export function createProcessActionHandler(config: ProcessActionConfig) {
-  return async function handleProcessAction(req: cds.Request): Promise<void> {
+  return async function handleProcessAction(req: cds.Request, data: EntityRow): Promise<void> {
     if (isDeleteWithoutProcess(req, config.logMessages.NOT_TRIGGERED)) return;
 
     const target = req.target as Target;
-    const data = ((req as ProcessDeleteRequest)._Process ??
-      getEntityDataFromRequest(req)) as EntityRow;
+    data = ((req as ProcessDeleteRequest)._Process ??
+      getEntityDataFromRequest(data, req.params)) as EntityRow;
 
     // Initialize specifications from annotations
     const specs = initSpecs(target, config.annotations);

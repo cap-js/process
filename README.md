@@ -1,3 +1,5 @@
+[![REUSE status](https://api.reuse.software/badge/github.com/cap-js/process)](https://api.reuse.software/info/github.com/cap-js/process)
+
 # Setup
 
 ### Execute following commands to install dependencies after cloning the project:
@@ -31,7 +33,7 @@ Start developing 🙂
 
 ## For starting a process:
 
-- `@bpm.process.start` -- Start a process (or classic workflow), either after entity creation, update, deletion, or any custom action including all entity elements unless at least one `@bpm.process.input` is given
+- `@bpm.process.start` -- Start a process (or classic workflow), either after entity creation, update, deletion, read, or any custom action including all entity elements unless at least one `@bpm.process.input` is given
   - if no attribute is annotated with`@bpm.process.input`, all attributes of that entity will be fetched and are part of the context for process input. Associations will not be expanded in that case
   - `@bpm.process.start.id` -- definition ID for deployed process
   - `@bpm.process.start.on`
