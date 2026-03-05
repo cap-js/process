@@ -7,7 +7,6 @@ import {
   PROCESS_RESUME_CASCADE,
   PROCESS_RESUME_IF,
   LOG_MESSAGES,
-  PROCESS_RESUME_BUSINESS_KEY,
 } from '../constants';
 
 const action = 'resume';
@@ -18,7 +17,6 @@ export const handleProcessResume = createProcessActionHandler({
     ON: PROCESS_RESUME_ON,
     CASCADE: PROCESS_RESUME_CASCADE,
     IF: PROCESS_RESUME_IF,
-    BUSINESS_KEY: PROCESS_RESUME_BUSINESS_KEY,
   },
   logMessages: {
     NOT_TRIGGERED: LOG_MESSAGES.PROCESS_NOT_RESUMED,
