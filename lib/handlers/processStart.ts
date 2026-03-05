@@ -50,12 +50,12 @@ export function getColumnsForProcessStart(
   }
 }
 
-export async function handleProcessStart(req: cds.Request): Promise<void> {
+export async function handleProcessStart(req: cds.Request, data: EntityRow): Promise<void> {
   if (isDeleteWithoutProcess(req, LOG_MESSAGES.PROCESS_NOT_STARTED)) return;
 
   const target = req.target as Target;
-  const data = ((req as ProcessDeleteRequest)._Process ??
-    getEntityDataFromRequest(req)) as EntityRow;
+  data = ((req as ProcessDeleteRequest)._Process ??
+    getEntityDataFromRequest(data, req.params)) as EntityRow;
 
   const allStartSpecs = getAllStartSpecs(target, req);
   if (allStartSpecs.length === 0) {

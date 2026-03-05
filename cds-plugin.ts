@@ -15,6 +15,7 @@ import {
   PROCESS_RESUME_ON,
   PROCESS_PREFIX,
   CUD_EVENTS,
+  EntityRow,
   PROCESS_START_QUALIFIER_PREFIX,
   PROCESS_START_QUALIFIER_PATTERN,
 } from './lib/index';
@@ -46,27 +47,40 @@ cds.on('serving', async (service: cds.Service) => {
     }
   });
 
-  service.after('*', async (each: Results, req: cds.Request) => {
+  service.after('*', async (results: Results, req: cds.Request) => {
     if (!req.target) return;
     const cacheKey = `${req.target.name}:${req.event}`;
     const cached = annotationCache.get(cacheKey);
 
     if (!cached) return; // Fast exit - no annotations
 
-    if (cached.hasStart) {
-      await handleProcessStart(req);
-    }
-    if (cached.hasCancel) {
-      await handleProcessCancel(req);
-    }
-    if (cached.hasSuspend) {
-      await handleProcessSuspend(req);
-    }
-    if (cached.hasResume) {
-      await handleProcessResume(req);
+    const rows: EntityRow[] = Array.isArray(results) ? results : [results];
+    if (rows.length > 0) {
+      await Promise.all(rows.map((row) => dispatchProcessHandlers(cached, req, row)));
+    } else {
+      await dispatchProcessHandlers(cached, req, req.data);
     }
   });
 });
+
+async function dispatchProcessHandlers(
+  cached: EntityEventCache,
+  req: cds.Request,
+  data: EntityRow,
+) {
+  if (cached.hasStart) {
+    await handleProcessStart(req, data);
+  }
+  if (cached.hasCancel) {
+    await handleProcessCancel(req, data);
+  }
+  if (cached.hasSuspend) {
+    await handleProcessSuspend(req, data);
+  }
+  if (cached.hasResume) {
+    await handleProcessResume(req, data);
+  }
+}
 
 function expandEvent(event: string | undefined, entity: cds.entity): string[] {
   if (!event) return [];
