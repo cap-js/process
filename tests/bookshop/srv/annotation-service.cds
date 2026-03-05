@@ -1477,4 +1477,87 @@ service AnnotationService {
     key ID   : UUID;
         name : String(100);
   }
+
+  // ============================================
+  // COMPOSITE BUSINESS KEY TESTS
+  // Testing businessKey with concat expressions
+  // ============================================
+
+  // Cancel with businessKey composed from two fields
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: false,
+    businessKey: (concat(model, concat('-', manufacturer)))
+  }
+  entity CancelCompositeKey             as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Suspend with businessKey composed from two fields
+  @bpm.process.suspend: {
+    on: 'UPDATE',
+    cascade: false,
+    if: (mileage > 500),
+    businessKey: (concat(manufacturer, concat('_', model)))
+  }
+  entity SuspendCompositeKey            as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Resume with businessKey composed from two fields
+  @bpm.process.resume: {
+    on: 'UPDATE',
+    cascade: false,
+    if: (mileage <= 500),
+    businessKey: (concat(manufacturer, concat('_', model)))
+  }
+  entity ResumeCompositeKey             as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Full lifecycle with composite businessKey on all action annotations
+  @bpm.process.start: {
+    id: 'compositeKeyLifecycleProcess',
+    on: 'CREATE',
+  }
+  @bpm.process.suspend: {
+    on: 'UPDATE',
+    cascade: false,
+    if: (mileage > 500),
+    businessKey: (concat(model, concat('/', manufacturer)))
+  }
+  @bpm.process.resume: {
+    on: 'UPDATE',
+    cascade: false,
+    if: (mileage <= 500),
+    businessKey: (concat(model, concat('/', manufacturer)))
+  }
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: true,
+    businessKey: (concat(model, concat('/', manufacturer)))
+  }
+  entity CompositeKeyLifecycle          as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
 }
