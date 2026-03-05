@@ -91,8 +91,11 @@ class ProcessService extends cds.ApplicationService {
       if (!businessKey) {
         return request.reject({ status: 400, message: 'Missing required parameter: businessKey' });
       }
-      
-      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, status);
+
+      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
+        businessKey,
+        status,
+      );
 
       return instances;
     });
