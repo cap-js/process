@@ -582,4 +582,116 @@ describe('Integration tests for START annotation with inputs array', () => {
       });
     });
   });
+
+  // ================================================
+  // Test 13: $self with Composition and Association
+  // $self should only include scalar fields, NOT compositions or associations
+  // ================================================
+  describe('Test 13: $self with Composition and Association', () => {
+    it('should include only scalar fields, NOT compositions or associations', async () => {
+      const entity = {
+        ID: '550e8400-e29b-41d4-a716-446655440013',
+        status: 'PENDING',
+        author_ID: '550e8400-e29b-41d4-a716-446655440099',
+      };
+
+      const response = await POST('/odata/v4/annotation/StartSelfWithAssoc', entity);
+
+      expect(response.status).toBe(201);
+      expect(foundMessages.length).toBe(1);
+
+      const context = getStartContext();
+      expect(context).toBeDefined();
+
+      // $self should only include scalar fields: ID, status
+      // Should NOT include: items (composition), author (association)
+      expect(context).toEqual({
+        ID: entity.ID,
+        status: entity.status,
+        businesskey: entity.ID,
+        author_ID: entity.author_ID,
+      });
+    });
+  });
+
+  // ================================================
+  // Test 14: No inputs with Composition and Association
+  // Without inputs array, all fields should be included
+  // ================================================
+  describe('Test 14: No inputs with Composition and Association', () => {
+    it('should include all fields including compositions and associations', async () => {
+      const author = {
+        ID: '550e8400-e29b-41d4-a716-446655440099',
+      };
+
+      const entity = {
+        ID: '550e8400-e29b-41d4-a716-446655440014',
+        status: 'PENDING',
+        author_ID: author.ID,
+      };
+
+      // Create author first
+      await POST('/odata/v4/annotation/StartNoInputWithAssocAuthors', author);
+
+      const response = await POST('/odata/v4/annotation/StartNoInputWithAssoc', entity);
+
+      expect(response.status).toBe(201);
+      expect(foundMessages.length).toBe(1);
+
+      const context = getStartContext();
+      expect(context).toBeDefined();
+
+      // No inputs specified - should include all fields
+      expect(context).toEqual({
+        ID: entity.ID,
+        status: entity.status,
+        businesskey: entity.ID,
+        author_ID: author.ID,
+      });
+    });
+  });
+
+  // ================================================
+  // Test 15: $self.author - explicitly include association
+  // Should expand the author association with all its fields
+  // ================================================
+  describe('Test 15: $self.author - explicitly include association', () => {
+    it('should include the author association expanded with all its fields', async () => {
+      const author = {
+        ID: '550e8400-e29b-41d4-a716-446655440098',
+        name: 'John Doe',
+      };
+
+      const entity = {
+        ID: '550e8400-e29b-41d4-a716-446655440015',
+        status: 'PENDING',
+        items: [{ ID: 'item-f01', title: 'Item A', quantity: 5 }],
+        author_ID: author.ID,
+      };
+
+      // Create author first
+      await POST('/odata/v4/annotation/StartWithAuthorInputAuthors', author);
+
+      const response = await POST('/odata/v4/annotation/StartWithAuthorInput', entity);
+
+      expect(response.status).toBe(201);
+      expect(foundMessages.length).toBe(1);
+
+      const context = getStartContext();
+      expect(context).toBeDefined();
+
+      // inputs: [$self.ID, $self.status, $self.author]
+      // Should include ID, status, and author expanded (NOT items, NOT author_ID)
+      expect(context).toEqual({
+        ID: entity.ID,
+        status: entity.status,
+        businesskey: entity.ID,
+        author_ID: author.ID,
+        author: {
+          ID: author.ID,
+          name: author.name,
+        },
+      });
+    });
+  });
 });

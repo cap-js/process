@@ -1228,4 +1228,71 @@ service AnnotationService {
         title    : String(200);
         quantity : Integer;
   }
+
+  // Test 13: $self with Composition and Association
+  // $self should only include scalar fields, NOT compositions or associations
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'startSelfWithAssocProcess',
+    on: 'CREATE',
+    inputs: [
+      $self
+    ]
+  }
+  entity StartSelfWithAssoc {
+    key ID     : UUID;
+        status : String(20) default 'PENDING';
+        author : Association to one StartSelfWithAssocAuthors;
+  }
+  entity StartSelfWithAssocAuthors {
+    key ID : UUID;
+  }
+
+  // Test 14: No inputs (all fields including Composition and Association)
+  // Without inputs array, all fields should be included
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'startNoInputWithAssocProcess',
+    on: 'CREATE'
+  }
+  entity StartNoInputWithAssoc {
+    key ID     : UUID;
+        status : String(20) default 'PENDING';
+        author : Association to one StartNoInputWithAssocAuthors;
+  }
+
+  entity StartNoInputWithAssocAuthors {
+    key ID : UUID;
+  }
+
+  // Test 15: $self.author - explicitly include association
+  // Should expand the author association with all its fields
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'startWithAuthorInputProcess',
+    on: 'CREATE',
+    inputs: [
+      $self,
+      $self.author
+    ]
+  }
+  entity StartWithAuthorInput {
+    key ID     : UUID;
+        status : String(20) default 'PENDING';
+        items  : Composition of many StartWithAuthorInputItems
+                   on items.parent = $self;
+        author : Association to one StartWithAuthorInputAuthors;
+  }
+
+  entity StartWithAuthorInputItems {
+    key ID       : UUID;
+        parent   : Association to StartWithAuthorInput;
+        title    : String(200);
+        quantity : Integer;
+  }
+
+  entity StartWithAuthorInputAuthors {
+    key ID   : UUID;
+        name : String(100);
+  }
 }
