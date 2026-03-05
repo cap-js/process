@@ -2,7 +2,6 @@ import cds, { column_expr, expr, Target } from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from '../constants';
 import cds, { column_expr, expr, Results, Target } from '@sap/cds';
 import {
-  BUILD_PREFIX,
   PROCESS_CANCEL_BUSINESS_KEY,
   PROCESS_CANCEL_IF,
   PROCESS_CANCEL_ON,
