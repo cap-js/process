@@ -7,7 +7,6 @@ import {
   PROCESS_CANCEL_CASCADE,
   PROCESS_CANCEL_IF,
   LOG_MESSAGES,
-  PROCESS_CANCEL_BUSINESS_KEY,
 } from '../constants';
 
 const action = 'cancel';
@@ -18,7 +17,6 @@ export const handleProcessCancel = createProcessActionHandler({
     ON: PROCESS_CANCEL_ON,
     CASCADE: PROCESS_CANCEL_CASCADE,
     IF: PROCESS_CANCEL_IF,
-    BUSINESS_KEY: PROCESS_CANCEL_BUSINESS_KEY,
   },
   logMessages: {
     NOT_TRIGGERED: LOG_MESSAGES.PROCESS_NOT_CANCELLED,

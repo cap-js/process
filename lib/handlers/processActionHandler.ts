@@ -31,7 +31,6 @@ interface ProcessActionConfig {
     ON: string;
     CASCADE: string;
     IF: string;
-    BUSINESS_KEY: string;
   };
   logMessages: {
     NOT_TRIGGERED: string;
@@ -59,10 +58,52 @@ function initSpecs(
     conditionExpr: targetAnnotations[annotations.IF]
       ? (targetAnnotations[annotations.IF] as { xpr: expr }).xpr
       : undefined,
-    businessKey: targetAnnotations[annotations.BUSINESS_KEY]
-      ? (targetAnnotations[annotations.BUSINESS_KEY] as { '=': string })['=']
-      : undefined,
+    businessKey: retrieveBusinessKeyExpression(targetAnnotations),
   };
+}
+
+function retrieveBusinessKeyExpression(targetAnnotations: Record<string, unknown>) {
+  /**
+   * Hierarchy:
+   *  prio0: @UI.HeaderInfo#bpm.Title.Value
+   *  prio1: @UI.HeaderInfo.Title.Value
+   *  prio2: @Common.SemanticKey#bpm
+   *  prio3: @Common.SemanticKey
+   */
+  for (const { path, transform } of PRIORITY_CHAIN) {
+    const value = targetAnnotations[path];
+    if (value === undefined) continue;
+    if (transform) {
+      return transform(value as { '=': string }[]);
+    } else {
+      return (value as { '=': string })?.['='];
+    }
+  }
+  return undefined;
+}
+
+type AnnotationConfig = {
+  path: string;
+  transform?: (value: { '=': string }[]) => string | undefined;
+};
+
+const PRIORITY_CHAIN: AnnotationConfig[] = [
+  { path: '@UI.HeaderInfo#bpm.Title.Value' },
+  { path: '@UI.HeaderInfo.Title.Value' },
+  { path: '@Common.SemanticKey#bpm', transform: formatSemanticKey },
+  { path: '@Common.SemanticKey', transform: formatSemanticKey },
+];
+
+function formatSemanticKey(values: { '=': string }[]): string | undefined {
+  let result = undefined;
+  for (const value of values) {
+    if (!result) {
+      result = value['='];
+    } else {
+      result = result + ' || ' + value['='];
+    }
+  }
+  return result;
 }
 
 export function createProcessActionHandler(config: ProcessActionConfig) {

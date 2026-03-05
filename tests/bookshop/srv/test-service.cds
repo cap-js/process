@@ -1,12 +1,17 @@
 service TestService {
 
-  @bpm.process.start: {
-    id: 'TestProcess',
-    on: 'CREATE'
+  @UI.HeaderInfo #bpm: {
+    Title: {
+      Value: (ssn || '-' || age)
+    }
   }
+  @bpm.process.start: {
+    id: 'OneProcess',
+    on: 'CREATE',
+  }
+  
   @bpm.process.cancel: {
     on: 'DELETE',
-    businessKey: (concat(ssn, concat('-', age)))
   }
   entity NewBusinessKey {
     key ID: String;
@@ -15,7 +20,7 @@ service TestService {
     testNum: Integer;
     ssn: String;
   }
-
+@Common.SemanticKey #bpm : [ssn, age]
   @bpm.process.start: {
     id: 'ShipmentProcess',
     on: 'UPDATE',
