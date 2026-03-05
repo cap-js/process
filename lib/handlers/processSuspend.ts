@@ -7,6 +7,7 @@ import {
   PROCESS_SUSPEND_CASCADE,
   PROCESS_SUSPEND_IF,
   LOG_MESSAGES,
+  PROCESS_SUSPEND_BUSINESS_KEY,
 } from '../constants';
 
 const action = 'suspend';
@@ -17,6 +18,7 @@ export const handleProcessSuspend = createProcessActionHandler({
     ON: PROCESS_SUSPEND_ON,
     CASCADE: PROCESS_SUSPEND_CASCADE,
     IF: PROCESS_SUSPEND_IF,
+    BUSINESS_KEY: PROCESS_SUSPEND_BUSINESS_KEY,
   },
   logMessages: {
     NOT_TRIGGERED: LOG_MESSAGES.PROCESS_NOT_SUSPENDED,
