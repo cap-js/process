@@ -57,7 +57,6 @@ describe('Integration tests for Process Annotation Combinations', () => {
       const startMessages = findStartMessages();
       expect(startMessages.length).toBe(1);
       expect(startMessages[0].data.definitionId).toBe('basicLifecycleProcess');
-      expect(startMessages[0].data.context.businesskey).toBe(car.ID);
     });
 
     it('should cancel process on DELETE', async () => {

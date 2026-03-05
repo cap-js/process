@@ -55,7 +55,7 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toBeDefined();
 
       // All fields should be present
-      expect(context).toEqual({ ...shipment, businesskey: shipment.ID });
+      expect(context).toEqual({ ...shipment });
     });
   });
 
@@ -88,7 +88,6 @@ describe('Integration tests for START annotation with inputs array', () => {
         ID: shipment.ID,
         shipmentDate: shipment.shipmentDate,
         origin: shipment.origin,
-        businesskey: shipment.ID,
       });
     });
   });
@@ -120,7 +119,6 @@ describe('Integration tests for START annotation with inputs array', () => {
       // ID should remain as ID (no alias)
       expect(context).toEqual({
         ID: shipment.ID,
-        businesskey: shipment.ID,
         ProcessStartDate: shipment.shipmentDate, // alias
         SourceLocation: shipment.origin, // alias
         TargetLocation: shipment.destination, // alias
@@ -169,8 +167,7 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toEqual({
         ID: order.ID,
         shipmentDate: order.shipmentDate,
-        businesskey: order.ID,
-        items: order.items, // entire composition included with all fields via $self.items
+        items: order.items, // entire composition included with all fields
       });
     });
   });
@@ -213,7 +210,6 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toEqual({
         ID: order.ID,
         shipmentDate: order.shipmentDate,
-        businesskey: order.ID,
         items: [
           // composition included but only with specified fields: ID, title, price
           {
@@ -263,7 +259,6 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toEqual({
         ID: order.ID,
         ProcessDate: order.orderDate, // alias
-        businesskey: order.ID,
         OrderLines: [
           {
             ID: order.items[0].ID,

@@ -50,7 +50,6 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
         expect(foundMessages[0].data.context).toBeDefined();
         expect(foundMessages[0].data.context).toEqual({
           ...car,
-          businesskey: car.ID,
         });
       });
 
@@ -67,7 +66,6 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
         expect(foundMessages[0].data.context).toBeDefined();
         expect(foundMessages[0].data.context).toEqual({
           ...car,
-          businesskey: car.ID,
         });
       });
 
@@ -103,7 +101,6 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
         expect(foundMessages.length).toBe(1);
         expect(foundMessages[0].data.definitionId).toBe('startOnUpdateProcess');
         expect(foundMessages[0].data.context).toBeDefined();
-        expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
       });
 
       it('should start process on UPDATE when condition is met', async () => {
@@ -125,7 +122,6 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
         expect(foundMessages.length).toBe(1);
         expect(foundMessages[0].data.definitionId).toBe('startOnUpdateWhenProcess');
         expect(foundMessages[0].data.context).toBeDefined();
-        expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
       });
 
       it('should NOT start process on UPDATE when condition is NOT met', async () => {
@@ -165,7 +161,6 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
         expect(foundMessages.length).toBe(1);
         expect(foundMessages[0].data.definitionId).toBe('startOnDeleteProcess');
         expect(foundMessages[0].data.context).toBeDefined();
-        expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
       });
 
       it('should start process on DELETE when condition is met', async () => {
@@ -184,7 +179,6 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
         expect(foundMessages.length).toBe(1);
         expect(foundMessages[0].data.definitionId).toBe('startOnDeleteWhenProcess');
         expect(foundMessages[0].data.context).toBeDefined();
-        expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
       });
 
       it('should NOT start process on DELETE when condition is NOT met', async () => {
