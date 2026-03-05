@@ -126,7 +126,7 @@ class ProcessService extends cds.ApplicationService {
     });
 
     this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
-      const { businessKey, status} = req.data;
+      const { businessKey, status } = req.data;
 
       LOG.debug(
         `==============================================================\n` +

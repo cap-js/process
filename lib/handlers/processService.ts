@@ -113,7 +113,10 @@ function registerGetInstancesByBusinessKeyHandler(
     }
 
     const processService = await cds.connect.to(PROCESS_SERVICE);
-    const result = await processService.send('getInstancesByBusinessKey', { businessKey, status: statusParam });
+    const result = await processService.send('getInstancesByBusinessKey', {
+      businessKey,
+      status: statusParam,
+    });
 
     return result;
   });

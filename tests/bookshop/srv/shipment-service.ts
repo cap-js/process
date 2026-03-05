@@ -102,7 +102,7 @@ class ShipmentService extends cds.ApplicationService {
       // Get all workflow instances by business key
       const instances = await processService.getInstancesByBusinessKey({
         businessKey: shipmentID,
-        status: ['COMPLETED'], 
+        status: ['COMPLETED'],
       });
 
       const allOutputs = [];
