@@ -20,6 +20,7 @@ export const PROCESS_START = '@bpm.process.start' as const;
 export const PROCESS_START_ID = '@bpm.process.start.id' as const;
 export const PROCESS_START_ON = '@bpm.process.start.on' as const;
 export const PROCESS_START_IF = '@bpm.process.start.if' as const;
+export const PROCESS_START_INPUTS = '@bpm.process.start.inputs' as const;
 
 /**
  * Process Cancel Annotations
@@ -44,11 +45,6 @@ export const PROCESS_RESUME = '@bpm.process.resume' as const;
 export const PROCESS_RESUME_ON = '@bpm.process.resume.on' as const;
 export const PROCESS_RESUME_CASCADE = '@bpm.process.resume.cascade' as const;
 export const PROCESS_RESUME_IF = '@bpm.process.resume.if' as const;
-
-/**
- * Process Input Annotation
- */
-export const PROCESS_INPUT = '@bpm.process.input' as const;
 
 /**
  * Annotation prefix for filtering
