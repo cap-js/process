@@ -1,6 +1,7 @@
 import cds from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, PROCESS_SERVICE } from '../constants';
 import { emitProcessEvent, ProcessLifecyclePayload, ProcessStartPayload } from './utils';
+import { WorkflowStatus } from '../api';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -36,7 +37,7 @@ function registerStartHandler(service: cds.Service, definitionId: string): void 
     }
     const payload: ProcessStartPayload = { definitionId, context: inputs };
 
-    await emitProcessEvent('start', req, payload, 'PROCESS_START_FAILED', definitionId);
+    await emitProcessEvent('start', req, payload, `Failed to start workflow: ${definitionId}`);
   });
 }
 
@@ -51,7 +52,12 @@ function registerSuspendHandler(service: cds.Service, definitionId: string): voi
 
     const payload: ProcessLifecyclePayload = { businessKey, cascade: cascade ?? false };
 
-    await emitProcessEvent('suspend', req, payload, 'PROCESS_SUSPEND_FAILED', businessKey);
+    await emitProcessEvent(
+      'suspend',
+      req,
+      payload,
+      `Failed to suspend process with business key: ${businessKey}`,
+    );
 
     LOG.debug(`Process suspended: businessKey=${businessKey}`);
   });
@@ -68,7 +74,12 @@ function registerResumeHandler(service: cds.Service, definitionId: string): void
 
     const payload: ProcessLifecyclePayload = { businessKey, cascade: cascade ?? false };
 
-    await emitProcessEvent('resume', req, payload, 'PROCESS_RESUME_FAILED', businessKey);
+    await emitProcessEvent(
+      'resume',
+      req,
+      payload,
+      `Failed to resume process with business key: ${businessKey}`,
+    );
 
     LOG.debug(`Process resumed: businessKey=${businessKey}`);
   });
@@ -84,7 +95,12 @@ function registerCancelHandler(service: cds.Service, definitionId: string): void
     }
 
     const payload: ProcessLifecyclePayload = { businessKey, cascade: cascade ?? false };
-    await emitProcessEvent('cancel', req, payload, 'PROCESS_CANCEL_FAILED', businessKey);
+    await emitProcessEvent(
+      'cancel',
+      req,
+      payload,
+      `Failed to cancel process with business key: ${businessKey}`,
+    );
 
     LOG.debug(`Process cancelled: businessKey=${businessKey}`);
   });
@@ -97,13 +113,27 @@ function registerGetInstancesByBusinessKeyHandler(
   service.on('getInstancesByBusinessKey', async (req) => {
     LOG.debug(`Getting instances by businessKey for process: ${definitionId}`);
 
-    const { businessKey } = req.data;
+    const { businessKey, status } = req.data;
     if (!businessKey) {
-      return req.reject({ status: 400, message: 'MISSING_REQUIRED_PARAM_BUSINESS_KEY' });
+      return req.reject({ status: 400, message: 'Missing required parameter: businessKey' });
+    }
+    if (status) {
+      const validStatuses = Object.values(WorkflowStatus);
+      const statuses = Array.isArray(status) ? status : [status];
+      const invalidStatuses = statuses.filter((s) => !validStatuses.includes(s));
+      if (invalidStatuses.length > 0) {
+        return req.reject({
+          status: 400,
+          message: `Invalid status value(s): ${invalidStatuses.join(', ')}. Valid values are: ${validStatuses.join(', ')}`,
+        });
+      }
     }
 
     const processService = await cds.connect.to(PROCESS_SERVICE);
-    const result = await processService.send('getInstancesByBusinessKey', { businessKey });
+    const result = await processService.send('getInstancesByBusinessKey', {
+      businessKey,
+      status,
+    });
 
     return result;
   });

@@ -104,13 +104,14 @@ class ShipmentService extends cds.ApplicationService {
       // Get all workflow instances by business key
       const instances = await processService.getInstancesByBusinessKey({
         businessKey: shipmentID,
+        status: ['COMPLETED'],
       });
 
       const allOutputs = [];
 
       // Get outputs for each workflow instance
       for (const instance of instances) {
-        if (instance.id && instance.status == 'COMPLETED') {
+        if (instance.id) {
           const outputs = await processService.getOutputs(instance.id);
           allOutputs.push({
             workflowId: instance.id,
@@ -120,6 +121,18 @@ class ShipmentService extends cds.ApplicationService {
       }
 
       return JSON.stringify(allOutputs, null, 2);
+    });
+
+    this.on('getInstancesByShipmentID', async (req: cds.Request) => {
+      const { shipmentID, status } = req.data;
+
+      const processService = await cds.connect.to(ShipmentHandlerService);
+      const instances = await processService.getInstancesByBusinessKey({
+        businessKey: shipmentID,
+        status: status,
+      });
+
+      return JSON.stringify(instances, null, 2);
     });
 
     await super.init();
