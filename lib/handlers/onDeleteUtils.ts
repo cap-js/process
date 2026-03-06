@@ -1,5 +1,7 @@
-import cds, { expr, Results } from '@sap/cds';
+import cds, { column_expr, expr, Results } from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX } from '../constants';
+import { EntityRow } from './utils';
+
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 export const PROCESS_EVENT_MAP: Record<string, keyof DeleteProcessObject> = {
@@ -60,4 +62,31 @@ export function buildWhereDeleteExpression(
         : conditionExpr.xpr;
   }
   return where;
+}
+
+export interface AddDeletedEntityConfig {
+  action: string;
+  ifAnnotation: string;
+  getColumns: (req: cds.Request) => (column_expr | string)[];
+}
+
+/**
+ * Generic factory to create a before-DELETE handler that pre-fetches
+ * entity data and attaches it to the request under `_Process.[ProcessEvent]`.
+ */
+export function createAddDeletedEntityHandler(config: AddDeletedEntityConfig) {
+  return async function addDeletedEntityToRequest(req: cds.Request): Promise<EntityRow | void> {
+    const columns = config.getColumns(req);
+
+    const annotatedTarget = req.target as unknown as Record<string, unknown>;
+    const conditionExpr = annotatedTarget[config.ifAnnotation] as { xpr: expr } | undefined;
+    const where = buildWhereDeleteExpression(req as ProcessDeleteRequest, conditionExpr);
+
+    if (where) {
+      const selectColumns = columns.length > 0 ? columns : ['*'];
+      const processEventKey = PROCESS_EVENT_MAP[config.action];
+      const entity = await SELECT.one.from(req.subject).columns(selectColumns).where(where);
+      return { [processEventKey]: entity };
+    }
+  };
 }

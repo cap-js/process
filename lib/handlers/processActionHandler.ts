@@ -10,7 +10,7 @@ import {
   resolveEntityRowOrReject,
 } from './utils';
 import {
-  buildWhereDeleteExpression,
+  createAddDeletedEntityHandler,
   isDeleteWithoutProcess,
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
@@ -97,20 +97,9 @@ export interface ProcessActionDeleteConfig {
   };
 }
 export function createProcessActionAddDeletedEntityHandler(config: ProcessActionDeleteConfig) {
-  return async function addDeletedEntityToRequest(req: cds.Request): Promise<EntityRow | void> {
-    const columns = getKeyFieldsForEntity(req.target as cds.entity);
-
-    const annotatedTarget = req.target as unknown as Record<string, unknown>;
-
-    const conditionExpr = annotatedTarget[config.annotations.IF] as { xpr: expr } | undefined;
-    const where = buildWhereDeleteExpression(req as ProcessDeleteRequest, conditionExpr);
-
-    if (where) {
-      // Safeguard: use ['*'] if columns array is empty to avoid invalid SQL
-      const selectColumns = columns.length > 0 ? columns : ['*'];
-      const processEventKey = PROCESS_EVENT_MAP[config.action];
-      const entity = await SELECT.one.from(req.subject).columns(selectColumns).where(where);
-      return { [processEventKey]: entity };
-    }
-  };
+  return createAddDeletedEntityHandler({
+    action: config.action,
+    ifAnnotation: config.annotations.IF,
+    getColumns: (req) => getKeyFieldsForEntity(req.target as cds.entity),
+  });
 }

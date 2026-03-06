@@ -25,7 +25,7 @@ import {
 
 import cds from '@sap/cds';
 import {
-  buildWhereDeleteExpression,
+  createAddDeletedEntityHandler,
   isDeleteWithoutProcess,
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
@@ -110,28 +110,11 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
 /**
  * Fetches and attaches entity data to the request for DELETE operations
  */
-export async function addDeletedEntityToRequestCreate(req: cds.Request): Promise<EntityRow | void> {
-  const target = req.target as Target;
-  let columns: (column_expr | string)[] = [];
-
-  columns = getColumnsForProcessStart(target);
-
-  const annotatedTarget = target as unknown as Record<string, unknown>;
-
-  const conditionExpr = annotatedTarget[PROCESS_START_IF] as { xpr: expr } | undefined;
-
-  const where = buildWhereDeleteExpression(req as ProcessDeleteRequest, conditionExpr);
-
-  if (where) {
-    // Safeguard: use ['*'] if columns array is empty to avoid invalid SQL
-    const selectColumns = columns.length > 0 ? columns : ['*'];
-    const entity: EntityRow = await SELECT.one
-      .from(req.subject)
-      .columns(selectColumns)
-      .where(where);
-    return { ProcessStart: entity };
-  }
-}
+export const addDeletedEntityToRequestCreate = createAddDeletedEntityHandler({
+  action: 'start',
+  ifAnnotation: PROCESS_START_IF,
+  getColumns: (req) => getColumnsForProcessStart(req.target as Target),
+});
 
 function initStartSpecs(target: Target): ProcessStartSpec {
   const startSpecs: ProcessStartSpec = {
