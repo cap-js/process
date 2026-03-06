@@ -1,5 +1,6 @@
 import cds, { ServiceDefinitionAnnotation } from '@sap/cds';
 import {
+  BUSINESS_KEY_ALIAS,
   BUSINESS_KEY_HEADER_INFO,
   BUSINESS_KEY_HEADER_INFO_BPM,
   BUSINESS_KEY_SEMANTIC_KEY,
@@ -16,6 +17,10 @@ const PRIORITY_CHAIN: BusinessKeyAnnotationConfig[] = [
   { path: BUSINESS_KEY_SEMANTIC_KEY_BPM, transform: formatSemanticKey },
   { path: BUSINESS_KEY_SEMANTIC_KEY, transform: formatSemanticKey },
 ];
+
+const TEMPLATE_PART_SPLITTER = /(\$\{[^}]+\})/;
+const PLACEHOLDER_MATCHER = /^\$\{([^}]+)\}$/;
+
 type BusinessKeyAnnotationConfig = {
   path: string;
   transform?: (value: { '=': string }[]) => string | undefined;
@@ -44,42 +49,37 @@ function capitalizeAfterLastDot(input: string): string {
 }
 
 function convertBusinessKeyToExpr(template: string): string {
-  const parts = template.split(/(\$\{[^}]+\})/);
+  const parts = template.split(TEMPLATE_PART_SPLITTER);
 
   const converted = parts
     .filter((part) => part !== '')
     .map((part) => {
-      const match = part.match(/^\$\{([^}]+)\}$/);
+      const match = part.match(PLACEHOLDER_MATCHER);
       return match ? match[1] : `'${part}'`;
     });
 
-  return converted.join(' || ') + ' as businessKey';
+  return converted.join(' || ') + ` ${BUSINESS_KEY_ALIAS}`;
 }
 
-async function extractBusinessKeyFromImportedProcess(
-  req: cds.Request,
-): Promise<string | undefined> {
-  // get process start id
+function extractBusinessKeyFromImportedProcess(req: cds.Request): string | undefined {
   const processStartId = (req.target as cds.entity)[PROCESS_START_ID] as string;
-  // get process csn for id
   const srvName = capitalizeAfterLastDot(processStartId);
-  const models = await cds.load(`srv/external/${processStartId}.cds`);
+
+  const cdsModel = cds.context?.model ?? cds.model;
+  const processModelDef = cdsModel?.definitions[srvName];
+
   // extract business key value from csn annotation
-  const srvCsn = models.definitions?.[srvName] as ServiceDefinitionAnnotation;
-  if (srvCsn) {
-    const bKey = srvCsn[BUSINESS_KEY_SRV];
+  if (processModelDef) {
+    const bKey = (processModelDef as ServiceDefinitionAnnotation)[BUSINESS_KEY_SRV];
     const bKeyExpr = convertBusinessKeyToExpr(bKey);
     return bKeyExpr;
   }
   return undefined;
 }
 
-export async function getBusinessKeyColumnOrReject(
-  req: cds.Request,
-  businessKey: string | undefined,
-) {
+export function getBusinessKeyColumnOrReject(req: cds.Request, businessKey: string | undefined) {
   if (!businessKey) {
-    const serviceBusinessKey = await extractBusinessKeyFromImportedProcess(req);
+    const serviceBusinessKey = extractBusinessKeyFromImportedProcess(req);
     if (!serviceBusinessKey) {
       const msg = 'Business key is required but was not found in the entity.';
       LOG.error(msg);
@@ -88,7 +88,7 @@ export async function getBusinessKeyColumnOrReject(
       return serviceBusinessKey;
     }
   } else {
-    return `${businessKey} as businessKey`;
+    return `${businessKey} ${BUSINESS_KEY_ALIAS}`;
   }
 }
 

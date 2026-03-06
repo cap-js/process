@@ -23,6 +23,11 @@ export const BUSINESS_KEY_SEMANTIC_KEY = '@Common.SemanticKey' as const;
 export const BUSINESS_KEY_SRV = '@bpm.process.businessKey' as const;
 
 /**
+ * Business key alias const
+ */
+export const BUSINESS_KEY_ALIAS = 'as businessKey' as const;
+
+/**
  * Process Start Annotations
  */
 export const PROCESS_START = '@bpm.process.start' as const;

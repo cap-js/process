@@ -76,7 +76,7 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
     const specs = initSpecs(target, config.annotations);
 
     // Get business key column
-    const businessKeyColumn = await getBusinessKeyColumnOrReject(req, specs.businessKey);
+    const businessKeyColumn = getBusinessKeyColumnOrReject(req, specs.businessKey);
 
     // fetch entity
     const row = await resolveEntityRowOrReject(
@@ -103,11 +103,8 @@ export function createProcessActionAddDeletedEntityHandler(config: ProcessAction
   return createAddDeletedEntityHandler({
     action: config.action,
     ifAnnotation: config.annotations.IF,
-    getColumns: async (req) => [
-      await getBusinessKeyColumnOrReject(
-        req,
-        retrieveBusinessKeyExpression(req.target as cds.entity),
-      ),
+    getColumns: (req) => [
+      getBusinessKeyColumnOrReject(req, retrieveBusinessKeyExpression(req.target as cds.entity)),
     ],
   });
 }
