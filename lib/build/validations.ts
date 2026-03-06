@@ -16,6 +16,7 @@ import {
   ERROR_START_ID_REQUIRES_ON,
   ERROR_START_ID_MUST_BE_STRING,
   ERROR_ON_REQUIRED,
+  ERROR_BUSINESS_KEY_REQUIRED,
   WARNING_TYPE_MISMATCH,
   WARNING_ARRAY_MISMATCH,
   ERROR_MISSING_MANDATORY_PROCESS_INPUT,
@@ -134,11 +135,17 @@ export function validateRequiredGenericAnnotations(
   entityName: string,
   annotationOn: string,
   annotationPrefix: string,
+  hasBusinessKey: boolean,
   buildPlugin: ProcessValidationPlugin,
 ) {
   // If any annotation with this prefix is defined, .on is required
   if (hasAnyAnnotationWithPrefix && !hasOn) {
     buildPlugin.pushMessage(ERROR_ON_REQUIRED(entityName, annotationPrefix, annotationOn), ERROR);
+  }
+  // If .on is defined or any annotation with this prefix is defined,
+  // businessKey must exist
+  if ((hasOn || hasAnyAnnotationWithPrefix) && !hasBusinessKey) {
+    buildPlugin.pushMessage(ERROR_BUSINESS_KEY_REQUIRED(entityName, annotationPrefix), ERROR);
   }
 }
 
