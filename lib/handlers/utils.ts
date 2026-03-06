@@ -2,6 +2,10 @@ import cds, { column_expr, expr, Target } from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from '../constants';
 import cds, { column_expr, expr, Results, Target } from '@sap/cds';
 import {
+  BUSINESS_KEY_HEADER_INFO,
+  BUSINESS_KEY_HEADER_INFO_BPM,
+  BUSINESS_KEY_SEMANTIC_KEY,
+  BUSINESS_KEY_SEMANTIC_KEY_BPM,
   PROCESS_CANCEL_IF,
   PROCESS_CANCEL_ON,
   PROCESS_LOGGER_PREFIX,
@@ -14,7 +18,6 @@ import {
   PROCESS_SUSPEND_ON,
 } from '../constants';
 import { getColumnsForProcessStart } from './processStart';
-import { retrieveBusinessKeyExpression } from './processActionHandler';
 const { SELECT } = cds.ql;
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -219,4 +222,52 @@ export async function emitProcessEvent(
     LOG.error(processEventFailedMsg, msgArgs, error);
     req.reject({ status: 500, message: processEventFailedMsg, args: [msgArgs] });
   }
+}
+
+type BusinessKeyAnnotationConfig = {
+  path: string;
+  transform?: (value: { '=': string }[]) => string | undefined;
+};
+
+const PRIORITY_CHAIN: BusinessKeyAnnotationConfig[] = [
+  { path: BUSINESS_KEY_HEADER_INFO_BPM },
+  { path: BUSINESS_KEY_HEADER_INFO },
+  { path: BUSINESS_KEY_SEMANTIC_KEY_BPM, transform: formatSemanticKey },
+  { path: BUSINESS_KEY_SEMANTIC_KEY, transform: formatSemanticKey },
+];
+
+function formatSemanticKey(values: { '=': string }[]): string | undefined {
+  let result = undefined;
+  for (const value of values) {
+    if (!result) {
+      result = value['='];
+    } else {
+      result = result + ' || ' + value['='];
+    }
+  }
+  return result;
+}
+
+/**
+ * Hierarchy:
+ *
+ *  1: '@UI.HeaderInfo#bpm.Title.Value'
+ *
+ *  2: '@UI.HeaderInfo.Title.Value'
+ *
+ *  3: '@Common.SemanticKey#bpm'
+ *
+ *  4: '@Common.SemanticKey'
+ */
+export function retrieveBusinessKeyExpression(targetAnnotations: Record<string, unknown>) {
+  for (const { path, transform } of PRIORITY_CHAIN) {
+    const value = targetAnnotations[path];
+    if (value === undefined) continue;
+    if (transform) {
+      return transform(value as { '=': string }[]);
+    } else {
+      return (value as { '=': string })?.['='];
+    }
+  }
+  return undefined;
 }

@@ -16,10 +16,10 @@ export const CUD_EVENTS = ['CREATE', 'UPDATE', 'DELETE'] as const;
 /** Business Key Annotations
  *
  */
-export const BUSINESS_KEY_HEADERINFO_BPM = '@UI.HeaderInfo#bpm.Title.Value' as const;
-export const BUSINESS_KEY_HEADERINFO = '@UI.HeaderInfo.Title.Value' as const;
-export const BUSINESS_KEY_SEMANTICKEY_BPM = '@Common.SemanticKey#bpm' as const;
-export const BUSINESS_KEY_SEMANTICKEY = '@Common.SemanticKey' as const;
+export const BUSINESS_KEY_HEADER_INFO_BPM = '@UI.HeaderInfo#bpm.Title.Value' as const;
+export const BUSINESS_KEY_HEADER_INFO = '@UI.HeaderInfo.Title.Value' as const;
+export const BUSINESS_KEY_SEMANTIC_KEY_BPM = '@Common.SemanticKey#bpm' as const;
+export const BUSINESS_KEY_SEMANTIC_KEY = '@Common.SemanticKey' as const;
 
 /**
  * Process Start Annotations
