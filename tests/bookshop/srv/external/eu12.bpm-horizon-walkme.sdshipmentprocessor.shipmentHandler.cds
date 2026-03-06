@@ -1,9 +1,10 @@
-/* checksum : 599270b792f9fe49fe94c62583c09a3e */
+/* checksum : 64f579df171742213d91266cf1d161be */
 namespace eu12.![bpm-horizon-walkme].sdshipmentprocessor;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
 @protocol : 'none'
 @bpm.process : 'eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler'
+@bpm.process.businessKey : 'SH-${context.startEvent.referenceid}'
 service ShipmentHandlerService {
   type ShipmentProcessResult_itemProcessResults_Array : many ItemProcessResult;
 
@@ -35,20 +36,27 @@ service ShipmentHandlerService {
 
   type ProcessInputs {
     startingShipment : Shipment not null;
-    businesskey : String not null;
+    referenceid : String not null;
   };
 
   type ProcessOutputs {
-    shipmentProcessResultOutput : ShipmentProcessResult;
+    shipmentProcessResultOutput : ShipmentProcessResult not null;
   };
 
-  type ProcessAttributes { };
+  type ProcessAttribute {
+    id : String not null;
+    label : String not null;
+    value : String;
+    type : String not null;
+  };
+
+  type ProcessAttributes : many ProcessAttribute;
 
   type ProcessInstance {
     definitionId : String;
     definitionVersion : String;
     id : String;
-    status: String;
+    status : String;
     startedAt : String;
     startedBy : String;
   };

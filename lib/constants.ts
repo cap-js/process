@@ -74,3 +74,7 @@ export const LOG_MESSAGES = {
   PROCESS_NOT_RESUMED: 'Not resuming process as resume condition(s) are not met.',
   PROCESS_NOT_CANCELLED: 'Not canceling process as cancel condition(s) are not met.',
 } as const;
+
+/** API BASE PATHS */
+export const BASE_PATH_UNIFIED = '/public/unified/v1' as const;
+export const BASE_PATH_PUBLIC = '/public/workflow/rest' as const;

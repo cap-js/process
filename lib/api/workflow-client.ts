@@ -1,8 +1,7 @@
 import cds from '@sap/cds';
-import { PROCESS_LOGGER_PREFIX } from '../constants';
+import { PROCESS_LOGGER_PREFIX, BASE_PATH_PUBLIC } from '../constants';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
-const BASE_PATH = '/public/workflow/rest';
 
 // ============ Types & Enums ============
 
@@ -66,7 +65,7 @@ export async function startWorkflow(
   definitionId: string,
   context: unknown,
 ): Promise<StartWorkflowResult> {
-  const url = `${serviceUrl}${BASE_PATH}/v1/workflow-instances`;
+  const url = `${serviceUrl}${BASE_PATH_PUBLIC}/v1/workflow-instances`;
   LOG.debug('Invoking url: ' + url);
 
   const res = await fetch(url, {
@@ -96,7 +95,7 @@ export async function getWorkflowsByBusinessKey(
   status: WorkflowStatus | WorkflowStatus[],
 ): Promise<WorkflowInstance[]> {
   const encodedBusinessKey = encodeURIComponent(businessKey);
-  let queryUrl = `${serviceUrl}${BASE_PATH}/v1/workflow-instances?businessKey=${encodedBusinessKey}`;
+  let queryUrl = `${serviceUrl}${BASE_PATH_PUBLIC}/v1/workflow-instances?businessKey=${encodedBusinessKey}`;
 
   const statuses = Array.isArray(status) ? status : [status];
   statuses.forEach((s) => {
@@ -128,7 +127,7 @@ export async function updateWorkflowStatus(
   status: WorkflowStatus,
   cascade: boolean,
 ): Promise<UpdateStatusResult> {
-  const url = `${serviceUrl}${BASE_PATH}/v1/workflow-instances/${instanceId}`;
+  const url = `${serviceUrl}${BASE_PATH_PUBLIC}/v1/workflow-instances/${instanceId}`;
   LOG.debug('Invoking url: ' + url);
 
   const res = await fetch(url, {
@@ -183,7 +182,7 @@ export async function getAttributes(
   jwt: string,
   instanceId: string,
 ): Promise<Record<string, string>[]> {
-  const url = `${serviceUrl}${BASE_PATH}/v1/workflow-instances/${instanceId}/attributes`;
+  const url = `${serviceUrl}${BASE_PATH_PUBLIC}/v1/workflow-instances/${instanceId}/attributes`;
   LOG.debug('Invoking url: ' + url);
 
   const res = await fetch(url, {
@@ -214,7 +213,7 @@ export async function getOutputs(
   jwt: string,
   instanceId: string,
 ): Promise<Record<string, unknown>> {
-  const url = `${serviceUrl}${BASE_PATH}/v1/workflow-instances/${instanceId}/outputs`;
+  const url = `${serviceUrl}${BASE_PATH_PUBLIC}/v1/workflow-instances/${instanceId}/outputs`;
   LOG.debug('Invoking url: ' + url);
 
   const res = await fetch(url, {

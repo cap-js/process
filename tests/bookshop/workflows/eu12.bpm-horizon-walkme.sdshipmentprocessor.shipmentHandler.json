@@ -4,7 +4,7 @@
   "description": "",
   "type": "bpi.process",
   "createdAt": "2026-01-16T10:27:43.206414Z",
-  "updatedAt": "2026-02-13T11:51:38.983652Z",
+  "updatedAt": "2026-03-05T14:12:01.204830Z",
   "header": {
     "inputs": {
       "title": "inputs",
@@ -39,13 +39,13 @@
           "title": "Starting Shipment",
           "description": ""
         },
-        "businesskey": {
+        "referenceid": {
           "type": "string",
-          "title": "businessKey",
+          "title": "referenceId",
           "description": ""
         }
       },
-      "required": ["startingShipment", "businesskey"]
+      "required": ["startingShipment", "referenceid"]
     },
     "outputs": {
       "title": "outputs",
@@ -81,7 +81,7 @@
           "description": ""
         }
       },
-      "required": []
+      "required": ["shipmentProcessResultOutput"]
     },
     "processAttributes": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -117,6 +117,7 @@
   "identifier": "shipmentHandler",
   "valid": true,
   "projectId": "eu12.bpm-horizon-walkme.sdshipmentprocessor",
+  "businessKey": "SH-${context.startEvent.referenceid}",
   "dataTypes": [
     {
       "uid": "06c40358-f452-468e-abd7-d5e71d559559",
@@ -124,7 +125,7 @@
       "description": "",
       "type": "datatype",
       "createdAt": "2026-01-16T10:26:16.361786Z",
-      "updatedAt": "2026-01-16T10:27:21.013727Z",
+      "updatedAt": "2026-02-26T13:32:11.972600Z",
       "header": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -136,8 +137,7 @@
           },
           "status": {
             "type": "string",
-            "uid": "777ca51a-2e5a-4bbc-b3bc-50b2a7d48bf1",
-            "enum": ["SUCCESS", "FAILED"]
+            "uid": "777ca51a-2e5a-4bbc-b3bc-50b2a7d48bf1"
           },
           "itemProcessResults": {
             "uid": "891237b4-1ced-4de8-9012-638159c03a76",
