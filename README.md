@@ -381,6 +381,11 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
   - A bound action defined on the entity
 - `@bpm.process.<cancel|suspend|resume>.cascade` is optional (defaults to false); if provided, must be a boolean
 - `@bpm.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
+- if any annotation with `@bpm.process.<cancel|suspend|resume>` is defined, a valid businessKey expression must be defined using one of the 4 following options:
+  - `@UI.HeaderInfo#bpm.Title.Value` --> expression
+  - `@UI.HeaderInfo.Title.Value` --> expression
+  - `@Common.SemanticKey#bpm` --> array of fields that will be concatenated
+  - `@Common.SemanticKey` --> array of fields that will be concatenated
 
 ### Warnings
 
