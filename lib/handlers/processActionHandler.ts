@@ -16,11 +16,6 @@ import {
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
-  BUSINESS_KEY_HEADERINFO,
-  BUSINESS_KEY_HEADERINFO_BPM,
-  BUSINESS_KEY_SEMANTICKEY,
-  BUSINESS_KEY_SEMANTICKEY_BPM,
-} from '../constants';
 
 type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
