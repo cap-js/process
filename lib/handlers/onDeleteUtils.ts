@@ -15,7 +15,7 @@ export const PROCESS_EVENT_MAP: Record<string, keyof DeleteProcessObject> = {
 interface AddDeletedEntityConfig {
   action: string;
   ifAnnotation: string;
-  getColumns: (req: cds.Request) => Promise<(column_expr | string)[]> | (column_expr | string)[];
+  getColumns: (req: cds.Request) => (column_expr | string)[];
 }
 
 export interface ProcessDeleteRequest extends cds.Request {
