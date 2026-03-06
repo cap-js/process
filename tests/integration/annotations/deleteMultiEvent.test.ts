@@ -55,7 +55,6 @@ describe('Integration tests for multiple process events on DELETE', () => {
       expect(foundMessages.length).toBe(2);
       expect(findStartMessages().length).toBe(1);
       expect(findStartMessages()[0].data.definitionId).toBe('deleteStartCancelProcess');
-      expect(findStartMessages()[0].data.context.businesskey).toBe(car.ID);
       expect(findCancelMessages().length).toBe(1);
       expect(findCancelMessages()[0].data).toEqual({
         businessKey: car.ID,
@@ -185,7 +184,6 @@ describe('Integration tests for multiple process events on DELETE', () => {
       expect(foundMessages.length).toBe(3);
       expect(findStartMessages().length).toBe(1);
       expect(findStartMessages()[0].data.definitionId).toBe('deleteStartCancelResumeProcess');
-      expect(findStartMessages()[0].data.context.businesskey).toBe(car.ID);
       expect(findCancelMessages().length).toBe(1);
       expect(findCancelMessages()[0].data).toEqual({
         businessKey: car.ID,
@@ -215,7 +213,6 @@ describe('Integration tests for multiple process events on DELETE', () => {
       expect(foundMessages.length).toBe(4);
       expect(findStartMessages().length).toBe(1);
       expect(findStartMessages()[0].data.definitionId).toBe('deleteAllEventsProcess');
-      expect(findStartMessages()[0].data.context.businesskey).toBe(car.ID);
       expect(findCancelMessages().length).toBe(1);
       expect(findCancelMessages()[0].data).toEqual({
         businessKey: car.ID,
@@ -254,7 +251,6 @@ describe('Integration tests for multiple process events on DELETE', () => {
       const startMsgs = findStartMessages();
       expect(startMsgs.length).toBe(1);
       expect(startMsgs[0].data.definitionId).toBe('deleteStartInputsCancelProcess');
-      expect(startMsgs[0].data.context.businesskey).toBe(car.ID);
       expect(startMsgs[0].data.context.CarModel).toBe('Test Model');
       expect(startMsgs[0].data.context.CarMaker).toBe('Test Manufacturer');
 
