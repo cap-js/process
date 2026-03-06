@@ -9,9 +9,8 @@ class ShipmentService extends cds.ApplicationService {
       const { shipmentID } = req.data;
       const shipment = await SELECT.one.from('Shipments').where({ ID: shipmentID });
 
-      // Start the process with typed inputs
       const processInstance = await shipmentProcess.start({
-        businesskey: shipmentID,
+        referenceid: shipmentID,
         startingShipment: {
           identifier: shipment.ID,
           items: [
