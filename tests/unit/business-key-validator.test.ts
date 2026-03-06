@@ -1,4 +1,4 @@
-import { validateBusinessKey, ValidationResult } from '../../lib/processImport/business-key-validator';
+import { validateBusinessKey } from '../../lib/processImport/business-key-validator';
 
 describe('Business Key Validator', () => {
   describe('Valid Business Keys', () => {
@@ -13,19 +13,34 @@ describe('Business Key Validator', () => {
       { input: '${context.startEvent.order_id}', description: 'variable with underscore' },
       { input: '${context.startEvent._private}', description: 'variable starting with underscore' },
       { input: '${context.startEvent.customer.name}', description: 'nested property' },
-      { input: '${context.startEvent.customer.address.city}', description: 'deeply nested property' },
+      {
+        input: '${context.startEvent.customer.address.city}',
+        description: 'deeply nested property',
+      },
       { input: 'ORD-${context.startEvent.orderId}', description: 'prefix + variable' },
       { input: '${context.startEvent.orderId}-SUFFIX', description: 'variable + suffix' },
-      { input: 'PREFIX-${context.startEvent.orderId}-SUFFIX', description: 'prefix + variable + suffix' },
-      { input: '${context.startEvent.a}${context.startEvent.b}', description: 'two consecutive variables' },
-      { input: '${context.startEvent.ssn} -${context.startEvent.age}', description: 'two variables with separator' },
+      {
+        input: 'PREFIX-${context.startEvent.orderId}-SUFFIX',
+        description: 'prefix + variable + suffix',
+      },
+      {
+        input: '${context.startEvent.a}${context.startEvent.b}',
+        description: 'two consecutive variables',
+      },
+      {
+        input: '${context.startEvent.ssn} -${context.startEvent.age}',
+        description: 'two variables with separator',
+      },
       { input: 'PRICE$100', description: 'literal $ not followed by {' },
       { input: '$$test', description: 'multiple $ as literal' },
       { input: '$notvar', description: 'single $ followed by text' },
       { input: 'order{123}', description: 'literal { and } in constant' },
       { input: 'test}value', description: 'literal } in constant' },
       { input: 'test{value', description: 'literal { in constant' },
-      { input: '${context.startEvent.a}-${context.startEvent.b}-${context.startEvent.c}', description: 'three variables' },
+      {
+        input: '${context.startEvent.a}-${context.startEvent.b}-${context.startEvent.c}',
+        description: 'three variables',
+      },
     ];
 
     validCases.forEach(({ input, description }) => {

@@ -25,6 +25,10 @@ export interface ProcessHeader {
   dataTypes?: DataType[];
 }
 
+interface ProcessDefinition {
+  businessKey?: string;
+}
+
 export interface DataType {
   uid: string;
   name: string;
@@ -181,12 +185,8 @@ export async function fetchBusinessKey(
   if (!contents) {
     return undefined;
   }
-  // Debug: log available keys
-  LOG.debug(`Available keys in contents: ${Object.keys(contents).join(', ')}`);
-  LOG.debug(`Looking for definitionId: ${definitionId}`);
 
-  // Get the process definition using the definitionId as the key
-  const processDefinition = Object.values(contents)[0] as any;
+  const processDefinition = Object.values(contents)[0] as ProcessDefinition;
   return processDefinition?.businessKey;
 }
 

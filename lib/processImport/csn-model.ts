@@ -1,15 +1,11 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import cds from '@sap/cds';
 import * as csn from '../../types/csn-extensions';
 import { ProcessHeader } from '../api';
-import { PROCESS_LOGGER_PREFIX } from '../constants';
 import { setDataTypeInCache } from './types';
 import { capitalize } from './utils';
 import { addServiceToPackageJson, getModelPathFromFilePath } from './package-json';
 import { buildCsnModel } from './csn-builders';
-
-const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // ============================================================================
 //  GENERATE CSN MODEL
