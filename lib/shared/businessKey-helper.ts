@@ -48,6 +48,25 @@ function capitalizeAfterLastDot(input: string): string {
   return beforeLastDot + afterLastDot.charAt(0).toUpperCase() + afterLastDot.slice(1) + 'Service';
 }
 
+/**
+ * Converts a template string with placeholders into a SQL-style
+ * concatenation expression.
+ *
+ * @param template - A template string containing `${variable}` placeholders
+ * and literal text (e.g. `"${ssn}-${age}"`).
+ * @returns A SQL concatenation string where placeholders are converted to
+ * column names, literals are wrapped in single quotes, parts are joined
+ * with `||`, and the expression is aliased as `businessKey`
+ * (e.g. `"ssn || '-' || age as businessKey"`).
+ *
+ * @example
+ * convertTemplate("${ssn}-${age}")
+ * // → "ssn || '-' || age as businessKey"
+ *
+ * @example
+ * convertTemplate("${firstName} ${lastName}")
+ * // → "firstName || ' ' || lastName as businessKey"
+ */
 function convertBusinessKeyToExpr(template: string): string {
   const parts = template.split(TEMPLATE_PART_SPLITTER);
 
