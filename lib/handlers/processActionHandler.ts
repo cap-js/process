@@ -3,11 +3,9 @@ import { expr, Target } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
-  getBusinessKeyColumnOrReject,
   getEntityDataFromRequest,
   ProcessLifecyclePayload,
   resolveEntityRowOrReject,
-  retrieveBusinessKeyExpression,
 } from './utils';
 import {
   createAddDeletedEntityHandler,
@@ -15,6 +13,10 @@ import {
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
+import {
+  getBusinessKeyColumnOrReject,
+  retrieveBusinessKeyExpression,
+} from '../shared/businessKey-helper';
 
 type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
