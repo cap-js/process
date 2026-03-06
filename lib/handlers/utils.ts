@@ -35,7 +35,7 @@ async function fetchEntity(
   results: EntityRow,
   request: cds.Request,
   condition: expr | undefined,
-  columns?: (column_expr | string)[],
+  columns: (column_expr | string)[],
 ): Promise<EntityRow | undefined> {
   if (typeof results !== 'object') {
     results = {};
@@ -48,7 +48,7 @@ async function fetchEntity(
 
   const fetchedData = await SELECT.one
     .from(request.target.name)
-    .columns(columns ? columns : keyFields)
+    .columns(columns)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .where(where as any);
 
@@ -133,23 +133,18 @@ export async function resolveEntityRowOrReject(
   conditionExpr: expr | undefined,
   fetchFailedMsg: string,
   notTriggeredMsg: string,
-  columns?: (column_expr | string)[],
+  columns: (column_expr | string)[],
 ): Promise<EntityRow | undefined> {
   let row: EntityRow | undefined;
   try {
-    row =
-      req.event === 'DELETE'
-        ? data
-        : await fetchEntity(data, req, conditionExpr, columns ?? undefined);
+    row = req.event === 'DELETE' ? data : await fetchEntity(data, req, conditionExpr, columns);
   } catch (error) {
     LOG.error(fetchFailedMsg, error);
     req.reject({
       status: 500,
       message: fetchFailedMsg,
     });
-    return undefined;
   }
-
   if (!row) {
     LOG.debug(notTriggeredMsg);
     return undefined;
