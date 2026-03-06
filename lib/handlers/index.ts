@@ -1,4 +1,8 @@
-export { handleProcessStart, getColumnsForProcessStart, addDeletedEntityToRequestCreate } from './processStart';
+export {
+  handleProcessStart,
+  getColumnsForProcessStart,
+  addDeletedEntityToRequestCreate,
+} from './processStart';
 export { handleProcessCancel, addDeletedEntityToRequestCancel } from './processCancel';
 export { handleProcessSuspend, addDeletedEntityToRequestSuspend } from './processSuspend';
 export { handleProcessResume, addDeletedEntityToRequestResume } from './processResume';

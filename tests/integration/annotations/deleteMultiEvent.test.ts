@@ -125,9 +125,7 @@ describe('Integration tests for multiple process events on DELETE', () => {
       await POST('/odata/v4/annotation/DeleteCancelSuspend', car);
       foundMessages = [];
 
-      const deleteResponse = await DELETE(
-        `/odata/v4/annotation/DeleteCancelSuspend('${car.ID}')`,
-      );
+      const deleteResponse = await DELETE(`/odata/v4/annotation/DeleteCancelSuspend('${car.ID}')`);
 
       expect(deleteResponse.status).toBe(204);
       expect(foundMessages.length).toBe(2);
