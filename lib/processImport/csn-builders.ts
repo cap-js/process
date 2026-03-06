@@ -12,7 +12,10 @@ const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 //  CSN BUILDERS: SERVICE & TYPES
 // ============================================================================
 
-export function createServiceDefinition(serviceName: string, process: ProcessHeader): csn.CsnDefinition {
+export function createServiceDefinition(
+  serviceName: string,
+  process: ProcessHeader,
+): csn.CsnDefinition {
   return {
     kind: 'service',
     name: serviceName,

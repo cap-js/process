@@ -9,7 +9,10 @@ const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 //  PACKAGE.JSON UPDATE
 // ============================================================================
 
-export async function addServiceToPackageJson(serviceName: string, modelPath: string): Promise<void> {
+export async function addServiceToPackageJson(
+  serviceName: string,
+  modelPath: string,
+): Promise<void> {
   const packagePath = path.join(cds.root, 'package.json');
 
   try {

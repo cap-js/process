@@ -45,10 +45,7 @@
           "description": ""
         }
       },
-      "required": [
-        "startingShipment",
-        "referenceid"
-      ]
+      "required": ["startingShipment", "referenceid"]
     },
     "outputs": {
       "title": "outputs",
@@ -84,9 +81,7 @@
           "description": ""
         }
       },
-      "required": [
-        "shipmentProcessResultOutput"
-      ]
+      "required": ["shipmentProcessResultOutput"]
     },
     "processAttributes": {
       "$schema": "http://json-schema.org/draft-07/schema#",
