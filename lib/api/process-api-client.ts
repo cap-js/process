@@ -9,7 +9,7 @@ export interface ProcessHeader {
   uid: string;
   name: string;
   identifier: string;
-  businessKey?: unknown;
+  businessKey?: string;
   type: string;
   description?: string;
   createdAt?: string;

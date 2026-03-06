@@ -7,6 +7,7 @@ import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from '../constants';
 import { setDataTypeInCache } from './types';
 import { splitAtLastDot, capitalize } from './utils';
 import { addServiceToPackageJson } from './package-json';
+import { validateAndLogBusinessKey } from './business-key-validator';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -26,6 +27,8 @@ export async function fetchAndSaveProcessDefinition(processName: string): Promis
   if (!processHeader.businessKey) {
     LOG.warn(`Process ${processName} has no business key defined.`);
   }
+
+  validateAndLogBusinessKey(processHeader.businessKey);
 
   if (processHeader.dependencies?.length) {
     LOG.debug(`Fetching ${processHeader.dependencies.length} dependent data types...`);
