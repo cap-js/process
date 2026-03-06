@@ -1,18 +1,20 @@
 import cds from '@sap/cds';
 import { expr, Target } from '@sap/cds';
 import {
-  buildWhereExpression,
   emitProcessEvent,
   EntityRow,
   getBusinessKeyOrReject,
   getEntityDataFromRequest,
   getKeyFieldsForEntity,
-  isDeleteWithoutProcess,
-  PROCESS_EVENT_MAP,
-  ProcessDeleteRequest,
   ProcessLifecyclePayload,
   resolveEntityRowOrReject,
 } from './utils';
+import {
+  buildWhereDeleteExpression,
+  isDeleteWithoutProcess,
+  PROCESS_EVENT_MAP,
+  ProcessDeleteRequest,
+} from './onDeleteUtils';
 
 export type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
@@ -101,7 +103,7 @@ export function createProcessActionAddDeletedEntityHandler(config: ProcessAction
     const annotatedTarget = req.target as unknown as Record<string, unknown>;
 
     const conditionExpr = annotatedTarget[config.annotations.IF] as { xpr: expr } | undefined;
-    const where = buildWhereExpression(req as ProcessDeleteRequest, conditionExpr);
+    const where = buildWhereDeleteExpression(req as ProcessDeleteRequest, conditionExpr);
 
     if (where) {
       // Safeguard: use ['*'] if columns array is empty to avoid invalid SQL
