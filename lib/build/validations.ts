@@ -149,6 +149,7 @@ export function validateRequiredGenericAnnotations(
   // If .on is defined or any annotation with this prefix is defined,
   // businessKey must exist
   if ((hasOn || hasAnyAnnotationWithPrefix) && !hasBusinessKey) {
+    // TODO: either set to warning or check if imported process has business key
     buildPlugin.pushMessage(ERROR_BUSINESS_KEY_REQUIRED(entityName, annotationPrefix), ERROR);
   }
 }
