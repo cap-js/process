@@ -84,6 +84,9 @@ export const ERROR_ON_REQUIRED = (
   return `${entityName}: ${annotationPrefix} requires ${annotationOn} to be defined`;
 };
 
+export const ERROR_BUSINESS_KEY_REQUIRED = (entityName: string, annotationPrefix: string) =>
+  `Entity "${entityName}" must have a business key defined when using the "${annotationPrefix}" annotation.`;
+
 export const ERROR_CASCADE_MUST_BE_BOOLEAN = (
   entityName: string,
   annotationCascade: string,
