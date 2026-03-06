@@ -31,7 +31,7 @@ import {
 } from '../constants';
 
 import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
-import { retrieveBusinessKeyExpression } from '../handlers/utils';
+import { retrieveBusinessKeyExpression } from '../shared/businessKey-helper';
 
 /**
  * Configuration for lifecycle annotation validation (cancel, suspend, resume)
