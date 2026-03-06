@@ -1,8 +1,7 @@
 import cds from '@sap/cds';
-import { PROCESS_LOGGER_PREFIX } from '../constants';
+import { PROCESS_LOGGER_PREFIX, BASE_PATH_PUBLIC, BASE_PATH_UNIFIED } from '../constants';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
-const BASE_PATH = '/public/unified/v1';
 
 // ============ Types ============
 
@@ -10,6 +9,7 @@ export interface ProcessHeader {
   uid: string;
   name: string;
   identifier: string;
+  businessKey?: unknown;
   type: string;
   description?: string;
   createdAt?: string;
@@ -54,6 +54,7 @@ export interface IProcessApiClient {
   fetchProcessHeader(projectId: string, processId: string): Promise<ProcessHeader>;
   fetchArtifact(projectId: string, artifactUid: string): Promise<DataType>;
   fetchAllDataTypes(projectId: string, dependencies: Dependency[]): Promise<DataType[]>;
+  fetchBusinessKey(projectId: string, processId: string): Promise<string | undefined>;
 }
 
 // ============ Implementation Functions ============
@@ -81,7 +82,7 @@ export async function fetchProcessHeader(
   projectId: string,
   processId: string,
 ): Promise<ProcessHeader> {
-  const url = `${serviceUrl}${BASE_PATH}/projects/${encodeURIComponent(projectId)}/artifacts/${encodeURIComponent(processId)}`;
+  const url = `${serviceUrl}${BASE_PATH_UNIFIED}/projects/${encodeURIComponent(projectId)}/artifacts/${encodeURIComponent(processId)}`;
   return fetchJson<ProcessHeader>(url, jwt);
 }
 
@@ -91,7 +92,7 @@ export async function fetchArtifact(
   projectId: string,
   artifactUid: string,
 ): Promise<DataType> {
-  const url = `${serviceUrl}${BASE_PATH}/projects/${encodeURIComponent(projectId)}/artifacts/${encodeURIComponent(artifactUid)}`;
+  const url = `${serviceUrl}${BASE_PATH_UNIFIED}/projects/${encodeURIComponent(projectId)}/artifacts/${encodeURIComponent(artifactUid)}`;
   return fetchJson<DataType>(url, jwt);
 }
 
@@ -160,6 +161,35 @@ export async function fetchAllDataTypes(
   return result;
 }
 
+export async function fetchBusinessKey(
+  serviceUrl: string,
+  jwt: string,
+  projectId: string,
+  processId: string,
+): Promise<string | undefined> {
+  const definitionId = `${projectId}.${processId}`;
+  const url = `${serviceUrl}${BASE_PATH_PUBLIC}/v1/workflow-definitions/${encodeURIComponent(definitionId)}/model`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  if (!response.ok) {
+    return undefined;
+  }
+  const json = await response.json();
+  const contents = json.contents;
+  if (!contents) {
+    return undefined;
+  }
+  // Debug: log available keys
+  LOG.debug(`Available keys in contents: ${Object.keys(contents).join(', ')}`);
+  LOG.debug(`Looking for definitionId: ${definitionId}`);
+
+  // Get the process definition using the definitionId as the key
+  const processDefinition = Object.values(contents)[0] as any;
+  return processDefinition?.businessKey;
+}
+
 // ============ Factory Function ============
 
 export function createProcessApiClient(
@@ -180,6 +210,11 @@ export function createProcessApiClient(
     fetchAllDataTypes: async (projectId, dependencies) => {
       const jwt = await getToken();
       return fetchAllDataTypes(serviceUrl, jwt, projectId, dependencies);
+    },
+
+    fetchBusinessKey: async (projectId, processId) => {
+      const jwt = await getToken();
+      return fetchBusinessKey(serviceUrl, jwt, projectId, processId);
     },
   };
 }

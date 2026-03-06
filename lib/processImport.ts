@@ -65,6 +65,10 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
   LOG.debug('Retrieving process header...');
   const processHeader = await apiClient.fetchProcessHeader(projectId, processId);
   processHeader.projectId = projectId;
+  processHeader.businessKey = await apiClient.fetchBusinessKey(projectId, processId);
+  if (!processHeader.businessKey) {
+    LOG.warn(`Process ${processName} has no business key defined.`);
+  }
 
   if (processHeader.dependencies?.length) {
     LOG.debug(`Fetching ${processHeader.dependencies.length} dependent data types...`);
@@ -185,6 +189,7 @@ function createServiceDefinition(serviceName: string, process: ProcessHeader): c
     doc: 'DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT.',
     '@protocol': 'none',
     '@bpm.process': `${process.projectId}.${process.identifier}`,
+    '@bpm.process.businessKey': `${process.businessKey}`,
   };
 }
 
