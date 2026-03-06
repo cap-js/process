@@ -99,7 +99,7 @@ function registerCancelHandler(service: cds.Service, definitionId: string): void
       'cancel',
       req,
       payload,
-      `Failed to suspend process with business key: {businessKey}`,
+      `Failed to cancel process with business key: ${businessKey}`,
     );
 
     LOG.debug(`Process cancelled: businessKey=${businessKey}`);
