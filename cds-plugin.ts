@@ -15,6 +15,7 @@ import {
   PROCESS_PREFIX,
   CUD_EVENTS,
   EntityRow,
+  ProcessDeleteRequest,
 } from './lib/index';
 import { importProcess } from './lib/processImport';
 import { addDeletedEntityToRequestCancel } from './lib/handlers/processCancel';
@@ -43,7 +44,7 @@ cds.on('serving', async (service: cds.Service) => {
     const cached = annotationCache.get(cacheKey);
 
     if (!cached) return; // Fast exit - no annotations
-    await Promise.all(
+    const results = await Promise.all(
       [
         cached.hasStart && addDeletedEntityToRequestCreate(req),
         cached.hasCancel && addDeletedEntityToRequestCancel(req),
@@ -51,6 +52,8 @@ cds.on('serving', async (service: cds.Service) => {
         cached.hasSuspend && addDeletedEntityToRequestSuspend(req),
       ].filter(Boolean),
     );
+    const combinedResults = Object.assign({}, ...results);
+    (req as ProcessDeleteRequest)._Process = combinedResults;
   });
 
   service.after('*', async (results: Results, req: cds.Request) => {

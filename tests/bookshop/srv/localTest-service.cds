@@ -10,9 +10,6 @@ service LocalTestService {
   @bpm.process.cancel: {
     on: 'DELETE',
   }
-  @bpm.process.suspend: {
-    on: 'DELETE',
-  }
   @bpm.process.resume: {
     on: 'DELETE',
   }

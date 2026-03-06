@@ -267,3 +267,22 @@ export async function emitProcessEvent(
     req.reject({ status: 500, message: processEventFailedMsg, args: [msgArgs] });
   }
 }
+
+export function buildWhereExpression(
+  req: ProcessDeleteRequest,
+  conditionExpr: { xpr: expr } | undefined,
+): unknown {
+  const deleteReq = req as ProcessDeleteRequest;
+  const deleteQuery = deleteReq.query?.DELETE as
+    | { from?: { ref?: Array<{ where?: unknown }> }; where?: unknown }
+    | undefined;
+  let where: unknown = deleteQuery?.from?.ref?.[0]?.where ?? deleteQuery?.where;
+
+  if (conditionExpr) {
+    where =
+      Array.isArray(where) && where.length
+        ? [{ xpr: where }, 'and', { xpr: conditionExpr.xpr }]
+        : conditionExpr.xpr;
+  }
+  return where;
+}

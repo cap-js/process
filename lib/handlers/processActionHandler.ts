@@ -1,6 +1,7 @@
-import cds, { column_expr } from '@sap/cds';
+import cds from '@sap/cds';
 import { expr, Target } from '@sap/cds';
 import {
+  buildWhereExpression,
   emitProcessEvent,
   EntityRow,
   getBusinessKeyOrReject,
@@ -94,35 +95,20 @@ export interface ProcessActionDeleteConfig {
   };
 }
 export function createProcessActionAddDeletedEntityHandler(config: ProcessActionDeleteConfig) {
-  return async function addDeletedEntityToRequest(req: cds.Request): Promise<void> {
-    const target = req.target as Target;
-    let columns: (column_expr | string)[] = [];
+  return async function addDeletedEntityToRequest(req: cds.Request): Promise<EntityRow | void> {
+    const columns = getKeyFieldsForEntity(req.target as cds.entity);
 
-    columns = getKeyFieldsForEntity(target as cds.entity);
-
-    const deleteReq = req as ProcessDeleteRequest;
-    const deleteQuery = deleteReq.query?.DELETE as
-      | { from?: { ref?: Array<{ where?: unknown }> }; where?: unknown }
-      | undefined;
-    let where: unknown = deleteQuery?.from?.ref?.[0]?.where ?? deleteQuery?.where;
-
-    const annotatedTarget = target as unknown as Record<string, unknown>;
+    const annotatedTarget = req.target as unknown as Record<string, unknown>;
 
     const conditionExpr = annotatedTarget[config.annotations.IF] as { xpr: expr } | undefined;
-    if (conditionExpr) {
-      where =
-        Array.isArray(where) && where.length
-          ? [{ xpr: where }, 'and', { xpr: conditionExpr.xpr }]
-          : conditionExpr.xpr;
-    }
+    const where = buildWhereExpression(req as ProcessDeleteRequest, conditionExpr);
 
     if (where) {
       // Safeguard: use ['*'] if columns array is empty to avoid invalid SQL
       const selectColumns = columns.length > 0 ? columns : ['*'];
       const processEventKey = PROCESS_EVENT_MAP[config.action];
-      const deleteReq = req as ProcessDeleteRequest;
-      const entities = await SELECT.one.from(req.subject).columns(selectColumns).where(where);
-      deleteReq._Process = { ...deleteReq._Process, [processEventKey]: entities };
+      const entity = await SELECT.one.from(req.subject).columns(selectColumns).where(where);
+      return { [processEventKey]: entity };
     }
   };
 }
