@@ -1,13 +1,16 @@
 service TestService {
 
-  @UI.HeaderInfo #bpm: {
-    Title: {
-      Value: (ssn || '-' || age)
-    }
-  }
-// @Common.SemanticKey: [ssn, age]
-  @bpm.process.cancel: {
+  // @UI.HeaderInfo #bpm: {
+  //   Title: {
+  //     Value: (ssn || '-' || age)
+  //   }
+  // }
+  @bpm.process.start: {
+    id: 'eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
     on: 'CREATE',
+  }
+  @bpm.process.cancel: {
+    on: 'DELETE',
   }
   entity NewBusinessKey {
     key ID: String;

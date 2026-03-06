@@ -89,7 +89,6 @@ export class ProcessValidationPlugin extends BuildPluginBase {
 
     const processDefinitions = getProcessDefinitions(model.definitions);
 
-    // TODO: add validation for business key
     const definitions = model.definitions ?? {};
     for (const name in definitions) {
       if (Object.hasOwn(definitions, name)) {
@@ -186,7 +185,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     const hasCascade = def[annotationCascade] !== undefined;
     const hasIf = def[annotationIf] !== undefined;
     const hasBusinessKey =
-      retrieveBusinessKeyExpression(def as unknown as Record<string, unknown>) !== undefined;
+      retrieveBusinessKeyExpression(def as unknown as cds.entity) !== undefined;
 
     const hasAnyAnnotationWithPrefix = Object.keys(def).some((key) =>
       key.startsWith(annotationPrefix + '.'),
@@ -214,5 +213,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     if (hasIf) {
       validateIfAnnotation(def, entityName, annotationIf, this);
     }
+
+    // TODO: business key validation
   }
 }

@@ -1,4 +1,4 @@
-import cds, { column_expr, expr, Target } from '@sap/cds';
+import cds, { column_expr, expr, ServiceDefinitionAnnotation, Target } from '@sap/cds';
 import {
   BUSINESS_KEY_HEADER_INFO,
   BUSINESS_KEY_HEADER_INFO_BPM,
@@ -6,6 +6,7 @@ import {
   BUSINESS_KEY_SEMANTIC_KEY_BPM,
   PROCESS_LOGGER_PREFIX,
   PROCESS_SERVICE,
+  PROCESS_START_ID,
 } from '../constants';
 const { SELECT } = cds.ql;
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
@@ -183,14 +184,63 @@ export async function resolveEntityRowOrReject(
   return row;
 }
 
-export function getBusinessKeyColumnOrReject(req: cds.Request, businessKey: string | undefined) {
+export async function getBusinessKeyColumnOrReject(
+  req: cds.Request,
+  businessKey: string | undefined,
+) {
   if (!businessKey) {
-    const msg = 'Business key is required but was not found in the entity.';
-    LOG.error(msg);
-    req.reject({ status: 400, message: msg });
+    const serviceBusinessKey = await extractBusinessKeyFromImportedProcess(req);
+    if (!serviceBusinessKey) {
+      const msg = 'Business key is required but was not found in the entity.';
+      LOG.error(msg);
+      req.reject({ status: 400, message: msg });
+    } else {
+      return serviceBusinessKey;
+    }
   } else {
     return `${businessKey} as businessKey`;
   }
+}
+
+async function extractBusinessKeyFromImportedProcess(
+  req: cds.Request,
+): Promise<string | undefined> {
+  // get process start id
+  const processStartId = (req.target as cds.entity)[PROCESS_START_ID] as string;
+  // get process csn for id
+  const srvName = capitalizeAfterLastDot(processStartId);
+  const models = await cds.load(`srv/external/${processStartId}.cds`);
+  // extract business key value from csn annotation
+  const srvCsn = models.definitions?.[srvName] as ServiceDefinitionAnnotation;
+  if (srvCsn) {
+    const bKey = srvCsn['@bpm.process.businessKey'];
+    const bKeyExpr = convertTemplate(bKey);
+    return bKeyExpr;
+  }
+  return undefined;
+}
+
+function capitalizeAfterLastDot(input: string): string {
+  const lastDotIndex = input.lastIndexOf('.');
+  if (lastDotIndex === -1) return input + 'Service';
+
+  const beforeLastDot = input.slice(0, lastDotIndex + 1);
+  const afterLastDot = input.slice(lastDotIndex + 1);
+
+  return beforeLastDot + afterLastDot.charAt(0).toUpperCase() + afterLastDot.slice(1) + 'Service';
+}
+
+function convertTemplate(template: string): string {
+  const parts = template.split(/(\$\{[^}]+\})/);
+
+  const converted = parts
+    .filter((part) => part !== '')
+    .map((part) => {
+      const match = part.match(/^\$\{([^}]+)\}$/);
+      return match ? match[1] : `'${part}'`;
+    });
+
+  return converted.join(' || ') + ' as businessKey';
 }
 
 /**
@@ -247,7 +297,7 @@ function formatSemanticKey(values: { '=': string }[]): string | undefined {
  *
  *  4: '@Common.SemanticKey'
  */
-export function retrieveBusinessKeyExpression(targetAnnotations: Record<string, unknown>) {
+export function retrieveBusinessKeyExpression(targetAnnotations: cds.entity) {
   for (const { path, transform } of PRIORITY_CHAIN) {
     const value = targetAnnotations[path];
     if (value === undefined) continue;
