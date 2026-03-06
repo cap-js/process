@@ -6,7 +6,7 @@ service TestService {
     }
   }
   @bpm.process.start: {
-    id: 'eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
+    id: 'TESTeu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
     on: 'CREATE',
   }
   @bpm.process.cancel: {
