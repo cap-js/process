@@ -31,6 +31,7 @@ import {
 } from '../constants';
 
 import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
+import { retrieveBusinessKeyExpression } from '../shared/businessKey-helper';
 
 /**
  * Configuration for lifecycle annotation validation (cancel, suspend, resume)
@@ -182,6 +183,8 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     const hasOn = def[annotationOn] !== undefined;
     const hasCascade = def[annotationCascade] !== undefined;
     const hasIf = def[annotationIf] !== undefined;
+    const hasBusinessKey =
+      retrieveBusinessKeyExpression(def as unknown as cds.entity) !== undefined;
 
     const hasAnyAnnotationWithPrefix = Object.keys(def).some((key) =>
       key.startsWith(annotationPrefix + '.'),
@@ -194,6 +197,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       entityName,
       annotationOn,
       annotationPrefix,
+      hasBusinessKey,
       this,
     );
 
@@ -208,5 +212,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     if (hasIf) {
       validateIfAnnotation(def, entityName, annotationIf, this);
     }
+
+    // TODO: business key validation
   }
 }

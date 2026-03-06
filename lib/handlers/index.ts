@@ -8,12 +8,5 @@ export { handleProcessSuspend, addDeletedEntityToRequestSuspend } from './proces
 export { handleProcessResume, addDeletedEntityToRequestResume } from './processResume';
 export { createProcessActionHandler } from './processActionHandler';
 export { registerProcessServiceHandlers } from './processService';
-export { getKeyFieldsForEntity, concatenateBusinessKey } from './utils';
-export type {
-  EntityRow,
-  ProcessStartPayload,
-  ProcessLifecyclePayload,
-  ProcessEventType,
-  AnnotatedTarget,
-} from './utils';
+export type { EntityRow, ProcessStartPayload, ProcessLifecyclePayload } from './utils';
 export type { ProcessDeleteRequest } from './onDeleteUtils';

@@ -1,5 +1,24 @@
 service TestService {
 
+  @UI.HeaderInfo #bpm: {
+    Title: {
+      Value: (ssn || '-' || age)
+    }
+  }
+  @bpm.process.start: {
+    id: 'TESTeu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
+    on: 'CREATE',
+  }
+  @bpm.process.cancel: {
+    on: 'DELETE',
+  }
+  entity NewBusinessKey {
+    key ID: String;
+    name: String;
+    age: Integer;
+    testNum: Integer;
+    ssn: String;
+  }
   @bpm.process.start: {
     id: 'ShipmentProcess',
     on: 'UPDATE',

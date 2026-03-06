@@ -2,7 +2,6 @@ import { column_expr, expr, Target } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
-  getBusinessKeyOrReject,
   getEntityDataFromRequest,
   resolveEntityRowOrReject,
 } from './utils';
@@ -84,20 +83,8 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   );
   if (!row) return;
 
-  // get business key
-  const businessKey = getBusinessKeyOrReject(
-    target as cds.entity,
-    row,
-    req,
-    'Failed to build business key for process start.',
-    'Business key is empty for process start.',
-  );
-  if (!businessKey) return;
-
-  const context = { ...row, businesskey: businessKey };
-
   // emit process start
-  const payload = { definitionId: startSpecs.id!, context };
+  const payload = { definitionId: startSpecs.id!, context: row };
   await emitProcessEvent(
     'start',
     req,

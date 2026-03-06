@@ -14,7 +14,7 @@ class ProcessService extends cds.ApplicationService {
       LOG.debug(
         `==============================================================\n` +
           `Process start for ${definitionId} initiated\n` +
-          `BusinessKey: ${businessKey}\nContext: ${JSON.stringify(context, null, 2)}\n` +
+          `Context: ${JSON.stringify(context, null, 2)}\n` +
           `==============================================================`,
       );
 

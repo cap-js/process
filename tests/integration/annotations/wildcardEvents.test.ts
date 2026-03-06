@@ -47,7 +47,6 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
       expect(foundMessages[0].data.context).toBeDefined();
       expect(foundMessages[0].data.context).toEqual({
         ...car,
-        businesskey: car.ID,
       });
     });
 
@@ -68,7 +67,6 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].data.definitionId).toBe('startOnWildcardProcess');
       expect(foundMessages[0].data.context).toBeDefined();
-      expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
     });
 
     it('should start process on DELETE', async () => {
@@ -86,7 +84,6 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].data.definitionId).toBe('startOnWildcardProcess');
       expect(foundMessages[0].data.context).toBeDefined();
-      expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
     });
 
     it('should start process on bound action', async () => {
@@ -106,7 +103,6 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].data.definitionId).toBe('startOnWildcardProcess');
       expect(foundMessages[0].data.context).toBeDefined();
-      expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
     });
   });
 
@@ -125,7 +121,6 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
       expect(foundMessages[0].data.context).toBeDefined();
       expect(foundMessages[0].data.context).toEqual({
         ...car,
-        businesskey: car.ID,
       });
     });
 
@@ -155,7 +150,6 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].data.definitionId).toBe('startOnWildcardWhenProcess');
       expect(foundMessages[0].data.context).toBeDefined();
-      expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
     });
 
     it('should NOT start process on UPDATE when condition is NOT met', async () => {
@@ -192,7 +186,6 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].data.definitionId).toBe('startOnWildcardWhenProcess');
       expect(foundMessages[0].data.context).toBeDefined();
-      expect(foundMessages[0].data.context.businesskey).toBe(car.ID);
     });
 
     it('should NOT start process on bound action when condition is NOT met', async () => {

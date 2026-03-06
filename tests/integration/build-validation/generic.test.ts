@@ -49,6 +49,7 @@ describe('Build Validation: Required Annotations', () => {
         it('should PASS when both on and cascade are present', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { on: 'DELETE', cascade: true }
+                        @UI.HeaderInfo #bpm: { Title: { Value: ID } }
                         entity ValidEntity { key ID: UUID; }
                     `);
 
@@ -61,6 +62,7 @@ describe('Build Validation: Required Annotations', () => {
         it('should PASS when on is present but cascade is missing (cascade defaults to false)', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { on: 'DELETE' }
+                        @UI.HeaderInfo #bpm: { Title: { Value: ID } }
                         entity MissingCascade { key ID: UUID; }
                     `);
 
@@ -111,6 +113,7 @@ describe('.on annotation tests ', () => {
     annotationBase: string;
     annotationOn: string;
     baseProps: string;
+    businessKeyAnnotation: string;
   }
 
   const annotationConfigs: AnnotationConfig[] = [
@@ -118,40 +121,48 @@ describe('.on annotation tests ', () => {
       annotationBase: PROCESS_START,
       annotationOn: PROCESS_START_ON,
       baseProps: `id: 'someID'`,
+      businessKeyAnnotation: '',
     },
     {
       annotationBase: PROCESS_CANCEL,
       annotationOn: PROCESS_CANCEL_ON,
       baseProps: 'cascade: true',
+      businessKeyAnnotation: '@UI.HeaderInfo #bpm: { Title: { Value: ID } }',
     },
     {
       annotationBase: PROCESS_SUSPEND,
       annotationOn: PROCESS_SUSPEND_ON,
       baseProps: 'cascade: true',
+      businessKeyAnnotation: '@UI.HeaderInfo #bpm: { Title: { Value: ID } }',
     },
     {
       annotationBase: PROCESS_RESUME,
       annotationOn: PROCESS_RESUME_ON,
       baseProps: 'cascade: true',
+      businessKeyAnnotation: '@UI.HeaderInfo #bpm: { Title: { Value: ID } }',
     },
   ];
 
   describe.each(annotationConfigs)(
     'Build Validation: $annotationOn',
-    ({ annotationBase, baseProps }) => {
+    ({ annotationBase, baseProps, businessKeyAnnotation }) => {
       describe('Valid events', () => {
         it('should PASS with CRUD events', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, on: 'CREATE' }
+                        ${businessKeyAnnotation}
                         entity OnCreate { key ID: UUID; }
 
                         ${annotationBase}: { ${baseProps}, on: 'UPDATE' }
+                        ${businessKeyAnnotation}
                         entity OnUpdate { key ID: UUID; }
 
                         ${annotationBase}: { ${baseProps}, on: 'DELETE' }
+                        ${businessKeyAnnotation}
                         entity OnDelete { key ID: UUID; }
 
                         ${annotationBase}: { ${baseProps}, on: 'READ' }
+                        ${businessKeyAnnotation}
                         entity OnRead { key ID: UUID; }
                     `);
 
@@ -163,6 +174,7 @@ describe('.on annotation tests ', () => {
         it('should PASS with wildcard (*) event', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, on: '*' }
+                        ${businessKeyAnnotation}
                         entity OnWildcard { key ID: UUID; }
                     `);
 
@@ -174,6 +186,7 @@ describe('.on annotation tests ', () => {
         it('should PASS when on references a valid bound action', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, on: 'customAction' }
+                        ${businessKeyAnnotation}
                         entity WithAction {
                             key ID: UUID;
                             status: String;
@@ -192,6 +205,7 @@ describe('.on annotation tests ', () => {
         it('should ERROR when on is not a valid lifecycle event or action', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, on: 'INVALID_EVENT' }
+                        ${businessKeyAnnotation}
                         entity InvalidEvent { key ID: UUID; }
                     `);
 
@@ -209,6 +223,7 @@ describe('.on annotation tests ', () => {
         it('should ERROR when on is lowercase (case sensitive)', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, on: 'delete' }
+                        ${businessKeyAnnotation}
                         entity LowercaseEvent { key ID: UUID; }
                     `);
 
@@ -221,6 +236,7 @@ describe('.on annotation tests ', () => {
         it('should ERROR when on is mixed case', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, on: 'Delete' }
+                        ${businessKeyAnnotation}
                         entity MixedCaseEvent { key ID: UUID; }
                     `);
 
@@ -233,6 +249,7 @@ describe('.on annotation tests ', () => {
         it('should ERROR when on is empty string', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, on: '' }
+                        ${businessKeyAnnotation}
                         entity EmptyOn { key ID: UUID; }
                     `);
 
@@ -280,6 +297,7 @@ describe('.cascade annotation tests', () => {
         it('should PASS when cascade is true', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, cascade: true }
+                        @UI.HeaderInfo #bpm: { Title: { Value: ID } }
                         entity CascadeTrue { key ID: UUID; }
                     `);
 
@@ -291,6 +309,7 @@ describe('.cascade annotation tests', () => {
         it('should PASS when cascade is false', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, cascade: false }
+                        @UI.HeaderInfo #bpm: { Title: { Value: ID } }
                         entity CascadeFalse { key ID: UUID; }
                     `);
 
@@ -304,6 +323,7 @@ describe('.cascade annotation tests', () => {
         it('should ERROR when cascade is a string instead of boolean', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, cascade: 'true' }
+                        @UI.HeaderInfo #bpm: { Title: { Value: ID } }
                         entity CascadeString { key ID: UUID; }
                     `);
 
@@ -321,6 +341,7 @@ describe('.cascade annotation tests', () => {
         it('should ERROR when cascade is a number instead of boolean', async () => {
           const cdsSource = wrapEntity(`
                         ${annotationBase}: { ${baseProps}, cascade: 1 }
+                        @UI.HeaderInfo #bpm: { Title: { Value: ID } }
                         entity CascadeNumber { key ID: UUID; }
                     `);
 
@@ -345,6 +366,7 @@ describe('.if annotation tests', () => {
     annotationBase: string;
     annotationIf: string;
     baseProps: string;
+    businessKeyAnnotation: string;
   }
 
   const annotationConfigs: AnnotationConfig[] = [
@@ -352,27 +374,31 @@ describe('.if annotation tests', () => {
       annotationBase: PROCESS_START,
       annotationIf: PROCESS_START_IF,
       baseProps: `id: 'someProcess', on: 'UPDATE'`,
+      businessKeyAnnotation: '',
     },
     {
       annotationBase: PROCESS_CANCEL,
       annotationIf: PROCESS_CANCEL_IF,
       baseProps: `on: 'UPDATE', cascade: true`,
+      businessKeyAnnotation: '@UI.HeaderInfo #bpm: { Title: { Value: ID } }',
     },
     {
       annotationBase: PROCESS_RESUME,
       annotationIf: PROCESS_RESUME_IF,
       baseProps: `on: 'UPDATE', cascade: true`,
+      businessKeyAnnotation: '@UI.HeaderInfo #bpm: { Title: { Value: ID } }',
     },
     {
       annotationBase: PROCESS_SUSPEND,
       annotationIf: PROCESS_SUSPEND_IF,
       baseProps: `on: 'UPDATE', cascade: true`,
+      businessKeyAnnotation: '@UI.HeaderInfo #bpm: { Title: { Value: ID } }',
     },
   ];
 
   describe.each(annotationConfigs)(
     'Build Validation: $annotationIf',
-    ({ annotationBase, annotationIf, baseProps }) => {
+    ({ annotationBase, annotationIf, baseProps, businessKeyAnnotation }) => {
       describe('Valid expressions', () => {
         it('should PASS with simple comparison expression', async () => {
           const cdsSource = wrapEntity(`
@@ -380,6 +406,7 @@ describe('.if annotation tests', () => {
                             ${baseProps},
                             if: (status = 'CANCELLED')
                         }
+                        ${businessKeyAnnotation}
                         entity SimpleWhen {
                             key ID: UUID;
                             status: String;
@@ -397,6 +424,7 @@ describe('.if annotation tests', () => {
                             ${baseProps},
                             if: (status = 'CANCELLED' and priority != 'HIGH')
                         }
+                        ${businessKeyAnnotation}
                         entity ComplexAndWhen {
                             key ID: UUID;
                             status: String;
@@ -415,6 +443,7 @@ describe('.if annotation tests', () => {
                             ${baseProps},
                             if: (retryCount >= 3)
                         }
+                        ${businessKeyAnnotation}
                         entity NumericWhen {
                             key ID: UUID;
                             retryCount: Integer;
@@ -434,6 +463,7 @@ describe('.if annotation tests', () => {
                             ${baseProps},
                             if: 'not an expression'
                         }
+                        ${businessKeyAnnotation}
                         entity InvalidWhen {
                             key ID: UUID;
                             retryCount: Integer;
@@ -461,6 +491,7 @@ describe('other validation logic tests', () => {
     annotationBase: string;
     baseProps: string;
     invalidProps: string;
+    businessKeyAnnotation: string;
   }
 
   const annotationConfigs: AnnotationConfig[] = [
@@ -468,32 +499,37 @@ describe('other validation logic tests', () => {
       annotationBase: PROCESS_START,
       baseProps: `id: 'someProcess', on: 'DELETE'`,
       invalidProps: `id: 'someProcess'`,
+      businessKeyAnnotation: '',
     },
     {
       annotationBase: PROCESS_CANCEL,
       baseProps: `on: 'DELETE', cascade: true`,
       invalidProps: `cascade: true`,
+      businessKeyAnnotation: '@UI.HeaderInfo #bpm: { Title: { Value: ID } }',
     },
     {
       annotationBase: PROCESS_SUSPEND,
       baseProps: `on: 'DELETE', cascade: true`,
       invalidProps: `cascade: true`,
+      businessKeyAnnotation: '@UI.HeaderInfo #bpm: { Title: { Value: ID } }',
     },
     {
       annotationBase: PROCESS_RESUME,
       baseProps: `on: 'DELETE', cascade: true`,
       invalidProps: `cascade: true`,
+      businessKeyAnnotation: '@UI.HeaderInfo #bpm: { Title: { Value: ID } }',
     },
   ];
 
   describe.each(annotationConfigs)(
     'Build Validation: $annotationBase other tests',
-    ({ annotationBase, baseProps, invalidProps }) => {
+    ({ annotationBase, baseProps, invalidProps, businessKeyAnnotation }) => {
       it('should WARN for multiple unknown annotations', async () => {
         const cdsSource = wrapEntity(`
                     ${annotationBase}: { ${baseProps} }
                     ${annotationBase}.foo: 'bar'
                     ${annotationBase}.baz: 123
+                    ${businessKeyAnnotation}
                     entity MultipleUnknown { key ID: UUID; }
                 `);
 
@@ -509,9 +545,11 @@ describe('other validation logic tests', () => {
         const cdsSource = `
                     service TestService {
                         ${annotationBase}: { ${baseProps} }
+                        ${businessKeyAnnotation}
                         entity ValidEntity1 { key ID: UUID; }
 
                         ${annotationBase}: { ${baseProps} }
+                        ${businessKeyAnnotation}
                         entity ValidEntity2 { key ID: UUID; }
 
                         ${annotationBase}: { ${invalidProps} }
@@ -529,4 +567,127 @@ describe('other validation logic tests', () => {
       });
     },
   );
+});
+
+// Tests business key requirement for cancel, suspend, resume
+describe('Business key validation tests', () => {
+  const lifecycleAnnotations = [
+    { annotationBase: PROCESS_CANCEL, annotationOn: PROCESS_CANCEL_ON },
+    { annotationBase: PROCESS_SUSPEND, annotationOn: PROCESS_SUSPEND_ON },
+    { annotationBase: PROCESS_RESUME, annotationOn: PROCESS_RESUME_ON },
+  ];
+
+  describe.each(lifecycleAnnotations)(
+    'Business key required for $annotationBase',
+    ({ annotationBase }) => {
+      it('should ERROR when .on is defined but no business key annotation exists', async () => {
+        const cdsSource = wrapEntity(`
+                    ${annotationBase}: { on: 'UPDATE' }
+                    entity NoBizKey { key ID: UUID; }
+                `);
+
+        const result = await validateModel(cdsSource);
+
+        expect(result.errors.length).toBeGreaterThan(0);
+        expect(
+          result.errors.some(
+            (e) => e.msg.includes('business key') && e.msg.includes(annotationBase),
+          ),
+        ).toBe(true);
+        expect(result.buildSucceeded).toBe(false);
+      });
+
+      it('should ERROR when .on and .cascade are defined but no business key annotation exists', async () => {
+        const cdsSource = wrapEntity(`
+                    ${annotationBase}: { on: 'DELETE', cascade: true }
+                    entity NoBizKeyCascade { key ID: UUID; }
+                `);
+
+        const result = await validateModel(cdsSource);
+
+        expect(result.errors.length).toBeGreaterThan(0);
+        expect(
+          result.errors.some(
+            (e) => e.msg.includes('business key') && e.msg.includes(annotationBase),
+          ),
+        ).toBe(true);
+        expect(result.buildSucceeded).toBe(false);
+      });
+
+      it('should PASS with @UI.HeaderInfo #bpm business key', async () => {
+        const cdsSource = wrapEntity(`
+                    ${annotationBase}: { on: 'UPDATE' }
+                    @UI.HeaderInfo #bpm: { Title: { Value: ID } }
+                    entity WithHeaderInfoBpm { key ID: UUID; }
+                `);
+
+        const result = await validateModel(cdsSource);
+
+        expect(result.errors).toHaveLength(0);
+        expect(result.buildSucceeded).toBe(true);
+      });
+
+      it('should PASS with @UI.HeaderInfo business key', async () => {
+        const cdsSource = wrapEntity(`
+                    ${annotationBase}: { on: 'UPDATE' }
+                    @UI.HeaderInfo: { Title: { Value: ID } }
+                    entity WithHeaderInfo { key ID: UUID; }
+                `);
+
+        const result = await validateModel(cdsSource);
+
+        expect(result.errors).toHaveLength(0);
+        expect(result.buildSucceeded).toBe(true);
+      });
+
+      it('should PASS with @Common.SemanticKey #bpm business key', async () => {
+        const cdsSource = wrapEntity(`
+                    ${annotationBase}: { on: 'UPDATE' }
+                    @Common.SemanticKey #bpm: [ID]
+                    entity WithSemanticKeyBpm { key ID: UUID; }
+                `);
+
+        const result = await validateModel(cdsSource);
+
+        expect(result.errors).toHaveLength(0);
+        expect(result.buildSucceeded).toBe(true);
+      });
+
+      it('should PASS with @Common.SemanticKey business key', async () => {
+        const cdsSource = wrapEntity(`
+                    ${annotationBase}: { on: 'UPDATE' }
+                    @Common.SemanticKey: [ID]
+                    entity WithSemanticKey { key ID: UUID; }
+                `);
+
+        const result = await validateModel(cdsSource);
+
+        expect(result.errors).toHaveLength(0);
+        expect(result.buildSucceeded).toBe(true);
+      });
+    },
+  );
+
+  it('should NOT require business key for @bpm.process.start', async () => {
+    const cdsSource = wrapEntity(`
+                @bpm.process.start: { id: 'someProcess', on: 'CREATE' }
+                entity StartNoBizKey { key ID: UUID; }
+            `);
+
+    const result = await validateModel(cdsSource);
+
+    expect(result.errors.some((e) => e.msg.includes('business key'))).toBe(false);
+    expect(result.buildSucceeded).toBe(true);
+  });
+
+  it('should NOT require business key for entities without process annotations', async () => {
+    const cdsSource = wrapEntity(`
+                entity PlainEntity { key ID: UUID; name: String; }
+            `);
+
+    const result = await validateModel(cdsSource);
+
+    expect(result.errors).toHaveLength(0);
+    expect(result.buildSucceeded).toBe(true);
+  });
 });
