@@ -5,7 +5,6 @@ import {
   EntityRow,
   getBusinessKeyColumnOrReject,
   getEntityDataFromRequest,
-  getKeyFieldsForEntity,
   ProcessLifecyclePayload,
   resolveEntityRowOrReject,
   retrieveBusinessKeyExpression,
@@ -102,6 +101,8 @@ export function createProcessActionAddDeletedEntityHandler(config: ProcessAction
   return createAddDeletedEntityHandler({
     action: config.action,
     ifAnnotation: config.annotations.IF,
-    getColumns: (req) => getKeyFieldsForEntity(req.target as cds.entity),
+    getColumns: (req) => [
+      getBusinessKeyColumnOrReject(req, retrieveBusinessKeyExpression(req.target as cds.entity)),
+    ],
   });
 }

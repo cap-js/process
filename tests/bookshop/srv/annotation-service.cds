@@ -750,6 +750,11 @@ service AnnotationService {
     on: 'DELETE',
     cascade: true,
   }
+  @UI.HeaderInfo #bpm: {
+    Title: {
+      Value: (ID)
+    }
+  }
   entity DeleteStartCancel as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
@@ -764,6 +769,11 @@ service AnnotationService {
   @bpm.process.resume: {
     on: 'DELETE',
     cascade: false,
+  }
+  @UI.HeaderInfo #bpm: {
+    Title: {
+      Value: (ID)
+    }
   }
   entity DeleteStartResume as projection on my.Car {
     ID, model, manufacturer, mileage, year
@@ -780,6 +790,11 @@ service AnnotationService {
     on: 'DELETE',
     cascade: false,
   }
+  @UI.HeaderInfo #bpm: {
+    Title: {
+      Value: (ID)
+    }
+  }
   entity DeleteCancelResume as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
@@ -794,6 +809,11 @@ service AnnotationService {
   @bpm.process.suspend: {
     on: 'DELETE',
     cascade: true,
+  }
+  @UI.HeaderInfo #bpm: {
+    Title: {
+      Value: (ID)
+    }
   }
   entity DeleteCancelSuspend as projection on my.Car {
     ID, model, manufacturer, mileage, year
@@ -810,6 +830,11 @@ service AnnotationService {
     on: 'DELETE',
     cascade: true,
     if: (mileage <= 500)
+  }
+  @UI.HeaderInfo #bpm: {
+    Title: {
+      Value: (ID)
+    }
   }
   entity DeleteCancelSuspendIfExpr as projection on my.Car {
     ID, model, manufacturer, mileage, year
@@ -829,6 +854,11 @@ service AnnotationService {
   @bpm.process.resume: {
     on: 'DELETE',
     cascade: false,
+  }
+  @UI.HeaderInfo #bpm: {
+    Title: {
+      Value: (ID)
+    }
   }
   entity DeleteStartCancelResume as projection on my.Car {
     ID, model, manufacturer, mileage, year
@@ -853,6 +883,11 @@ service AnnotationService {
     on: 'DELETE',
     cascade: true,
   }
+  @UI.HeaderInfo#bpm: {
+    Title: {
+      Value: (ID)
+    }
+  }
   entity DeleteAllEvents as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
@@ -871,6 +906,11 @@ service AnnotationService {
   @bpm.process.cancel: {
     on: 'DELETE',
     cascade: false,
+  }
+  @UI.HeaderInfo #bpm: {
+    Title: {
+      Value: (ID)
+    }
   }
   entity DeleteStartInputsCancel as projection on my.Car {
     ID, model, manufacturer, mileage, year
