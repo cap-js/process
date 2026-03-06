@@ -4,8 +4,6 @@ import {
   EntityRow,
   getBusinessKeyOrReject,
   getEntityDataFromRequest,
-  isDeleteWithoutProcess,
-  ProcessDeleteRequest,
   resolveEntityRowOrReject,
 } from './utils';
 import {
@@ -26,6 +24,12 @@ import {
 } from '../shared/input-parser';
 
 import cds from '@sap/cds';
+import {
+  createAddDeletedEntityHandler,
+  isDeleteWithoutProcess,
+  PROCESS_EVENT_MAP,
+  ProcessDeleteRequest,
+} from './onDeleteUtils';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // Use InputTreeNode as ProcessStartInput (same structure)
@@ -40,6 +44,7 @@ export type ProcessStartSpec = {
 
 export function getColumnsForProcessStart(target: Target): (column_expr | string)[] {
   const startSpecs = initStartSpecs(target);
+  startSpecs.inputs = parseInputToTree(target);
   if (startSpecs.inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
     return ['*'];
@@ -49,10 +54,11 @@ export function getColumnsForProcessStart(target: Target): (column_expr | string
 }
 
 export async function handleProcessStart(req: cds.Request, data: EntityRow): Promise<void> {
-  if (isDeleteWithoutProcess(req, LOG_MESSAGES.PROCESS_NOT_STARTED)) return;
+  if (isDeleteWithoutProcess(req, LOG_MESSAGES.PROCESS_NOT_STARTED, 'start')) return;
 
   const target = req.target as Target;
-  data = ((req as ProcessDeleteRequest)._Process ??
+  const processEventKey = PROCESS_EVENT_MAP['start'];
+  data = ((req as ProcessDeleteRequest)._Process?.[processEventKey] ??
     getEntityDataFromRequest(data, req.params)) as EntityRow;
 
   const startSpecs = initStartSpecs(target);
@@ -100,6 +106,15 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
     startSpecs.id!,
   );
 }
+
+/**
+ * Fetches and attaches entity data to the request for DELETE operations
+ */
+export const addDeletedEntityToRequestStart = createAddDeletedEntityHandler({
+  action: 'start',
+  ifAnnotation: PROCESS_START_IF,
+  getColumns: (req) => getColumnsForProcessStart(req.target as Target),
+});
 
 function initStartSpecs(target: Target): ProcessStartSpec {
   const startSpecs: ProcessStartSpec = {

@@ -5,21 +5,26 @@ import {
   EntityRow,
   getBusinessKeyOrReject,
   getEntityDataFromRequest,
-  isDeleteWithoutProcess,
-  ProcessDeleteRequest,
+  getKeyFieldsForEntity,
   ProcessLifecyclePayload,
   resolveEntityRowOrReject,
 } from './utils';
+import {
+  createAddDeletedEntityHandler,
+  isDeleteWithoutProcess,
+  PROCESS_EVENT_MAP,
+  ProcessDeleteRequest,
+} from './onDeleteUtils';
 
-export type ProcessActionType = 'cancel' | 'resume' | 'suspend';
+type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
-export interface ProcessActionSpec {
+interface ProcessActionSpec {
   on?: string;
   cascade: boolean;
   conditionExpr: expr | undefined;
 }
 
-export interface ProcessActionConfig {
+interface ProcessActionConfig {
   action: ProcessActionType;
   annotations: {
     ON: string;
@@ -34,12 +39,18 @@ export interface ProcessActionConfig {
     FAILED: string;
   };
 }
+interface ProcessActionDeleteConfig {
+  action: ProcessActionType;
+  annotations: {
+    IF: string;
+  };
+}
 
 function initSpecs(
   target: Target,
   annotations: ProcessActionConfig['annotations'],
 ): ProcessActionSpec {
-  const targetAnnotations = target as unknown as Record<string, unknown>;
+  const targetAnnotations = target as cds.entity;
   return {
     on: targetAnnotations[annotations.ON] as string,
     cascade: (targetAnnotations[annotations.CASCADE] as boolean) ?? false,
@@ -51,12 +62,12 @@ function initSpecs(
 
 export function createProcessActionHandler(config: ProcessActionConfig) {
   return async function handleProcessAction(req: cds.Request, data: EntityRow): Promise<void> {
-    if (isDeleteWithoutProcess(req, config.logMessages.NOT_TRIGGERED)) return;
+    if (isDeleteWithoutProcess(req, config.logMessages.NOT_TRIGGERED, config.action)) return;
 
     const target = req.target as Target;
-    data = ((req as ProcessDeleteRequest)._Process ??
+    const processEventKey = PROCESS_EVENT_MAP[config.action];
+    data = ((req as ProcessDeleteRequest)._Process?.[processEventKey] ??
       getEntityDataFromRequest(data, req.params)) as EntityRow;
-
     // Initialize specifications from annotations
     const specs = initSpecs(target, config.annotations);
 
@@ -84,4 +95,12 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
     const payload: ProcessLifecyclePayload = { businessKey, cascade: specs.cascade };
     await emitProcessEvent(config.action, req, payload, config.logMessages.FAILED, businessKey);
   };
+}
+
+export function createProcessActionAddDeletedEntityHandler(config: ProcessActionDeleteConfig) {
+  return createAddDeletedEntityHandler({
+    action: config.action,
+    ifAnnotation: config.annotations.IF,
+    getColumns: (req) => getKeyFieldsForEntity(req.target as cds.entity),
+  });
 }

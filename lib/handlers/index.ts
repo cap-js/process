@@ -1,20 +1,19 @@
-export { handleProcessStart, getColumnsForProcessStart } from './processStart';
-export { handleProcessCancel } from './processCancel';
-export { handleProcessSuspend } from './processSuspend';
-export { handleProcessResume } from './processResume';
+export {
+  handleProcessStart,
+  getColumnsForProcessStart,
+  addDeletedEntityToRequestStart,
+} from './processStart';
+export { handleProcessCancel, addDeletedEntityToRequestCancel } from './processCancel';
+export { handleProcessSuspend, addDeletedEntityToRequestSuspend } from './processSuspend';
+export { handleProcessResume, addDeletedEntityToRequestResume } from './processResume';
 export { createProcessActionHandler } from './processActionHandler';
-export type {
-  ProcessActionType,
-  ProcessActionSpec,
-  ProcessActionConfig,
-} from './processActionHandler';
 export { registerProcessServiceHandlers } from './processService';
-export { getKeyFieldsForEntity, concatenateBusinessKey, addDeletedEntityToRequest } from './utils';
+export { getKeyFieldsForEntity, concatenateBusinessKey } from './utils';
 export type {
   EntityRow,
   ProcessStartPayload,
   ProcessLifecyclePayload,
   ProcessEventType,
   AnnotatedTarget,
-  ProcessDeleteRequest,
 } from './utils';
+export type { ProcessDeleteRequest } from './onDeleteUtils';

@@ -1,4 +1,7 @@
-import { createProcessActionHandler } from './processActionHandler';
+import {
+  createProcessActionAddDeletedEntityHandler,
+  createProcessActionHandler,
+} from './processActionHandler';
 import {
   PROCESS_CANCEL_ON,
   PROCESS_CANCEL_CASCADE,
@@ -6,8 +9,10 @@ import {
   LOG_MESSAGES,
 } from '../constants';
 
+const action = 'cancel';
+
 export const handleProcessCancel = createProcessActionHandler({
-  action: 'cancel',
+  action: action,
   annotations: {
     ON: PROCESS_CANCEL_ON,
     CASCADE: PROCESS_CANCEL_CASCADE,
@@ -19,5 +24,12 @@ export const handleProcessCancel = createProcessActionHandler({
     INVALID_KEY: 'Failed to build business key for process cancellation.',
     EMPTY_KEY: 'Business key is empty for process cancellation.',
     FAILED: 'Failed to cancel process with business key',
+  },
+});
+
+export const addDeletedEntityToRequestCancel = createProcessActionAddDeletedEntityHandler({
+  action: action,
+  annotations: {
+    IF: PROCESS_CANCEL_IF,
   },
 });

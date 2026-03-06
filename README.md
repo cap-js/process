@@ -31,6 +31,8 @@ Start developing 🙂
 
 # Current annotation implementation:
 
+Important: for process events defined on 'DELETE' operation, a before handler fetches the entity that will be deleted and stores it in `req._Process.[Start|Suspend|Resume|Cancel]` so that it can be used in our `service.after` handler.
+
 ## For starting a process:
 
 - `@bpm.process.start` -- Start a process (or classic workflow), either after entity creation, update, deletion, read, or any custom action including all entity elements unless at least one `@bpm.process.input` is given

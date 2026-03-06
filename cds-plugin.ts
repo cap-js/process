@@ -1,7 +1,6 @@
 import cds, { Results } from '@sap/cds';
 import { EntityEventCache } from './types/cds-plugin';
 import {
-  addDeletedEntityToRequest,
   handleProcessCancel,
   handleProcessResume,
   handleProcessStart,
@@ -16,6 +15,11 @@ import {
   PROCESS_PREFIX,
   CUD_EVENTS,
   EntityRow,
+  addDeletedEntityToRequestCancel,
+  addDeletedEntityToRequestStart,
+  addDeletedEntityToRequestResume,
+  addDeletedEntityToRequestSuspend,
+  ProcessDeleteRequest,
 } from './lib/index';
 import { importProcess } from './lib/processImport';
 
@@ -40,9 +44,15 @@ cds.on('serving', async (service: cds.Service) => {
     const cached = annotationCache.get(cacheKey);
 
     if (!cached) return; // Fast exit - no annotations
-    if (cached.hasCancel || cached.hasSuspend || cached.hasStart || cached.hasResume) {
-      await addDeletedEntityToRequest(req, cached.hasStart);
-    }
+    const results = await Promise.all(
+      [
+        cached.hasStart && addDeletedEntityToRequestStart(req),
+        cached.hasCancel && addDeletedEntityToRequestCancel(req),
+        cached.hasResume && addDeletedEntityToRequestResume(req),
+        cached.hasSuspend && addDeletedEntityToRequestSuspend(req),
+      ].filter(Boolean),
+    );
+    (req as ProcessDeleteRequest)._Process = Object.assign({}, ...results);
   });
 
   service.after('*', async (results: Results, req: cds.Request) => {

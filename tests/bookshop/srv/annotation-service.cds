@@ -703,6 +703,148 @@ service AnnotationService {
     }
 
   // ============================================
+  // MULTI-EVENT DELETE COMBINATIONS
+  // Testing multiple process events triggered by a single DELETE
+  // ============================================
+
+  // --------------------------------------------
+  // Start + Cancel on DELETE
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'deleteStartCancelProcess',
+    on: 'DELETE',
+  }
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: true,
+  }
+  entity DeleteStartCancel as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  }
+
+  // --------------------------------------------
+  // Start + Resume on DELETE
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'deleteStartResumeProcess',
+    on: 'DELETE',
+  }
+  @bpm.process.resume: {
+    on: 'DELETE',
+    cascade: false,
+  }
+  entity DeleteStartResume as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  }
+
+  // --------------------------------------------
+  // Cancel + Resume on DELETE
+  // --------------------------------------------
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: true,
+  }
+  @bpm.process.resume: {
+    on: 'DELETE',
+    cascade: false,
+  }
+  entity DeleteCancelResume as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  }
+
+  // --------------------------------------------
+  // Cancel + Suspend on DELETE
+  // --------------------------------------------
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: false,
+  }
+  @bpm.process.suspend: {
+    on: 'DELETE',
+    cascade: true,
+  }
+  entity DeleteCancelSuspend as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  }
+  // --------------------------------------------
+  // Cancel + Suspend on DELETE with if condition
+  // --------------------------------------------
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: false,
+    if: (mileage > 500)
+  }
+  @bpm.process.suspend: {
+    on: 'DELETE',
+    cascade: true,
+    if: (mileage <= 500)
+  }
+  entity DeleteCancelSuspendIfExpr as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  }
+
+  // --------------------------------------------
+  // Start + Cancel + Resume on DELETE (LocalTestService pattern)
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'deleteStartCancelResumeProcess',
+    on: 'DELETE',
+  }
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: true,
+  }
+  @bpm.process.resume: {
+    on: 'DELETE',
+    cascade: false,
+  }
+  entity DeleteStartCancelResume as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  }
+
+  // --------------------------------------------
+  // All four events on DELETE
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'deleteAllEventsProcess',
+    on: 'DELETE',
+  }
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: true,
+  }
+  @bpm.process.suspend: {
+    on: 'DELETE',
+    cascade: false,
+  }
+  @bpm.process.resume: {
+    on: 'DELETE',
+    cascade: true,
+  }
+  entity DeleteAllEvents as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  }
+
+  // --------------------------------------------
+  // Start with inputs + Cancel on DELETE
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'deleteStartInputsCancelProcess',
+    on: 'DELETE',
+    inputs: [
+      { path: $self.model, as: 'CarModel' },
+      { path: $self.manufacturer, as: 'CarMaker' }
+    ]
+  }
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: false,
+  }
+  entity DeleteStartInputsCancel as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  }
+
+  // ============================================
   // START INPUT ANNOTATION TESTS
   // Testing inputs array in @bpm.process.start
   // ============================================
