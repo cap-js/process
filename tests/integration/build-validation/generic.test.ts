@@ -676,9 +676,7 @@ describe('Business key validation tests', () => {
 
     const result = await validateModel(cdsSource);
 
-    expect(
-      result.errors.some((e) => e.msg.includes('business key')),
-    ).toBe(false);
+    expect(result.errors.some((e) => e.msg.includes('business key'))).toBe(false);
     expect(result.buildSucceeded).toBe(true);
   });
 
