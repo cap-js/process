@@ -82,6 +82,6 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
 
     // Emit process event
     const payload: ProcessLifecyclePayload = { businessKey, cascade: specs.cascade };
-    await emitProcessEvent(config.action, req, payload, config.logMessages.FAILED, businessKey);
+    await emitProcessEvent(config.action, req, payload, config.logMessages.FAILED);
   };
 }

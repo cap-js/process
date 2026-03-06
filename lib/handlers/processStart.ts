@@ -96,7 +96,6 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
     req,
     payload,
     `Failed to start process with definition ID ${startSpecs.id!}.`,
-    startSpecs.id!,
   );
 }
 
