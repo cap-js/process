@@ -15,13 +15,13 @@ import {
   PROCESS_PREFIX,
   CUD_EVENTS,
   EntityRow,
+  addDeletedEntityToRequestCancel,
+  addDeletedEntityToRequestCreate,
+  addDeletedEntityToRequestResume,
+  addDeletedEntityToRequestSuspend,
+  ProcessDeleteRequest,
 } from './lib/index';
 import { importProcess } from './lib/processImport';
-import { addDeletedEntityToRequestCancel } from './lib/handlers/processCancel';
-import { addDeletedEntityToRequestCreate } from './lib/handlers/processStart';
-import { addDeletedEntityToRequestResume } from './lib/handlers/processResume';
-import { addDeletedEntityToRequestSuspend } from './lib/handlers/processSuspend';
-import { ProcessDeleteRequest } from './lib/handlers/onDeleteUtils';
 
 // Register build plugin for annotation validation during cds build
 cds.build?.register?.('process-validation', ProcessValidationPlugin);

@@ -1,7 +1,7 @@
-export { handleProcessStart, getColumnsForProcessStart } from './processStart';
-export { handleProcessCancel } from './processCancel';
-export { handleProcessSuspend } from './processSuspend';
-export { handleProcessResume } from './processResume';
+export { handleProcessStart, getColumnsForProcessStart, addDeletedEntityToRequestCreate } from './processStart';
+export { handleProcessCancel, addDeletedEntityToRequestCancel } from './processCancel';
+export { handleProcessSuspend, addDeletedEntityToRequestSuspend } from './processSuspend';
+export { handleProcessResume, addDeletedEntityToRequestResume } from './processResume';
 export { createProcessActionHandler } from './processActionHandler';
 export type {
   ProcessActionType,
@@ -17,3 +17,4 @@ export type {
   ProcessEventType,
   AnnotatedTarget,
 } from './utils';
+export type { ProcessDeleteRequest } from './onDeleteUtils';

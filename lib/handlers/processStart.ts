@@ -1,13 +1,9 @@
 import { column_expr, expr, Target } from '@sap/cds';
 import {
-  buildWhereExpression,
   emitProcessEvent,
   EntityRow,
   getBusinessKeyOrReject,
   getEntityDataFromRequest,
-  isDeleteWithoutProcess,
-  PROCESS_EVENT_MAP,
-  ProcessDeleteRequest,
   resolveEntityRowOrReject,
 } from './utils';
 import {
@@ -28,6 +24,12 @@ import {
 } from '../shared/input-parser';
 
 import cds from '@sap/cds';
+import {
+  buildWhereDeleteExpression,
+  isDeleteWithoutProcess,
+  PROCESS_EVENT_MAP,
+  ProcessDeleteRequest,
+} from './onDeleteUtils';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // Use InputTreeNode as ProcessStartInput (same structure)
@@ -118,7 +120,7 @@ export async function addDeletedEntityToRequestCreate(req: cds.Request): Promise
 
   const conditionExpr = annotatedTarget[PROCESS_START_IF] as { xpr: expr } | undefined;
 
-  const where = buildWhereExpression(req as ProcessDeleteRequest, conditionExpr);
+  const where = buildWhereDeleteExpression(req as ProcessDeleteRequest, conditionExpr);
 
   if (where) {
     // Safeguard: use ['*'] if columns array is empty to avoid invalid SQL
