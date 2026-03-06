@@ -15,7 +15,7 @@ export const PROCESS_EVENT_MAP: Record<string, keyof DeleteProcessObject> = {
 interface AddDeletedEntityConfig {
   action: string;
   ifAnnotation: string;
-  getColumns: (req: cds.Request) => (column_expr | string)[];
+  getColumns: (req: cds.Request) => Promise<(column_expr | string)[]>;
 }
 
 export interface ProcessDeleteRequest extends cds.Request {
@@ -74,7 +74,7 @@ export function isDeleteWithoutProcess(
  */
 export function createAddDeletedEntityHandler(config: AddDeletedEntityConfig) {
   return async function addDeletedEntityToRequest(req: cds.Request): Promise<EntityRow | void> {
-    const columns = config.getColumns(req);
+    const columns = await config.getColumns(req);
 
     const annotatedTarget = req.target as cds.entity;
     const conditionExpr = annotatedTarget[config.ifAnnotation as string] as
