@@ -110,7 +110,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
 /**
  * Fetches and attaches entity data to the request for DELETE operations
  */
-export const addDeletedEntityToRequestCreate = createAddDeletedEntityHandler({
+export const addDeletedEntityToRequestStart = createAddDeletedEntityHandler({
   action: 'start',
   ifAnnotation: PROCESS_START_IF,
   getColumns: (req) => getColumnsForProcessStart(req.target as Target),

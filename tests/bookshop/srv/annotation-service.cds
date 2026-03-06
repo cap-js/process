@@ -766,6 +766,22 @@ service AnnotationService {
   entity DeleteCancelSuspend as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
+  // --------------------------------------------
+  // Cancel + Suspend on DELETE with if condition
+  // --------------------------------------------
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: false,
+    if: (mileage > 500)
+  }
+  @bpm.process.suspend: {
+    on: 'DELETE',
+    cascade: true,
+    if: (mileage <= 500)
+  }
+  entity DeleteCancelSuspendIfExpr as projection on my.Car {
+    ID, model, manufacturer, mileage, year
+  }
 
   // --------------------------------------------
   // Start + Cancel + Resume on DELETE (LocalTestService pattern)

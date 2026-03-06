@@ -143,6 +143,31 @@ describe('Integration tests for multiple process events on DELETE', () => {
   });
 
   // ================================================
+  // Cancel + Suspend on DELETE with if condition
+  // ================================================
+  describe('Cancel + Suspend on DELETE with if condition', () => {
+    it('should trigger only suspend', async () => {
+      const car = createTestCar(undefined, 50);
+
+      await POST('/odata/v4/annotation/DeleteCancelSuspendIfExpr', car);
+      foundMessages = [];
+
+      const deleteResponse = await DELETE(
+        `/odata/v4/annotation/DeleteCancelSuspendIfExpr('${car.ID}')`,
+      );
+
+      expect(deleteResponse.status).toBe(204);
+      expect(foundMessages.length).toBe(1);
+      expect(findCancelMessages().length).toBe(0);
+      expect(findSuspendMessages().length).toBe(1);
+      expect(findSuspendMessages()[0].data).toEqual({
+        businessKey: car.ID,
+        cascade: true,
+      });
+    });
+  });
+
+  // ================================================
   // Start + Cancel + Resume on DELETE
   // ================================================
   describe('Start + Cancel + Resume on DELETE', () => {

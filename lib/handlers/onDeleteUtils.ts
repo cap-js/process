@@ -5,10 +5,10 @@ import { EntityRow } from './utils';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 export const PROCESS_EVENT_MAP: Record<string, keyof DeleteProcessObject> = {
-  start: 'ProcessStart',
-  cancel: 'ProcessCancel',
-  suspend: 'ProcessSuspend',
-  resume: 'ProcessResume',
+  start: 'Start',
+  cancel: 'Cancel',
+  suspend: 'Suspend',
+  resume: 'Resume',
 };
 /**
  * Checks if this is a DELETE request without process data (condition not met)
@@ -39,10 +39,10 @@ export interface ProcessDeleteRequest extends cds.Request {
 }
 
 type DeleteProcessObject = {
-  ProcessStart?: Results;
-  ProcessCancel?: Results;
-  ProcessSuspend?: Results;
-  ProcessResume?: Results;
+  Start?: Results;
+  Cancel?: Results;
+  Suspend?: Results;
+  Resume?: Results;
 };
 
 export function buildWhereDeleteExpression(

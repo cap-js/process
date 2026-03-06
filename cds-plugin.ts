@@ -16,7 +16,7 @@ import {
   CUD_EVENTS,
   EntityRow,
   addDeletedEntityToRequestCancel,
-  addDeletedEntityToRequestCreate,
+  addDeletedEntityToRequestStart,
   addDeletedEntityToRequestResume,
   addDeletedEntityToRequestSuspend,
   ProcessDeleteRequest,
@@ -46,14 +46,13 @@ cds.on('serving', async (service: cds.Service) => {
     if (!cached) return; // Fast exit - no annotations
     const results = await Promise.all(
       [
-        cached.hasStart && addDeletedEntityToRequestCreate(req),
+        cached.hasStart && addDeletedEntityToRequestStart(req),
         cached.hasCancel && addDeletedEntityToRequestCancel(req),
         cached.hasResume && addDeletedEntityToRequestResume(req),
         cached.hasSuspend && addDeletedEntityToRequestSuspend(req),
       ].filter(Boolean),
     );
-    const combinedResults = Object.assign({}, ...results);
-    (req as ProcessDeleteRequest)._Process = combinedResults;
+    (req as ProcessDeleteRequest)._Process = Object.assign({}, ...results);
   });
 
   service.after('*', async (results: Results, req: cds.Request) => {
