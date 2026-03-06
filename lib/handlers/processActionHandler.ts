@@ -16,15 +16,15 @@ import {
   ProcessDeleteRequest,
 } from './onDeleteUtils';
 
-export type ProcessActionType = 'cancel' | 'resume' | 'suspend';
+type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
-export interface ProcessActionSpec {
+interface ProcessActionSpec {
   on?: string;
   cascade: boolean;
   conditionExpr: expr | undefined;
 }
 
-export interface ProcessActionConfig {
+interface ProcessActionConfig {
   action: ProcessActionType;
   annotations: {
     ON: string;
@@ -39,12 +39,18 @@ export interface ProcessActionConfig {
     FAILED: string;
   };
 }
+interface ProcessActionDeleteConfig {
+  action: ProcessActionType;
+  annotations: {
+    IF: string;
+  };
+}
 
 function initSpecs(
   target: Target,
   annotations: ProcessActionConfig['annotations'],
 ): ProcessActionSpec {
-  const targetAnnotations = target as unknown as Record<string, unknown>;
+  const targetAnnotations = target as cds.entity;
   return {
     on: targetAnnotations[annotations.ON] as string,
     cascade: (targetAnnotations[annotations.CASCADE] as boolean) ?? false,
@@ -90,12 +96,7 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
     await emitProcessEvent(config.action, req, payload, config.logMessages.FAILED, businessKey);
   };
 }
-export interface ProcessActionDeleteConfig {
-  action: ProcessActionType;
-  annotations: {
-    IF: string;
-  };
-}
+
 export function createProcessActionAddDeletedEntityHandler(config: ProcessActionDeleteConfig) {
   return createAddDeletedEntityHandler({
     action: config.action,

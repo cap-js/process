@@ -70,10 +70,6 @@ export function getEntityDataFromRequest(
   data: EntityRow,
   reqParams: Record<string, unknown>[],
 ): EntityRow {
-  // const reqParams = req.params;
-  // const reqData = (req.data as EntityRow) ?? {};
-  // const reqResults = (req as unknown as { results: EntityRow }).results;
-
   if (reqParams && Array.isArray(reqParams) && reqParams.length > 0) {
     const paramsData = reqParams.reduce((acc: EntityRow, param) => {
       if (typeof param === 'object' && param !== null) {

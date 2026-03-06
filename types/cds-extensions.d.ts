@@ -78,7 +78,18 @@ declare module '@sap/cds' {
     [key: string]: any;
   }
 
-  interface DeleteRequest extends cds.Request {
-    _Process?: cds.entity[];
+  /**
+   * CDS request with process-specific data for DELETE operations
+   */
+
+  interface ProcessDeleteRequest extends cds.Request {
+    _Process?: DeleteProcessObject;
   }
+
+  type DeleteProcessObject = {
+    Start?: Results;
+    Cancel?: Results;
+    Suspend?: Results;
+    Resume?: Results;
+  };
 }
