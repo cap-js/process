@@ -1,11 +1,13 @@
-import cds from '@sap/cds';
 import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
-import { PROCESS_INPUT, PROCESS_PREFIX } from '../constants';
-import { ProcessValidationPlugin } from './plugin';
-import { ERROR_CYCLE_DETECTED } from './constants';
-
-const Plugin = cds.build?.Plugin;
-const ERROR = Plugin?.ERROR;
+import { PROCESS_PREFIX, PROCESS_START_INPUTS } from '../constants';
+import {
+  InputCSNEntry,
+  InputTreeNode,
+  parseInputsArray,
+  buildInputTree,
+  EntityContext,
+  WILDCARD,
+} from '../shared/input-parser';
 
 export type ElementType = {
   type: string;
@@ -13,6 +15,32 @@ export type ElementType = {
   isArray?: boolean;
   properties?: Record<string, ElementType>;
 };
+
+/**
+ * Creates an EntityContext for build-time CSN entities
+ */
+function createCsnEntityContext(
+  elements: Record<string, CsnElement>,
+  allDefinitions: Record<string, CsnDefinition>,
+): EntityContext {
+  return {
+    getElement: (name: string) => {
+      const element = elements[name];
+      if (!element) return undefined;
+
+      const isAssocOrComp =
+        element.type === 'cds.Association' || element.type === 'cds.Composition';
+      const targetDef = element.target ? allDefinitions[element.target] : undefined;
+      const childElements =
+        targetDef && targetDef.kind === 'entity'
+          ? (targetDef.elements as Record<string, CsnElement>)
+          : {};
+      const targetEntity = createCsnEntityContext(childElements, allDefinitions);
+
+      return { isAssocOrComp, targetEntity };
+    },
+  };
+}
 
 /**
  * Checks if a type name is a complex (non-CDS built-in) type
@@ -37,16 +65,32 @@ function hasItems(obj: unknown): obj is { items: { type?: string } } {
 
 /**
  * Resolves an inline array element (has items but no type) to ElementType
+ * Handles two cases:
+ * 1. `items: many TypeName` -> items.type is set
+ * 2. `items: many { ID: UUID; }` -> items.elements is set (anonymous inline type)
  */
 function resolveInlineArrayElement(
-  element: { items?: { type?: string }; notNull?: boolean },
+  element: { items?: { type?: string; elements?: Record<string, unknown> }; notNull?: boolean },
   allDefinitions: Record<string, CsnDefinition>,
   visited: Set<string>,
 ): ElementType | null {
-  const itemType = element.items?.type;
-  if (!itemType) return null;
+  if (!element.items) return null;
 
   const isMandatory = element.notNull ?? false;
+  const itemType = element.items.type;
+
+  // Case 1: Anonymous inline array type with elements directly (e.g., `items: many { ID: UUID; }`)
+  if (!itemType && element.items.elements) {
+    const nestedElements = getProcessDefInputsAndTypes(
+      { elements: element.items.elements } as CsnDefinition,
+      allDefinitions,
+      visited,
+    );
+    return { type: 'anonymous', isMandatory, isArray: true, properties: nestedElements };
+  }
+
+  // Case 2: Named type reference (e.g., `items: many ItemType`)
+  if (!itemType) return null;
 
   // Complex array item type - need to resolve nested elements
   if (isComplexType(itemType) && !visited.has(itemType)) {
@@ -136,7 +180,11 @@ function resolveComplexTypeElement(
  * Resolves a single element to its ElementType representation
  */
 function resolveElementToType(
-  element: { type?: string; items?: { type?: string }; notNull?: boolean },
+  element: {
+    type?: string;
+    items?: { type?: string; elements?: Record<string, unknown> };
+    notNull?: boolean;
+  },
   allDefinitions: Record<string, CsnDefinition>,
   visited: Set<string>,
 ): ElementType | null {
@@ -182,123 +230,17 @@ export function getProcessDefInputsAndTypes(
     if (Object.hasOwn(elements, name)) {
       const element = elements[name];
       const resolvedType = resolveElementToType(
-        element as { type?: string; items?: { type?: string }; notNull?: boolean },
+        element as {
+          type?: string;
+          items?: { type?: string; elements?: Record<string, unknown> };
+          notNull?: boolean;
+        },
         allDefinitions,
         visited,
       );
       if (resolvedType) {
         result[name] = resolvedType;
       }
-    }
-  }
-  return result;
-}
-
-/**
- * Extracts element names and types from an entity definition
- */
-export function getElementNamesAndTypes(
-  buildPlugin: ProcessValidationPlugin,
-  def: CsnEntity,
-  allDefinitions: Record<string, CsnDefinition>,
-  visited: Set<string>,
-): Record<string, ElementType> {
-  const elements = def.elements ?? {};
-
-  // Check if at least one element has @bpm.process.input
-  let hasInputAnnotation = false;
-  for (const name in elements) {
-    if (PROCESS_INPUT in elements[name]) {
-      hasInputAnnotation = true;
-      break;
-    }
-  }
-
-  const result: Record<string, ElementType> = {};
-
-  for (const name in elements) {
-    const element = elements[name];
-
-    // Skip elements without input annotation if any element has input annotation
-    if (hasInputAnnotation && !(PROCESS_INPUT in element)) {
-      continue;
-    }
-    const isAssociationOrComposition =
-      element.type === 'cds.Association' || element.type === 'cds.Composition';
-    const isMandatory = element['@mandatory'] === true;
-
-    // Use annotation value or element name depending on if it is present
-    const inputAnnotation = element[PROCESS_INPUT];
-    const keyName = typeof inputAnnotation === 'string' ? inputAnnotation : name;
-
-    if (isAssociationOrComposition) {
-      const associatedProperties = getRecursiveElementNamesAndTypes(
-        buildPlugin,
-        hasInputAnnotation,
-        element,
-        keyName,
-        allDefinitions,
-        visited,
-      );
-      result[keyName] = {
-        type: element.type,
-        isMandatory,
-        isArray: element.cardinality?.max === '*',
-        properties: associatedProperties,
-      };
-    } else {
-      result[keyName] = { type: element.type, isMandatory };
-    }
-  }
-
-  return result;
-}
-
-/**
- * Recursively gets element names and types from associated entities
- */
-function getRecursiveElementNamesAndTypes(
-  buildPlugin: ProcessValidationPlugin,
-  hasInputAnnotation: boolean,
-  element: CsnElement,
-  keyName: string,
-  allDefinitions: Record<string, CsnDefinition>,
-  visited: Set<string>,
-): Record<string, ElementType> {
-  // When no annotation is present, do not include elements
-  if (!hasInputAnnotation || !element.target) {
-    return {};
-  }
-
-  // Prohibit cycles
-  if (visited.has(element.target)) {
-    buildPlugin.pushMessage(ERROR_CYCLE_DETECTED(element.target), ERROR);
-    return {};
-  }
-
-  const targetDef = allDefinitions[element.target];
-  if (!targetDef || targetDef.kind !== 'entity') {
-    return {};
-  }
-
-  // Track visited entity to prevent cycles
-  const newVisited = new Set(visited);
-  newVisited.add(element.target);
-
-  // Recursively get elements from associated entity
-  const associatedElements = getElementNamesAndTypes(
-    buildPlugin,
-    targetDef,
-    allDefinitions,
-    newVisited,
-  );
-
-  // Return associated elements
-  const result: Record<string, ElementType> = {};
-  for (const assocName in associatedElements) {
-    if (Object.hasOwn(associatedElements, assocName)) {
-      const assocType = associatedElements[assocName];
-      result[assocName] = assocType;
     }
   }
   return result;
@@ -327,4 +269,160 @@ export function getProcessDefinitions(
   }
 
   return processMap;
+}
+
+/**
+ * Extracts element names and types from an entity definition based on the inputs array.
+ * If no inputs array is defined, returns all entity fields.
+ */
+export function getElementNamesAndTypes(
+  def: CsnEntity,
+  allDefinitions: Record<string, CsnDefinition>,
+): Record<string, ElementType> {
+  const elements = def.elements ?? {};
+  const inputsCSN = def[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
+
+  // If inputs array is defined, parse it to get specific fields
+  if (inputsCSN && inputsCSN.length > 0) {
+    const parsedEntries = parseInputsArray(inputsCSN);
+    const entityContext = createCsnEntityContext(
+      elements as Record<string, CsnElement>,
+      allDefinitions,
+    );
+    const inputTree = buildInputTree(parsedEntries, entityContext);
+    return convertTreeToElementTypes(
+      inputTree,
+      elements as Record<string, CsnElement>,
+      allDefinitions,
+    );
+  }
+
+  // No inputs array defined - return all entity fields
+  return getAllElementTypes(elements as Record<string, CsnElement>, allDefinitions);
+}
+
+/**
+ * Converts InputTreeNode[] to Record<string, ElementType>
+ */
+function convertTreeToElementTypes(
+  tree: InputTreeNode[],
+  elements: Record<string, CsnElement>,
+  allDefinitions: Record<string, CsnDefinition>,
+): Record<string, ElementType> {
+  const result: Record<string, ElementType> = {};
+
+  for (const node of tree) {
+    // Handle wildcard '*' (from $self) - expand all elements
+    if (node.sourceElement === WILDCARD) {
+      const allTypes = getAllElementTypes(elements, allDefinitions);
+      Object.assign(result, allTypes);
+      continue;
+    }
+
+    const element = elements[node.sourceElement];
+    if (!element) continue;
+
+    const keyName = node.targetVariable ?? node.sourceElement;
+    const isMandatory = element['@mandatory'] === true;
+
+    if (node.associatedInputElements !== undefined) {
+      // This is an association/composition
+      const targetDef = element.target ? allDefinitions[element.target] : undefined;
+      const childElements =
+        targetDef && targetDef.kind === 'entity'
+          ? (targetDef.elements as Record<string, CsnElement>)
+          : {};
+
+      if (node.associatedInputElements.length > 0) {
+        // Has specific nested fields
+        result[keyName] = {
+          type: element.type,
+          isMandatory,
+          isArray: element.cardinality?.max === '*',
+          properties: convertTreeToElementTypes(
+            node.associatedInputElements,
+            childElements,
+            allDefinitions,
+          ),
+        };
+      } else {
+        // Expand all (*) - get all child element types
+        result[keyName] = {
+          type: element.type,
+          isMandatory,
+          isArray: element.cardinality?.max === '*',
+          properties: getAllElementTypes(childElements, allDefinitions),
+        };
+      }
+    } else {
+      // Simple field
+      result[keyName] = { type: element.type, isMandatory };
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Gets all element types from an elements record (no filtering)
+ * Skips associations (they're structural, not data fields - their managed foreign keys are separate)
+ * @param visitedTargets - Set of already visited target entity names (to prevent infinite recursion)
+ */
+function getAllElementTypes(
+  elements: Record<string, CsnElement>,
+  allDefinitions: Record<string, CsnDefinition>,
+  visitedTargets: Set<string> = new Set(),
+): Record<string, ElementType> {
+  const result: Record<string, ElementType> = {};
+
+  for (const name in elements) {
+    const element = elements[name];
+    const isAssociation = element.type === 'cds.Association';
+    const isComposition = element.type === 'cds.Composition';
+    const isMandatory = element['@mandatory'] === true;
+
+    // Skip associations - they're structural metadata, not data fields
+    // Their managed foreign keys (e.g., parent_ID) are separate elements
+    if (isAssociation) {
+      continue;
+    }
+
+    if (isComposition) {
+      // For compositions, get the target entity's elements
+      const targetDef = element.target ? allDefinitions[element.target] : undefined;
+
+      // Skip if we've already visited this target (cyclic reference)
+      if (element.target && visitedTargets.has(element.target)) {
+        result[name] = {
+          type: element.type,
+          isMandatory,
+          isArray: element.cardinality?.max === '*',
+          properties: {}, // Don't expand cyclic references
+        };
+        continue;
+      }
+
+      const childElements =
+        targetDef && targetDef.kind === 'entity'
+          ? (targetDef.elements as Record<string, CsnElement>)
+          : {};
+
+      // Track visited target to prevent cycles
+      const newVisited = new Set(visitedTargets);
+      if (element.target) {
+        newVisited.add(element.target);
+      }
+
+      result[name] = {
+        type: element.type,
+        isMandatory,
+        isArray: element.cardinality?.max === '*',
+        properties: getAllElementTypes(childElements, allDefinitions, newVisited),
+      };
+    } else {
+      result[name] = { type: element.type, isMandatory };
+    }
+  }
+
+  return result;
 }
