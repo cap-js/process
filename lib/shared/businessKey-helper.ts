@@ -9,6 +9,7 @@ import {
   PROCESS_LOGGER_PREFIX,
   PROCESS_START_ID,
 } from '../constants';
+import { CsnDefinition } from '../../types/csn-extensions';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 const PRIORITY_CHAIN: BusinessKeyAnnotationConfig[] = [
@@ -80,16 +81,21 @@ function convertBusinessKeyToExpr(template: string): string {
   return converted.join(' || ') + ` ${BUSINESS_KEY_ALIAS}`;
 }
 
-function extractBusinessKeyFromImportedProcess(req: cds.Request): string | undefined {
-  const processStartId = (req.target as cds.entity)[PROCESS_START_ID] as string;
-  const srvName = capitalizeAfterLastDot(processStartId);
-
-  const cdsModel = cds.context?.model ?? cds.model;
-  const processModelDef = cdsModel?.definitions[srvName];
+export function extractBusinessKeyFromImportedProcess(
+  req?: cds.Request,
+  processModelDef?: CsnDefinition,
+): string | undefined {
+  if (!processModelDef) {
+    const processStartId = (req?.target as cds.entity)[PROCESS_START_ID] as string;
+    const srvName = capitalizeAfterLastDot(processStartId);
+    const cdsModel = cds.context?.model ?? cds.model;
+    processModelDef = cdsModel?.definitions[srvName] as CsnDefinition | undefined;
+  }
 
   // extract business key value from csn annotation
   if (processModelDef) {
     const bKey = (processModelDef as ServiceDefinitionAnnotation)[BUSINESS_KEY_SRV];
+    if (!bKey) return undefined;
     const bKeyExpr = convertBusinessKeyToExpr(bKey);
     return bKeyExpr;
   }
@@ -123,6 +129,7 @@ export function getBusinessKeyColumnOrReject(req: cds.Request, businessKey: stri
  *  4: '@Common.SemanticKey'
  */
 export function retrieveBusinessKeyExpression(targetAnnotations: cds.entity) {
+  if (!targetAnnotations) return undefined;
   for (const { path, transform } of PRIORITY_CHAIN) {
     const value = targetAnnotations[path];
     if (value === undefined) continue;

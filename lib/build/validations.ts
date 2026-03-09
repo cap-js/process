@@ -28,6 +28,7 @@ import {
   WARNING_NO_PROCESS_DEFINITION,
   ERROR_START_BUSINESSKEY_INPUT_MISSING,
   WARNING_INPUT_PATH_NOT_IN_ENTITY,
+  ERROR_BUSINESS_KEY_UNKNOWN_FIELD,
 } from './constants';
 import { EntityContext, ParsedInputEntry } from '../shared/input-parser';
 
@@ -35,6 +36,25 @@ const Plugin = cds.build?.Plugin;
 const ERROR = Plugin?.ERROR;
 const WARNING = Plugin?.WARNING;
 const VALID_EVENTS = ['CREATE', 'READ', 'UPDATE', 'DELETE', '*'] as const;
+
+export function validateBusinessKey(
+  def: CsnEntity,
+  entityName: string,
+  buildPlugin: ProcessValidationPlugin,
+) {
+  // check whether bKey is from SemanticKey
+  // only then: possible to check whether fields are in the entity
+  const semanticKeyAnnotationValue = def['@Common.SemanticKey#bpm'] ?? def['@Common.SemanticKey'];
+  if (!semanticKeyAnnotationValue) return;
+  if (Array.isArray(semanticKeyAnnotationValue)) {
+    const elements = Object.keys(def.elements || {});
+    for (const entry of semanticKeyAnnotationValue) {
+      if (!elements.includes(entry)) {
+        buildPlugin.pushMessage(ERROR_BUSINESS_KEY_UNKNOWN_FIELD(entityName, entry), ERROR);
+      }
+    }
+  }
+}
 
 export function validateAllowedAnnotations(
   allowedAnnotations: string[],
@@ -149,7 +169,6 @@ export function validateRequiredGenericAnnotations(
   // If .on is defined or any annotation with this prefix is defined,
   // businessKey must exist
   if ((hasOn || hasAnyAnnotationWithPrefix) && !hasBusinessKey) {
-    // TODO: either set to warning or check if imported process has business key
     buildPlugin.pushMessage(ERROR_BUSINESS_KEY_REQUIRED(entityName, annotationPrefix), ERROR);
   }
 }

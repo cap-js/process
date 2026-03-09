@@ -9,6 +9,7 @@ import {
   validateRequiredGenericAnnotations,
   validateRequiredStartAnnotations,
   validateIfAnnotation,
+  validateBusinessKey,
 } from './index';
 import {
   PROCESS_START_ID,
@@ -32,7 +33,10 @@ import {
 } from '../constants';
 
 import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
-import { retrieveBusinessKeyExpression } from '../shared/businessKey-helper';
+import {
+  extractBusinessKeyFromImportedProcess,
+  retrieveBusinessKeyExpression,
+} from '../shared/businessKey-helper';
 
 /**
  * Configuration for lifecycle annotation validation (cancel, suspend, resume)
@@ -104,6 +108,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
             config.annotationCascade,
             config.annotationIf,
             config.annotationPrefix,
+            processDefinitions,
           );
         }
 
@@ -176,6 +181,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     annotationCascade: `@${string}`,
     annotationIf: `@${string}`,
     annotationPrefix: string,
+    processDefinitions: Map<string, CsnDefinition>,
   ) {
     // check for unknown annotations
     const allowedAnnotations = [annotationOn, annotationCascade, annotationIf];
@@ -184,8 +190,16 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     const hasOn = def[annotationOn] !== undefined;
     const hasCascade = def[annotationCascade] !== undefined;
     const hasIf = def[annotationIf] !== undefined;
-    const hasBusinessKey =
-      retrieveBusinessKeyExpression(def as unknown as cds.entity) !== undefined;
+
+    let hasBusinessKey: boolean = false;
+    let bKey: string | undefined = undefined;
+    if (hasOn) {
+      const processStartId = def[PROCESS_START_ID];
+      bKey =
+        retrieveBusinessKeyExpression(def as unknown as cds.entity) ??
+        extractBusinessKeyFromImportedProcess(undefined, processDefinitions.get(processStartId));
+      hasBusinessKey = bKey !== undefined;
+    }
 
     const hasAnyAnnotationWithPrefix = Object.keys(def).some((key) =>
       key.startsWith(annotationPrefix + '.'),
@@ -214,6 +228,8 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       validateIfAnnotation(def, entityName, annotationIf, this);
     }
 
-    // TODO: business key validation
+    if (hasOn && hasBusinessKey) {
+      validateBusinessKey(def, entityName, this);
+    }
   }
 }
