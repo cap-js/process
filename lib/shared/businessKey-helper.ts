@@ -9,7 +9,7 @@ import {
   PROCESS_LOGGER_PREFIX,
   PROCESS_START_ID,
 } from '../constants';
-import { CsnDefinition } from '../../types/csn-extensions';
+import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 const PRIORITY_CHAIN: BusinessKeyAnnotationConfig[] = [
@@ -94,13 +94,10 @@ export function extractBusinessKeyFromImportedProcess(
   }
 
   // extract business key value from csn annotation
-  if (processModelDef) {
-    const bKey = (processModelDef as ServiceDefinitionAnnotation)[BUSINESS_KEY_SRV];
-    if (!bKey) return undefined;
-    const bKeyExpr = convertBusinessKeyToExpr(bKey);
-    return bKeyExpr;
-  }
-  return undefined;
+  const bKey = (processModelDef as ServiceDefinitionAnnotation)[BUSINESS_KEY_SRV];
+  if (!bKey) return undefined;
+  const bKeyExpr = convertBusinessKeyToExpr(bKey);
+  return bKeyExpr;
 }
 
 export function getBusinessKeyColumnOrReject(req: cds.Request, businessKey: string | undefined) {
@@ -129,10 +126,12 @@ export function getBusinessKeyColumnOrReject(req: cds.Request, businessKey: stri
  *
  *  4: '@Common.SemanticKey'
  */
-export function retrieveBusinessKeyExpression(targetAnnotations: cds.entity) {
+export function retrieveBusinessKeyExpression(targetAnnotations: cds.entity | CsnEntity) {
   if (!targetAnnotations) return undefined;
   for (const { path, transform } of PRIORITY_CHAIN) {
-    const value = targetAnnotations[path];
+    const value = isCsnEntity(targetAnnotations)
+      ? (targetAnnotations as CsnEntity)[path as keyof CsnEntity]
+      : (targetAnnotations as cds.entity)[path];
     if (value === undefined) continue;
     if (transform) {
       return transform(value as { '=': string }[]);
@@ -141,4 +140,9 @@ export function retrieveBusinessKeyExpression(targetAnnotations: cds.entity) {
     }
   }
   return undefined;
+}
+
+//  type guard function
+function isCsnEntity(entity: cds.entity | CsnEntity): entity is CsnEntity {
+  return (entity as CsnEntity).kind === 'entity';
 }

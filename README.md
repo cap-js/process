@@ -387,6 +387,8 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
   - `@Common.SemanticKey#bpm` --> array of fields that will be concatenated
   - `@Common.SemanticKey` --> array of fields that will be concatenated
   - If none of the annotations is set, the imported process model definition will be looked at to get the business key from there. If the businessKey there is also undefined, an error will be thrown
+- The existence of a businessKey annotation will also be checked
+  - if businessKey is provided either by `@Common.SemanticKey#bpm` or `@Common.SemanticKey`, all elements part of that array will also be checked if they exist in the annotated entity
 
 ### Warnings
 

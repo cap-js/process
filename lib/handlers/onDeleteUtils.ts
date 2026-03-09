@@ -74,7 +74,7 @@ export function isDeleteWithoutProcess(
  */
 export function createAddDeletedEntityHandler(config: AddDeletedEntityConfig) {
   return async function addDeletedEntityToRequest(req: cds.Request): Promise<EntityRow | void> {
-    const columns = await config.getColumns(req);
+    const columns = config.getColumns(req);
 
     const annotatedTarget = req.target as cds.entity;
     const conditionExpr = annotatedTarget[config.ifAnnotation as string] as

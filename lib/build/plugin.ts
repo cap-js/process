@@ -196,7 +196,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     if (hasOn) {
       const processStartId = def[PROCESS_START_ID];
       bKey =
-        retrieveBusinessKeyExpression(def as unknown as cds.entity) ??
+        retrieveBusinessKeyExpression(def) ??
         extractBusinessKeyFromImportedProcess(undefined, processDefinitions.get(processStartId));
       hasBusinessKey = bKey !== undefined;
     }
