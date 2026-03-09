@@ -51,6 +51,7 @@ export const PROCESS_RESUME_IF = '@bpm.process.resume.if' as const;
  */
 export const BUILD_PREFIX = '@bpm' as const;
 export const PROCESS_PREFIX = '@bpm.process' as const;
+export const BUSINESS_KEY = '@bpm.process.businessKey' as const;
 
 /**
  * Process Event Annotations (Runtime)

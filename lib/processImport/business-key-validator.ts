@@ -13,7 +13,7 @@ enum ValidationState {
   PARSED_VAR_NAME,
 }
 
-export interface ValidationResult {
+interface ValidationResult {
   isValid: boolean;
   error?: string;
 }
@@ -187,12 +187,10 @@ export function validateBusinessKey(businessKey: string | undefined): Validation
     }
   }
 
-  // End-of-input validation
   switch (validationState) {
     case ValidationState.START:
     case ValidationState.CONST:
     case ValidationState.PARSED_VAR_NAME:
-      // Valid end states
       return { isValid: true };
 
     case ValidationState.PRE_STEP:
@@ -210,9 +208,6 @@ export function validateBusinessKey(businessKey: string | undefined): Validation
         error: `'${invalidVar}' is incomplete, missing closing '}'`,
       };
     }
-
-    default:
-      return { isValid: true };
   }
 }
 
@@ -230,7 +225,7 @@ export function validateAndLogBusinessKey(businessKey: string | undefined) {
 
   const result = validateBusinessKey(businessKey);
   if (!result.isValid) {
-    LOG.error(`Invalid business key: ${result.error}`);
+    LOG.warn(`Invalid business key: ${result.error}`);
   }
 }
 

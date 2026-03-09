@@ -1,7 +1,7 @@
 import cds from '@sap/cds';
 import * as csn from '../../types/csn-extensions';
 import { ProcessHeader, DataType } from '../api';
-import { PROCESS_LOGGER_PREFIX } from '../constants';
+import { BUSINESS_KEY, PROCESS_LOGGER_PREFIX, PROCESS_PREFIX } from '../constants';
 import { getDataTypeCache } from './types';
 import { fqn, sanitizeName } from './utils';
 import { buildTypeFromSchema, ensureObjectSchema } from './schema-converter';
@@ -21,8 +21,8 @@ export function createServiceDefinition(
     name: serviceName,
     doc: 'DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT.',
     '@protocol': 'none',
-    '@bpm.process': `${process.projectId}.${process.identifier}`,
-    '@bpm.process.businessKey': `${process.businessKey}`,
+    [PROCESS_PREFIX]: `${process.projectId}.${process.identifier}`,
+    [BUSINESS_KEY]: `${process.businessKey}`,
   };
 }
 
