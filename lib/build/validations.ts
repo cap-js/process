@@ -26,6 +26,7 @@ import {
   ERROR_ATTRIBUTE_NOT_IN_PROCESS_DEF,
   WARNING_NO_PROCESS_DEFINITION,
   ERROR_START_BUSINESSKEY_INPUT_MISSING,
+  WARNING_INPUT_PATH_NOT_IN_ENTITY,
 } from './constants';
 import { EntityContext } from '../shared/input-parser';
 
@@ -178,7 +179,7 @@ export function validateInputTypes(
     delete processDefInputs['businesskey'];
   }
 
-  validateInputPathsExist(def, entityContext);
+  validateInputPathsExist(buildPlugin, entityName, def, entityContext);
 
   // Compare entity attributes against process definition inputs
   validateInputsMatch(
@@ -190,16 +191,44 @@ export function validateInputTypes(
   );
 }
 
-function validateInputPathsExist(def: CsnDefinition, entityContext: EntityContext): void {
+function validateInputPathsExist(
+  buildPlugin: ProcessValidationPlugin,
+  entityName: string,
+  def: CsnDefinition,
+  entityContext: EntityContext,
+): void {
   const parsedEntries = getParsedInputEntries(def as CsnEntity);
-  const elements = (def as CsnEntity).elements ?? {};
 
   if (!parsedEntries) {
     return;
   }
 
   for (const entry of parsedEntries) {
+    // Skip wildcards ($self alone)
     if (entry.path.length === 1 && entry.path[0] === '*') continue;
+
+    let currentContext = entityContext;
+
+    for (let i = 0; i < entry.path.length; i++) {
+      const segment = entry.path[i];
+
+      // Skip wildcards in nested paths
+      if (segment === '*') continue;
+
+      const element = currentContext.getElement(segment);
+
+      if (!element) {
+        // Element doesn't exist - push warning
+        const fullPath = '$self.' + entry.path.slice(0, i + 1).join('.');
+        buildPlugin.pushMessage(WARNING_INPUT_PATH_NOT_IN_ENTITY(entityName, fullPath), WARNING);
+        break; // Stop validating further segments of this path
+      }
+
+      // Move to target entity context for next segment (if association/composition)
+      if (element.isAssocOrComp && element.targetEntity) {
+        currentContext = element.targetEntity;
+      }
+    }
   }
 }
 
