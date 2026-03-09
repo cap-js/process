@@ -28,6 +28,7 @@ import {
   PROCESS_SUSPEND,
   PROCESS_RESUME,
   PROCESS_START,
+  PROCESS_PREFIX,
 } from '../constants';
 
 import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
@@ -83,7 +84,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     const model = await this.model();
     if (!model) return;
 
-    LOG.debug('Validating @bpm.process.* annotations...');
+    LOG.debug(`Validating ${PROCESS_PREFIX}.* annotations...`);
 
     const processDefinitions = getProcessDefinitions(model.definitions);
 

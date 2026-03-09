@@ -1,10 +1,12 @@
 import cds from '@sap/cds';
 import { ProcessValidationPlugin } from './plugin';
-import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
+import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
 import { PROCESS_START_ID, PROCESS_START_ON } from '../constants';
 import {
+  createCsnEntityContext,
   ElementType,
   getElementNamesAndTypes,
+  getParsedInputEntries,
   getProcessDefInputsAndTypes,
 } from './validation-utils';
 import {
@@ -25,6 +27,7 @@ import {
   WARNING_NO_PROCESS_DEFINITION,
   ERROR_START_BUSINESSKEY_INPUT_MISSING,
 } from './constants';
+import { EntityContext } from '../shared/input-parser';
 
 const Plugin = cds.build?.Plugin;
 const ERROR = Plugin?.ERROR;
@@ -149,8 +152,20 @@ export function validateInputTypes(
   processDef: CsnDefinition,
   allDefinitions: Record<string, CsnDefinition> | undefined,
 ) {
+  const parsedEntries = getParsedInputEntries(def as CsnEntity);
+  const elements = (def as CsnEntity).elements ?? {};
+  const entityContext = createCsnEntityContext(
+    elements as Record<string, CsnElement>,
+    allDefinitions || {},
+  );
+
   // entity attributes from inputs array annotation
-  const entityAttributes = getElementNamesAndTypes(def as CsnEntity, allDefinitions || {});
+  const entityAttributes = getElementNamesAndTypes(
+    parsedEntries,
+    def as CsnEntity,
+    allDefinitions || {},
+    entityContext,
+  );
 
   // process def inputs from csn model
   const processDefInputs = getProcessDefInputsAndTypes(processDef, allDefinitions || {});
@@ -163,6 +178,8 @@ export function validateInputTypes(
     delete processDefInputs['businesskey'];
   }
 
+  validateInputPathsExist(def, entityContext);
+
   // Compare entity attributes against process definition inputs
   validateInputsMatch(
     buildPlugin,
@@ -171,6 +188,19 @@ export function validateInputTypes(
     processDefInputs,
     def[PROCESS_START_ID],
   );
+}
+
+function validateInputPathsExist(def: CsnDefinition, entityContext: EntityContext): void {
+  const parsedEntries = getParsedInputEntries(def as CsnEntity);
+  const elements = (def as CsnEntity).elements ?? {};
+
+  if (!parsedEntries) {
+    return;
+  }
+
+  for (const entry of parsedEntries) {
+    if (entry.path.length === 1 && entry.path[0] === '*') continue;
+  }
 }
 
 function validateInputsMatch(
