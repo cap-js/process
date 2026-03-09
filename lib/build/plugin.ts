@@ -192,7 +192,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     const hasIf = def[annotationIf] !== undefined;
 
     let hasBusinessKey: boolean = false;
-    let bKey: string | undefined = undefined;
+    let bKey: string | undefined;
     if (hasOn) {
       const processStartId = def[PROCESS_START_ID];
       bKey =
