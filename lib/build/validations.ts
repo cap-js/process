@@ -2,6 +2,13 @@ import cds from '@sap/cds';
 import { ProcessValidationPlugin } from './plugin';
 import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
 import { PROCESS_START_ID, PROCESS_START_ON } from '../constants';
+import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
+import {
+  BUSINESS_KEY_SEMANTIC_KEY,
+  BUSINESS_KEY_SEMANTIC_KEY_BPM,
+  PROCESS_START_ID,
+  PROCESS_START_ON,
+} from '../constants';
 import {
   createCsnEntityContext,
   ElementType,
@@ -29,6 +36,7 @@ import {
   ERROR_START_BUSINESSKEY_INPUT_MISSING,
   WARNING_INPUT_PATH_NOT_IN_ENTITY,
   ERROR_BUSINESS_KEY_UNKNOWN_FIELD,
+  ERROR_BUSINESS_KEY_MISSING_FIELD,
 } from './constants';
 import { EntityContext, ParsedInputEntry } from '../shared/input-parser';
 
@@ -44,13 +52,19 @@ export function validateBusinessKey(
 ) {
   // check whether bKey is from SemanticKey
   // only then: possible to check whether fields are in the entity
-  const semanticKeyAnnotationValue = def['@Common.SemanticKey#bpm'] ?? def['@Common.SemanticKey'];
+  const semanticKeyAnnotationValue =
+    def[BUSINESS_KEY_SEMANTIC_KEY_BPM] ?? def[BUSINESS_KEY_SEMANTIC_KEY];
   if (!semanticKeyAnnotationValue) return;
   if (Array.isArray(semanticKeyAnnotationValue)) {
     const elements = Object.keys(def.elements || {});
     for (const entry of semanticKeyAnnotationValue) {
-      if (!elements.includes(entry)) {
-        buildPlugin.pushMessage(ERROR_BUSINESS_KEY_UNKNOWN_FIELD(entityName, entry), ERROR);
+      const entryValue = entry['='];
+      if (entryValue === undefined) {
+        buildPlugin.pushMessage(ERROR_BUSINESS_KEY_UNKNOWN_FIELD(entityName), ERROR);
+        continue;
+      }
+      if (!elements.includes(entryValue)) {
+        buildPlugin.pushMessage(ERROR_BUSINESS_KEY_MISSING_FIELD(entityName, entryValue), ERROR);
       }
     }
   }

@@ -85,6 +85,7 @@ export function extractBusinessKeyFromImportedProcess(
   req?: cds.Request,
   processModelDef?: CsnDefinition,
 ): string | undefined {
+  if (!req && !processModelDef) return undefined;
   if (!processModelDef) {
     const processStartId = (req?.target as cds.entity)[PROCESS_START_ID] as string;
     const srvName = capitalizeAfterLastDot(processStartId);
