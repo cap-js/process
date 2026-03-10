@@ -28,4 +28,7 @@ service ShipmentService {
   action getShipmentAttributes(shipmentID: UUID)            returns String;
 
   action getShipmentOutputs(shipmentID: UUID)               returns String;
+
+  action getInstancesByShipmentID(shipmentID: UUID,
+                                  status: many String)      returns String;
 }

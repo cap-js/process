@@ -222,6 +222,66 @@ describe('Programatic Approach Integration Tests', () => {
     });
   });
 
+  describe('Get Instances by Shipment ID', () => {
+    it('should return instances with expected properties', async () => {
+      const shipmentID = await createShipment();
+      await startShipment(shipmentID);
+
+      const response = await POST('/odata/v4/shipment/getInstancesByShipmentID', { shipmentID });
+
+      const parsed = JSON.parse(response.data.value);
+      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed.length).toBeGreaterThan(0);
+      expect(parsed[0]).toHaveProperty('id');
+      expect(parsed[0]).toHaveProperty('status');
+      expect(parsed[0]).toHaveProperty('definitionId');
+    });
+
+    it('should return an empty array when no workflow has been started', async () => {
+      const shipmentID = await createShipment();
+
+      const response = await POST('/odata/v4/shipment/getInstancesByShipmentID', { shipmentID });
+
+      expect(response.status).toBe(200);
+      const parsed = JSON.parse(response.data.value);
+      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed.length).toBe(0);
+    });
+
+    it('should filter instances by status', async () => {
+      const shipmentID = await createShipment();
+      await startShipment(shipmentID);
+
+      const response = await POST('/odata/v4/shipment/getInstancesByShipmentID', {
+        shipmentID,
+        status: ['COMPLETED'],
+      });
+
+      expect(response.status).toBe(200);
+      const parsed = JSON.parse(response.data.value);
+      expect(Array.isArray(parsed)).toBe(true);
+      // All returned instances should have the requested status
+      for (const instance of parsed) {
+        expect(instance.status).toBe('COMPLETED');
+      }
+    });
+
+    it('should return no instances for a non-matching status filter', async () => {
+      const shipmentID = await createShipment();
+      await startShipment(shipmentID);
+
+      const response = await POST('/odata/v4/shipment/getInstancesByShipmentID', {
+        shipmentID,
+        status: ['CANCELED'],
+      });
+
+      expect(response.status).toBe(200);
+      const parsed = JSON.parse(response.data.value);
+      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed.length).toBe(0);
+    });
+  });
+
   describe('Get Shipment Outputs', () => {
     it('should return outputs for a started (COMPLETED) shipment workflow', async () => {
       const shipmentID = await createShipment();
