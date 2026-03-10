@@ -223,27 +223,6 @@ describe('Programatic Approach Integration Tests', () => {
   });
 
   describe('Get Instances by Shipment ID', () => {
-    it('should return instances for a started shipment', async () => {
-      const shipmentID = await createShipment();
-      await startShipment(shipmentID);
-
-      const response = await POST('/odata/v4/shipment/getInstancesByShipmentID', { shipmentID });
-
-      expect(response.status).toBe(200);
-      expect(response.data).toBeDefined();
-    });
-
-    it('should return an array of process instances', async () => {
-      const shipmentID = await createShipment();
-      await startShipment(shipmentID);
-
-      const response = await POST('/odata/v4/shipment/getInstancesByShipmentID', { shipmentID });
-
-      const parsed = JSON.parse(response.data.value);
-      expect(Array.isArray(parsed)).toBe(true);
-      expect(parsed.length).toBeGreaterThan(0);
-    });
-
     it('should return instances with expected properties', async () => {
       const shipmentID = await createShipment();
       await startShipment(shipmentID);
@@ -251,6 +230,7 @@ describe('Programatic Approach Integration Tests', () => {
       const response = await POST('/odata/v4/shipment/getInstancesByShipmentID', { shipmentID });
 
       const parsed = JSON.parse(response.data.value);
+      expect(Array.isArray(parsed)).toBe(true);
       expect(parsed.length).toBeGreaterThan(0);
       expect(parsed[0]).toHaveProperty('id');
       expect(parsed[0]).toHaveProperty('status');
