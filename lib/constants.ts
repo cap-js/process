@@ -17,6 +17,7 @@ export const CUD_EVENTS = ['CREATE', 'UPDATE', 'DELETE'] as const;
  *
  */
 export const BUSINESS_KEY = '@bpm.process.businessKey' as const;
+export const BUSINESS_KEY_MAX_LENGTH = 255;
 
 /**
  * Business key alias const
