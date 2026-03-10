@@ -28,7 +28,7 @@ import {
   ERROR_START_BUSINESSKEY_INPUT_MISSING,
   WARNING_INPUT_PATH_NOT_IN_ENTITY,
 } from './constants';
-import { EntityContext } from '../shared/input-parser';
+import { EntityContext, ParsedInputEntry } from '../shared/input-parser';
 
 const Plugin = cds.build?.Plugin;
 const ERROR = Plugin?.ERROR;
@@ -179,7 +179,7 @@ export function validateInputTypes(
     delete processDefInputs['businesskey'];
   }
 
-  validateInputPathsExist(buildPlugin, entityName, def, entityContext);
+  validateInputPathsExist(buildPlugin, entityName, parsedEntries, entityContext);
 
   // Compare entity attributes against process definition inputs
   validateInputsMatch(
@@ -194,11 +194,9 @@ export function validateInputTypes(
 function validateInputPathsExist(
   buildPlugin: ProcessValidationPlugin,
   entityName: string,
-  def: CsnDefinition,
+  parsedEntries: ParsedInputEntry[] | undefined,
   entityContext: EntityContext,
 ): void {
-  const parsedEntries = getParsedInputEntries(def as CsnEntity);
-
   if (!parsedEntries) {
     return;
   }
@@ -212,8 +210,8 @@ function validateInputPathsExist(
     for (let i = 0; i < entry.path.length; i++) {
       const segment = entry.path[i];
 
-      // Skip wildcards in nested paths
-      if (segment === '*') continue;
+      // Skip wildcards in nested paths - remainder of path is implicitly valid
+      if (segment === '*') break;
 
       const element = currentContext.getElement(segment);
 
