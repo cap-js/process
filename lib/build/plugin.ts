@@ -9,7 +9,7 @@ import {
   validateRequiredGenericAnnotations,
   validateRequiredStartAnnotations,
   validateIfAnnotation,
-  validateBusinessKey,
+  validateBusinessKeyAnnotation,
 } from './index';
 import {
   PROCESS_START_ID,
@@ -30,13 +30,10 @@ import {
   PROCESS_RESUME,
   PROCESS_START,
   PROCESS_PREFIX,
+  BUSINESS_KEY,
 } from '../constants';
 
 import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
-import {
-  extractBusinessKeyFromImportedProcess,
-  retrieveBusinessKeyExpression,
-} from '../shared/businessKey-helper';
 
 /**
  * Configuration for lifecycle annotation validation (cancel, suspend, resume)
@@ -108,7 +105,6 @@ export class ProcessValidationPlugin extends BuildPluginBase {
             config.annotationCascade,
             config.annotationIf,
             config.annotationPrefix,
-            processDefinitions,
           );
         }
 
@@ -181,7 +177,6 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     annotationCascade: `@${string}`,
     annotationIf: `@${string}`,
     annotationPrefix: string,
-    processDefinitions: Map<string, CsnDefinition>,
   ) {
     // check for unknown annotations
     const allowedAnnotations = [annotationOn, annotationCascade, annotationIf];
@@ -190,16 +185,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     const hasOn = def[annotationOn] !== undefined;
     const hasCascade = def[annotationCascade] !== undefined;
     const hasIf = def[annotationIf] !== undefined;
-
-    let hasBusinessKey: boolean = false;
-    let bKey: string | undefined;
-    if (hasOn) {
-      const processStartId = def[PROCESS_START_ID];
-      bKey =
-        retrieveBusinessKeyExpression(def) ??
-        extractBusinessKeyFromImportedProcess(undefined, processDefinitions.get(processStartId));
-      hasBusinessKey = bKey !== undefined;
-    }
+    const hasBusinessKey = def[BUSINESS_KEY] !== undefined;
 
     const hasAnyAnnotationWithPrefix = Object.keys(def).some((key) =>
       key.startsWith(annotationPrefix + '.'),
@@ -229,7 +215,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     }
 
     if (hasOn && hasBusinessKey) {
-      validateBusinessKey(def, entityName, this);
+      validateBusinessKeyAnnotation(def, entityName, annotationPrefix, this);
     }
   }
 }

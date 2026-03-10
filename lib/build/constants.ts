@@ -32,6 +32,13 @@ export const ERROR_IF_MUST_BE_EXPRESSION = (entityName: string, annotationIf: st
   return `${entityName}: ${annotationIf} must be a valid expression`;
 };
 
+export const ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION = (
+  entityName: string,
+  annotationBKey: string,
+): string => {
+  return `${entityName}: ${annotationBKey} must be a valid expression`;
+};
+
 // =============================================================================
 // Start Annotation Validation Messages
 // =============================================================================
@@ -86,13 +93,6 @@ export const ERROR_ON_REQUIRED = (
 
 export const ERROR_BUSINESS_KEY_REQUIRED = (entityName: string, annotationPrefix: string) =>
   `Entity "${entityName}" must have a business key defined when using the "${annotationPrefix}" annotation.`;
-
-export const ERROR_BUSINESS_KEY_MISSING_FIELD = (entityName: string, key: string): string => {
-  return `${entityName}: Business key field '${key}' is not an element of the entity.`;
-};
-export const ERROR_BUSINESS_KEY_UNKNOWN_FIELD = (entityName: string): string => {
-  return `${entityName}: Business key array in @Common.SemanticKey must be an array of direct element names.`;
-};
 
 export const ERROR_CASCADE_MUST_BE_BOOLEAN = (
   entityName: string,

@@ -3,12 +3,7 @@ import { ProcessValidationPlugin } from './plugin';
 import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
 import { PROCESS_START_ID, PROCESS_START_ON } from '../constants';
 import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
-import {
-  BUSINESS_KEY_SEMANTIC_KEY,
-  BUSINESS_KEY_SEMANTIC_KEY_BPM,
-  PROCESS_START_ID,
-  PROCESS_START_ON,
-} from '../constants';
+import { BUSINESS_KEY, PROCESS_START_ID, PROCESS_START_ON } from '../constants';
 import {
   createCsnEntityContext,
   ElementType,
@@ -37,6 +32,7 @@ import {
   WARNING_INPUT_PATH_NOT_IN_ENTITY,
   ERROR_BUSINESS_KEY_UNKNOWN_FIELD,
   ERROR_BUSINESS_KEY_MISSING_FIELD,
+  ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION,
 } from './constants';
 import { EntityContext, ParsedInputEntry } from '../shared/input-parser';
 
@@ -44,31 +40,6 @@ const Plugin = cds.build?.Plugin;
 const ERROR = Plugin?.ERROR;
 const WARNING = Plugin?.WARNING;
 const VALID_EVENTS = ['CREATE', 'READ', 'UPDATE', 'DELETE', '*'] as const;
-
-export function validateBusinessKey(
-  def: CsnEntity,
-  entityName: string,
-  buildPlugin: ProcessValidationPlugin,
-) {
-  // check whether bKey is from SemanticKey
-  // only then: possible to check whether fields are in the entity
-  const semanticKeyAnnotationValue =
-    def[BUSINESS_KEY_SEMANTIC_KEY_BPM] ?? def[BUSINESS_KEY_SEMANTIC_KEY];
-  if (!semanticKeyAnnotationValue) return;
-  if (Array.isArray(semanticKeyAnnotationValue)) {
-    const elements = Object.keys(def.elements || {});
-    for (const entry of semanticKeyAnnotationValue) {
-      const entryValue = entry['='];
-      if (entryValue === undefined) {
-        buildPlugin.pushMessage(ERROR_BUSINESS_KEY_UNKNOWN_FIELD(entityName), ERROR);
-        continue;
-      }
-      if (!elements.includes(entryValue)) {
-        buildPlugin.pushMessage(ERROR_BUSINESS_KEY_MISSING_FIELD(entityName, entryValue), ERROR);
-      }
-    }
-  }
-}
 
 export function validateAllowedAnnotations(
   allowedAnnotations: string[],
@@ -116,6 +87,17 @@ export function validateIfAnnotation(
   const ifExpr = def[annotationIf as `@${string}`];
   if (!ifExpr || !ifExpr['='] || !ifExpr['xpr']) {
     buildPlugin.pushMessage(ERROR_IF_MUST_BE_EXPRESSION(entityName, annotationIf), ERROR);
+  }
+}
+export function validateBusinessKeyAnnotation(
+  def: CsnEntity,
+  entityName: string,
+  annotationIf: string,
+  buildPlugin: ProcessValidationPlugin,
+) {
+  const bKeyExpr = def[BUSINESS_KEY];
+  if (!bKeyExpr || !bKeyExpr['='] || !bKeyExpr['xpr']) {
+    buildPlugin.pushMessage(ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION(entityName, BUSINESS_KEY), ERROR);
   }
 }
 
