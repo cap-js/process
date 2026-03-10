@@ -31,7 +31,10 @@ import {
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
-import { getBusinessKeyColumnOrReject } from '../shared/businessKey-helper';
+import {
+  getBusinessKeyColumnOrReject,
+  getBusinessKeyColumnProcessStart,
+} from '../shared/businessKey-helper';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // Use InputTreeNode as ProcessStartInput (same structure)
@@ -75,11 +78,13 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
     columns = convertToColumnsExpr(startSpecs.inputs);
   }
 
-  const businessKeyColumn = getBusinessKeyColumnOrReject(
+  const businessKeyColumn = getBusinessKeyColumnProcessStart(
     req,
-    (target[BUSINESS_KEY] as { '=': string })['='],
+    (target[BUSINESS_KEY] as { '=': string })?.['='],
   );
-  columns.push(businessKeyColumn);
+  if (businessKeyColumn) {
+    columns.push(businessKeyColumn);
+  }
 
   // fetch entity
   const row = await resolveEntityRowOrReject(
@@ -92,7 +97,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   );
   if (!row) return;
 
-  if ((row.businessKey as string).length > BUSINESS_KEY_MAX_LENGTH) {
+  if ((row.businessKey as string)?.length > BUSINESS_KEY_MAX_LENGTH) {
     const msg = `Business key value exceeds maximum length of ${BUSINESS_KEY_MAX_LENGTH} characters. Process start will fail.`;
     LOG.error(msg);
     return req.reject({ status: 400, message: msg });

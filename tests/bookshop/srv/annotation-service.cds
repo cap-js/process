@@ -1489,6 +1489,74 @@ service AnnotationService {
   }
 
   // ============================================
+  // BUSINESS KEY LENGTH VALIDATION TESTS
+  // Testing businessKey max length (255 chars) on processStart
+  // ============================================
+
+  // Start on CREATE with businessKey (short value - well under 255 chars)
+  @bpm.process.start: {
+    id: 'startShortBusinessKeyProcess',
+    on: 'CREATE',
+  }
+  @bpm.process.businessKey: (ID)
+  entity StartWithShortBusinessKey       as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Start on CREATE with businessKey at exactly 255 chars
+  @bpm.process.start: {
+    id: 'startExactLimitBusinessKeyProcess',
+    on: 'CREATE',
+  }
+  @bpm.process.businessKey: (longValue)
+  entity StartWithExactLimitBusinessKey {
+    key ID        : UUID;
+        longValue : String(300);
+        name      : String(100);
+  }
+
+  // Start on CREATE with businessKey exceeding 255 chars
+  @bpm.process.start: {
+    id: 'startExceedingBusinessKeyProcess',
+    on: 'CREATE',
+  }
+  @bpm.process.businessKey: (longValue)
+  entity StartWithExceedingBusinessKey {
+    key ID        : UUID;
+        longValue : String(300);
+        name      : String(100);
+  }
+
+  // Start on DELETE with businessKey exceeding 255 chars
+  @bpm.process.start: {
+    id: 'startOnDeleteExceedingBusinessKeyProcess',
+    on: 'DELETE',
+  }
+  @bpm.process.businessKey: (longValue)
+  entity StartOnDeleteExceedingBusinessKey {
+    key ID        : UUID;
+        longValue : String(300);
+        name      : String(100);
+  }
+
+  // Start on UPDATE with businessKey exceeding 255 chars
+  @bpm.process.start: {
+    id: 'startOnUpdateExceedingBusinessKeyProcess',
+    on: 'UPDATE',
+  }
+  @bpm.process.businessKey: (longValue)
+  entity StartOnUpdateExceedingBusinessKey {
+    key ID        : UUID;
+        longValue : String(300);
+        name      : String(100);
+  }
+
+  // ============================================
   // COMPOSITE BUSINESS KEY TESTS
   // Testing businessKey with concat expressions
   // ============================================

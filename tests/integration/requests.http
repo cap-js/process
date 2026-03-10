@@ -9,7 +9,8 @@ Content-Type: application/json
     "name": "Test Name",
     "age": 21,
     "testNum": 1,
-    "ssn": "45772"
+    "ssn": "45772",
+    "longfield": "t"
 }
 
 ###

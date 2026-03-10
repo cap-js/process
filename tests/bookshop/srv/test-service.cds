@@ -1,6 +1,6 @@
 service TestService {
 
-  @bpm.process.businessKey: (ssn || '-' || age)
+  @bpm.process.businessKey: (longfield || '-' || longfield || '-' || longfield)
   @bpm.process.start: {
     id: 'TESTeu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
     on: 'CREATE',
@@ -14,6 +14,7 @@ service TestService {
     age: Integer;
     testNum: Integer;
     ssn: String;
+    longfield: String(100);
   }
   @bpm.process.start: {
     id: 'ShipmentProcess',

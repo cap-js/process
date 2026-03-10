@@ -12,3 +12,14 @@ export function getBusinessKeyColumnOrReject(req: cds.Request, businessKey: stri
     return `${businessKey} ${BUSINESS_KEY_ALIAS}`;
   }
 }
+
+export function getBusinessKeyColumnProcessStart(
+  req: cds.Request,
+  businessKey: string | undefined,
+) {
+  if (!businessKey) {
+    return undefined;
+  } else {
+    return `${businessKey} ${BUSINESS_KEY_ALIAS}`;
+  }
+}
