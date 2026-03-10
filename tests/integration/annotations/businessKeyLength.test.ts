@@ -55,10 +55,7 @@ describe('Integration tests for Business Key Length Validation on processStart',
         name: 'Test',
       };
 
-      const response = await POST(
-        '/odata/v4/annotation/StartWithExactLimitBusinessKey',
-        entity,
-      );
+      const response = await POST('/odata/v4/annotation/StartWithExactLimitBusinessKey', entity);
 
       expect(response.status).toBe(201);
       expect(foundMessages.length).toBe(1);
@@ -134,9 +131,7 @@ describe('Integration tests for Business Key Length Validation on processStart',
 
       // Delete should fail due to businessKey length
       try {
-        await DELETE(
-          `/odata/v4/annotation/StartOnDeleteExceedingBusinessKey('${entity.ID}')`,
-        );
+        await DELETE(`/odata/v4/annotation/StartOnDeleteExceedingBusinessKey('${entity.ID}')`);
         fail('Expected request to be rejected');
       } catch (error: any) {
         expect(error.response.status).toBe(400);
@@ -172,9 +167,7 @@ describe('Integration tests for Business Key Length Validation on processStart',
 
       expect(deleteResponse.status).toBe(204);
       expect(foundMessages.length).toBe(1);
-      expect(foundMessages[0].data.definitionId).toBe(
-        'startOnDeleteExceedingBusinessKeyProcess',
-      );
+      expect(foundMessages[0].data.definitionId).toBe('startOnDeleteExceedingBusinessKeyProcess');
     });
   });
 
@@ -201,10 +194,9 @@ describe('Integration tests for Business Key Length Validation on processStart',
 
       // Update should fail due to businessKey length
       try {
-        await PATCH(
-          `/odata/v4/annotation/StartOnUpdateExceedingBusinessKey('${entity.ID}')`,
-          { name: 'Updated' },
-        );
+        await PATCH(`/odata/v4/annotation/StartOnUpdateExceedingBusinessKey('${entity.ID}')`, {
+          name: 'Updated',
+        });
         fail('Expected request to be rejected');
       } catch (error: any) {
         expect(error.response.status).toBe(400);
@@ -241,9 +233,7 @@ describe('Integration tests for Business Key Length Validation on processStart',
 
       expect(updateResponse.status).toBe(200);
       expect(foundMessages.length).toBe(1);
-      expect(foundMessages[0].data.definitionId).toBe(
-        'startOnUpdateExceedingBusinessKeyProcess',
-      );
+      expect(foundMessages[0].data.definitionId).toBe('startOnUpdateExceedingBusinessKeyProcess');
     });
   });
 
@@ -260,10 +250,7 @@ describe('Integration tests for Business Key Length Validation on processStart',
         name: 'Test',
       };
 
-      const response = await POST(
-        '/odata/v4/annotation/StartWithExactLimitBusinessKey',
-        entity,
-      );
+      const response = await POST('/odata/v4/annotation/StartWithExactLimitBusinessKey', entity);
 
       expect(response.status).toBe(201);
       expect(foundMessages.length).toBe(1);
@@ -277,10 +264,7 @@ describe('Integration tests for Business Key Length Validation on processStart',
         name: 'Test',
       };
 
-      const response = await POST(
-        '/odata/v4/annotation/StartWithExactLimitBusinessKey',
-        entity,
-      );
+      const response = await POST('/odata/v4/annotation/StartWithExactLimitBusinessKey', entity);
 
       expect(response.status).toBe(201);
       expect(foundMessages.length).toBe(1);
