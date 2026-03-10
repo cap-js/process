@@ -65,7 +65,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   startSpecs.inputs = parseInputToTree(target);
 
   // if startSpecs.input = [] --> no input defined, fetch entire row
-  let columns: (column_expr | string)[] = [];
+  let columns: (column_expr | string)[];
   if (startSpecs.inputs.length === 0) {
     columns = [WILDCARD];
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
