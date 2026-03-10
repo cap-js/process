@@ -1,10 +1,6 @@
 service TestService {
 
-  @UI.HeaderInfo #bpm: {
-    Title: {
-      Value: (ssn || '-' || age)
-    }
-  }
+  @bpm.process.businessKey: (ssn || '-' || age)
   @bpm.process.start: {
     id: 'TESTeu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
     on: 'CREATE',

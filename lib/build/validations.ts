@@ -92,7 +92,7 @@ export function validateBusinessKeyAnnotation(
   buildPlugin: ProcessValidationPlugin,
 ) {
   const bKeyExpr = def[BUSINESS_KEY];
-  if (!bKeyExpr || !bKeyExpr['='] || !bKeyExpr['xpr']) {
+  if (!bKeyExpr || !bKeyExpr['='] || (!bKeyExpr['xpr'] && !bKeyExpr['ref'])) {
     buildPlugin.pushMessage(ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION(entityName, BUSINESS_KEY), ERROR);
   }
 }
