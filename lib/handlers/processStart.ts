@@ -26,15 +26,13 @@ import {
 
 import cds from '@sap/cds';
 import {
+  addBusinessKeyToStartColumns,
   createAddDeletedEntityHandler,
   isDeleteWithoutProcess,
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
-import {
-  getBusinessKeyColumnOrReject,
-  getBusinessKeyColumnProcessStart,
-} from '../shared/businessKey-helper';
+import { getBusinessKeyColumnProcessStart } from '../shared/businessKey-helper';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // Use InputTreeNode as ProcessStartInput (same structure)
@@ -121,7 +119,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
 export const addDeletedEntityToRequestStart = createAddDeletedEntityHandler({
   action: 'start',
   ifAnnotation: PROCESS_START_IF,
-  getColumns: (req) => getColumnsForProcessStart(req.target as Target),
+  getColumns: (req) => addBusinessKeyToStartColumns(req),
 });
 
 function initStartSpecs(target: Target): ProcessStartSpec {

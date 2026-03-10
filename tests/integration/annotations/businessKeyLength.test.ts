@@ -112,12 +112,10 @@ describe('Integration tests for Business Key Length Validation on processStart',
   });
 
   // ================================================
-  // START ON DELETE - businessKey length is not validated
-  // because the entity row is pre-fetched without the
-  // businessKey column before deletion
+  // START ON DELETE - businessKey length validation
   // ================================================
-  describe('Start on DELETE with long businessKey', () => {
-    it('should still start process on DELETE even when businessKey value exceeds 255 characters', async () => {
+  describe('Start on DELETE with businessKey length validation', () => {
+    it('should reject with 400 on DELETE when businessKey exceeds 255 characters', async () => {
       const exceedingValue = 'a'.repeat(BUSINESS_KEY_MAX_LENGTH + 1);
 
       const entity = {
@@ -134,8 +132,40 @@ describe('Integration tests for Business Key Length Validation on processStart',
       expect(createResponse.status).toBe(201);
       foundMessages = [];
 
-      // Delete should succeed - businessKey length validation does not apply
-      // on DELETE because the entity is pre-fetched without the businessKey column
+      // Delete should fail due to businessKey length
+      try {
+        await DELETE(
+          `/odata/v4/annotation/StartOnDeleteExceedingBusinessKey('${entity.ID}')`,
+        );
+        fail('Expected request to be rejected');
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+        expect(error.response.data.error.message).toContain(
+          `Business key value exceeds maximum length of ${BUSINESS_KEY_MAX_LENGTH} characters`,
+        );
+      }
+
+      expect(foundMessages.length).toBe(0);
+    });
+
+    it('should start process on DELETE when businessKey is within the limit', async () => {
+      const validValue = 'd'.repeat(BUSINESS_KEY_MAX_LENGTH);
+
+      const entity = {
+        ID: '550e8400-e29b-41d4-a716-446655440009',
+        longValue: validValue,
+        name: 'Test',
+      };
+
+      // First create the entity
+      const createResponse = await POST(
+        '/odata/v4/annotation/StartOnDeleteExceedingBusinessKey',
+        entity,
+      );
+      expect(createResponse.status).toBe(201);
+      foundMessages = [];
+
+      // Delete should succeed since businessKey is within limit
       const deleteResponse = await DELETE(
         `/odata/v4/annotation/StartOnDeleteExceedingBusinessKey('${entity.ID}')`,
       );

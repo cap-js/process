@@ -3,9 +3,6 @@ service TestService {
   @bpm.process.businessKey: (longfield || '-' || longfield || '-' || longfield)
   @bpm.process.start: {
     id: 'TESTeu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
-    on: 'CREATE',
-  }
-  @bpm.process.cancel: {
     on: 'DELETE',
   }
   entity NewBusinessKey {
