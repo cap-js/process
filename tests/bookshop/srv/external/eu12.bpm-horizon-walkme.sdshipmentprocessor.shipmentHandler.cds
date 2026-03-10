@@ -4,7 +4,6 @@ namespace eu12.![bpm-horizon-walkme].sdshipmentprocessor;
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
 @protocol : 'none'
 @bpm.process : 'eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler'
-@bpm.process.businessKey : '${ssn}-${age}'
 service ShipmentHandlerService {
   type ShipmentProcessResult_itemProcessResults_Array : many ItemProcessResult;
 
