@@ -13,10 +13,8 @@ import {
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
-import {
-  getBusinessKeyColumnOrReject,
-  retrieveBusinessKeyExpression,
-} from '../shared/businessKey-helper';
+import { getBusinessKeyColumnOrReject } from '../shared/businessKey-helper';
+import { BUSINESS_KEY } from '../constants';
 
 type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
@@ -60,7 +58,7 @@ function initSpecs(
     conditionExpr: targetAnnotations[annotations.IF]
       ? (targetAnnotations[annotations.IF] as { xpr: expr }).xpr
       : undefined,
-    businessKey: retrieveBusinessKeyExpression(targetAnnotations),
+    businessKey: targetAnnotations[BUSINESS_KEY]?.['='],
   };
 }
 
@@ -105,7 +103,7 @@ export function createProcessActionAddDeletedEntityHandler(config: ProcessAction
     action: config.action,
     ifAnnotation: config.annotations.IF,
     getColumns: (req) => [
-      getBusinessKeyColumnOrReject(req, retrieveBusinessKeyExpression(req.target as cds.entity)),
+      getBusinessKeyColumnOrReject(req, (req.target as cds.entity)[BUSINESS_KEY]?.['=']),
     ],
   });
 }
