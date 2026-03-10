@@ -154,6 +154,10 @@ export const ERROR_MISSING_MANDATORY_PROCESS_INPUT = (
   return `${entityName}: Mandatory input '${inputKey}' from process definition '${processDefId}' is missing in the entity`;
 };
 
+export const WARNING_INPUT_PATH_NOT_IN_ENTITY = (entityName: string, inputPath: string): string => {
+  return `${entityName}: Input path '${inputPath}' does not exist on the entity. If this is a virtual field added at runtime, you can ignore this warning.`;
+};
+
 // =============================================================================
 // Misc Build Warnings
 // =============================================================================

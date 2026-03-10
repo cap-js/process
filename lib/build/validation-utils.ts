@@ -7,6 +7,7 @@ import {
   buildInputTree,
   EntityContext,
   WILDCARD,
+  ParsedInputEntry,
 } from '../shared/input-parser';
 
 export type ElementType = {
@@ -19,7 +20,7 @@ export type ElementType = {
 /**
  * Creates an EntityContext for build-time CSN entities
  */
-function createCsnEntityContext(
+export function createCsnEntityContext(
   elements: Record<string, CsnElement>,
   allDefinitions: Record<string, CsnDefinition>,
 ): EntityContext {
@@ -271,24 +272,29 @@ export function getProcessDefinitions(
   return processMap;
 }
 
+export function getParsedInputEntries(def: CsnEntity): ParsedInputEntry[] | undefined {
+  const inputsCSN = def[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
+  if (!inputsCSN || inputsCSN.length === 0) {
+    return undefined;
+  }
+  const parsedEntries = parseInputsArray(inputsCSN);
+  return parsedEntries;
+}
+
 /**
  * Extracts element names and types from an entity definition based on the inputs array.
  * If no inputs array is defined, returns all entity fields.
  */
 export function getElementNamesAndTypes(
+  parsedEntries: ParsedInputEntry[] | undefined,
   def: CsnEntity,
   allDefinitions: Record<string, CsnDefinition>,
+  entityContext: EntityContext,
 ): Record<string, ElementType> {
   const elements = def.elements ?? {};
-  const inputsCSN = def[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
 
   // If inputs array is defined, parse it to get specific fields
-  if (inputsCSN && inputsCSN.length > 0) {
-    const parsedEntries = parseInputsArray(inputsCSN);
-    const entityContext = createCsnEntityContext(
-      elements as Record<string, CsnElement>,
-      allDefinitions,
-    );
+  if (parsedEntries) {
     const inputTree = buildInputTree(parsedEntries, entityContext);
     return convertTreeToElementTypes(
       inputTree,

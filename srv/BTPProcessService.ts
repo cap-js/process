@@ -138,7 +138,7 @@ class ProcessService extends cds.ApplicationService {
       return await this.cachingTokenProvider.getToken(tenant);
     } catch (error) {
       LOG.error('Error fetching token for Process Service:', error);
-      throw new Error('Error during token fetching.');
+      throw new Error('Error during token fetching.', { cause: error });
     }
   }
 }

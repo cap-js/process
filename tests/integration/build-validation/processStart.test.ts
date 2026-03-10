@@ -661,4 +661,182 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       expect(result.buildSucceeded).toBe(false);
     });
   });
+
+  describe('Input path existence validation', () => {
+    it('should WARN when input references non-existing scalar field', async () => {
+      const processId = 'nonExistingFieldProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        $self.nonExistingField
+                    ]
+                }
+                entity NonExistingFieldEntity { 
+                    key ID: UUID; 
+                    name: String;
+                }
+            `;
+      const processInputs = `ID: UUID; nonExistingField: String; businesskey: String;`;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      expect(result.buildSucceeded).toBe(true);
+      expect(
+        result.warnings.some(
+          (w) =>
+            w.msg.includes('$self.nonExistingField') &&
+            w.msg.includes('does not exist on the entity'),
+        ),
+      ).toBe(true);
+    });
+
+    it('should WARN when input references non-existing composition', async () => {
+      const processId = 'nonExistingCompositionProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        $self.nonExistingComposition
+                    ]
+                }
+                entity NonExistingCompositionEntity { 
+                    key ID: UUID; 
+                }
+            `;
+      const processInputs = `ID: UUID; nonExistingComposition: String; businesskey: String;`;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      expect(result.buildSucceeded).toBe(true);
+      expect(
+        result.warnings.some(
+          (w) =>
+            w.msg.includes('$self.nonExistingComposition') &&
+            w.msg.includes('does not exist on the entity'),
+        ),
+      ).toBe(true);
+    });
+
+    it('should WARN when input references non-existing nested field in composition', async () => {
+      const processId = 'nonExistingNestedFieldProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        $self.items.nonExistingField
+                    ]
+                }
+                entity NonExistingNestedFieldEntity { 
+                    key ID: UUID; 
+                    items: Composition of many NonExistingNestedFieldItems on items.parent = $self;
+                }
+                entity NonExistingNestedFieldItems {
+                    key ID: UUID;
+                    parent: Association to NonExistingNestedFieldEntity;
+                    title: String;
+                }
+            `;
+      const processInputs = `
+                ID: UUID; 
+                businesskey: String;
+                items: many {
+                    nonExistingField: String;
+                };
+            `;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      expect(result.buildSucceeded).toBe(true);
+      expect(
+        result.warnings.some(
+          (w) =>
+            w.msg.includes('$self.items.nonExistingField') &&
+            w.msg.includes('does not exist on the entity'),
+        ),
+      ).toBe(true);
+    });
+
+    it('should WARN when aliased input references non-existing field', async () => {
+      const processId = 'nonExistingAliasedFieldProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        { path: $self.nonExistingField, as: 'AliasedField' }
+                    ]
+                }
+                entity NonExistingAliasedFieldEntity { 
+                    key ID: UUID; 
+                }
+            `;
+      const processInputs = `ID: UUID; AliasedField: String; businesskey: String;`;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      expect(result.buildSucceeded).toBe(true);
+      expect(
+        result.warnings.some(
+          (w) =>
+            w.msg.includes('$self.nonExistingField') &&
+            w.msg.includes('does not exist on the entity'),
+        ),
+      ).toBe(true);
+    });
+
+    it('should NOT warn when all input paths exist on the entity', async () => {
+      const processId = 'allPathsExistProcess';
+      const entityDef = `
+                ${PROCESS_START}: { 
+                    id: '${processId}', 
+                    on: 'CREATE',
+                    inputs: [
+                        $self.ID,
+                        $self.name,
+                        $self.items.title
+                    ]
+                }
+                entity AllPathsExistEntity { 
+                    key ID: UUID; 
+                    name: String;
+                    items: Composition of many AllPathsExistItems on items.parent = $self;
+                }
+                entity AllPathsExistItems {
+                    key ID: UUID;
+                    parent: Association to AllPathsExistEntity;
+                    title: String;
+                }
+            `;
+      const processInputs = `
+                ID: UUID; 
+                name: String;
+                businesskey: String;
+                items: many {
+                    title: String;
+                };
+            `;
+      const cdsSourceProcessDef = withProcessDefinition(entityDef, processId, processInputs);
+
+      const result = await validateModel(cdsSourceProcessDef);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.buildSucceeded).toBe(true);
+      // No warnings about non-existing paths
+      expect(result.warnings.some((w) => w.msg.includes('does not exist on the entity'))).toBe(
+        false,
+      );
+    });
+  });
 });

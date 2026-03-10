@@ -1,10 +1,12 @@
 import cds from '@sap/cds';
 import { ProcessValidationPlugin } from './plugin';
-import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
+import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
 import { PROCESS_START_ID, PROCESS_START_ON } from '../constants';
 import {
+  createCsnEntityContext,
   ElementType,
   getElementNamesAndTypes,
+  getParsedInputEntries,
   getProcessDefInputsAndTypes,
 } from './validation-utils';
 import {
@@ -24,7 +26,9 @@ import {
   ERROR_ATTRIBUTE_NOT_IN_PROCESS_DEF,
   WARNING_NO_PROCESS_DEFINITION,
   ERROR_START_BUSINESSKEY_INPUT_MISSING,
+  WARNING_INPUT_PATH_NOT_IN_ENTITY,
 } from './constants';
+import { EntityContext, ParsedInputEntry } from '../shared/input-parser';
 
 const Plugin = cds.build?.Plugin;
 const ERROR = Plugin?.ERROR;
@@ -149,8 +153,20 @@ export function validateInputTypes(
   processDef: CsnDefinition,
   allDefinitions: Record<string, CsnDefinition> | undefined,
 ) {
+  const parsedEntries = getParsedInputEntries(def as CsnEntity);
+  const elements = (def as CsnEntity).elements ?? {};
+  const entityContext = createCsnEntityContext(
+    elements as Record<string, CsnElement>,
+    allDefinitions || {},
+  );
+
   // entity attributes from inputs array annotation
-  const entityAttributes = getElementNamesAndTypes(def as CsnEntity, allDefinitions || {});
+  const entityAttributes = getElementNamesAndTypes(
+    parsedEntries,
+    def as CsnEntity,
+    allDefinitions || {},
+    entityContext,
+  );
 
   // process def inputs from csn model
   const processDefInputs = getProcessDefInputsAndTypes(processDef, allDefinitions || {});
@@ -163,6 +179,8 @@ export function validateInputTypes(
     delete processDefInputs['businesskey'];
   }
 
+  validateInputPathsExist(buildPlugin, entityName, parsedEntries, entityContext);
+
   // Compare entity attributes against process definition inputs
   validateInputsMatch(
     buildPlugin,
@@ -171,6 +189,45 @@ export function validateInputTypes(
     processDefInputs,
     def[PROCESS_START_ID],
   );
+}
+
+function validateInputPathsExist(
+  buildPlugin: ProcessValidationPlugin,
+  entityName: string,
+  parsedEntries: ParsedInputEntry[] | undefined,
+  entityContext: EntityContext,
+): void {
+  if (!parsedEntries) {
+    return;
+  }
+
+  for (const entry of parsedEntries) {
+    // Skip wildcards ($self alone)
+    if (entry.path.length === 1 && entry.path[0] === '*') continue;
+
+    let currentContext = entityContext;
+
+    for (let i = 0; i < entry.path.length; i++) {
+      const segment = entry.path[i];
+
+      // Skip wildcards in nested paths - remainder of path is implicitly valid
+      if (segment === '*') break;
+
+      const element = currentContext.getElement(segment);
+
+      if (!element) {
+        // Element doesn't exist - push warning
+        const fullPath = '$self.' + entry.path.slice(0, i + 1).join('.');
+        buildPlugin.pushMessage(WARNING_INPUT_PATH_NOT_IN_ENTITY(entityName, fullPath), WARNING);
+        break; // Stop validating further segments of this path
+      }
+
+      // Move to target entity context for next segment (if association/composition)
+      if (element.isAssocOrComp && element.targetEntity) {
+        currentContext = element.targetEntity;
+      }
+    }
+  }
 }
 
 function validateInputsMatch(
