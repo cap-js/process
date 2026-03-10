@@ -381,14 +381,9 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
   - A bound action defined on the entity
 - `@bpm.process.<cancel|suspend|resume>.cascade` is optional (defaults to false); if provided, must be a boolean
 - `@bpm.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
-- if any annotation with `@bpm.process.<cancel|suspend|resume>` is defined, a valid businessKey expression must be defined using one of the 4 following options:
-  - `@UI.HeaderInfo#bpm.Title.Value` --> expression
-  - `@UI.HeaderInfo.Title.Value` --> expression
-  - `@Common.SemanticKey#bpm` --> array of fields that will be concatenated
-  - `@Common.SemanticKey` --> array of fields that will be concatenated
-  - If none of the annotations is set, the imported process model definition will be looked at to get the business key from there. If the businessKey there is also undefined, an error will be thrown
-- The existence of a businessKey annotation will also be checked
-  - if businessKey is provided either by `@Common.SemanticKey#bpm` or `@Common.SemanticKey`, all elements part of that array will also be checked if they exist in the annotated entity
+- if any annotation with `@bpm.process.<cancel|suspend|resume>` is defined, a valid businessKey expression must be defined using `@bpm.process.businessKey`
+  - example: `@bpm.process.businessKey: (id || '-' || name)` would concatenate id and name with a '-' string as a business key
+  - the businessKey definition here must reflect the one configured in SBPA Process Builder
 
 ### Warnings
 
