@@ -313,7 +313,9 @@ service MyService {
   - `@bpm.process.<cancel|resume|suspend>.if` -- only starting process if expression is true
     - example: `@bpm.process.suspend.if: (weight > 10)`
 - for cancelling/resuming/suspending it is required to have a businessKey expression annotated on the entity using `@bpm.process.businessKey`. If no businessKey is annotated, the request will be rejected
-  Example:
+  - example: `@bpm.process.businessKey: (id || '-' || name)`
+
+Example:
 
 ```cds
 service MyService {
