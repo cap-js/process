@@ -1,4 +1,4 @@
-/* checksum : ba13b7a95c8d1c3567a2bdb109bd687d */
+/* checksum : 060851d153c6463bb8c4fb247ccfd927 */
 namespace eu12.![bpm-horizon-walkme].sdshipmentprocessor;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
@@ -39,7 +39,7 @@ service ShipmentHandlerService {
   };
 
   type ProcessOutputs {
-    shipmentProcessResultOutput : ShipmentProcessResult not null;
+    shipmentProcessResultOutput : ShipmentProcessResult;
   };
 
   type ProcessAttribute {
@@ -62,6 +62,8 @@ service ShipmentHandlerService {
 
   type ProcessInstances : many ProcessInstance;
 
+  type ProcessInstanceStatus : many String;
+
   action start(
     inputs : ProcessInputs not null
   );
@@ -76,7 +78,7 @@ service ShipmentHandlerService {
 
   function getInstancesByBusinessKey(
     businessKey : String not null,
-    status : many String
+    status : ProcessInstanceStatus
   ) returns ProcessInstances;
 
   action suspend(
