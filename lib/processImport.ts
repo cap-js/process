@@ -166,9 +166,10 @@ function buildCsnModel(process: ProcessHeader): csn.CsnModel {
 
   addProcessTypes(process, serviceName, definitions);
 
-  const inputProperties = process.header?.inputs?.properties ?? {};
+  const normalizedInputSchema = ensureObjectSchema(process.header?.inputs);
+  const inputProperties = normalizedInputSchema.properties ?? {};
   const hasInputProperties = Object.keys(inputProperties).length > 0;
-  const hasRequiredInputs = (process.header?.inputs?.required?.length ?? 0) > 0;
+  const hasRequiredInputs = hasInputProperties && (normalizedInputSchema.required?.length ?? 0) > 0;
   addProcessActions(serviceName, definitions, hasInputProperties, hasRequiredInputs);
 
   return {
