@@ -70,8 +70,9 @@ service AnnotationService {
   @bpm.process.cancel: {
     on: 'UPDATE',
     cascade: false,
-    if: (mileage > 1000)
+    if: (mileage > 1000),
   }
+  @bpm.process.businessKey: (ID)
   entity CarWhen                       as
     projection on my.Car {
       ID,
@@ -194,6 +195,7 @@ service AnnotationService {
     on: 'CREATE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity CancelOnCreate                as
     projection on my.Car {
       ID,
@@ -207,8 +209,9 @@ service AnnotationService {
   @bpm.process.cancel: {
     on: 'CREATE',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity CancelOnCreateWhen            as
     projection on my.Car {
       ID,
@@ -223,6 +226,7 @@ service AnnotationService {
     on: 'UPDATE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity CancelOnUpdate                as
     projection on my.Car {
       ID,
@@ -236,8 +240,9 @@ service AnnotationService {
   @bpm.process.cancel: {
     on: 'UPDATE',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity CancelOnUpdateWhen            as
     projection on my.Car {
       ID,
@@ -252,6 +257,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity CancelOnDelete                as
     projection on my.Car {
       ID,
@@ -265,8 +271,9 @@ service AnnotationService {
   @bpm.process.cancel: {
     on: 'DELETE',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity CancelOnDeleteWhen            as
     projection on my.Car {
       ID,
@@ -285,6 +292,7 @@ service AnnotationService {
     on: 'CREATE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity SuspendOnCreate               as
     projection on my.Car {
       ID,
@@ -298,8 +306,9 @@ service AnnotationService {
   @bpm.process.suspend: {
     on: 'CREATE',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity SuspendOnCreateWhen           as
     projection on my.Car {
       ID,
@@ -314,6 +323,7 @@ service AnnotationService {
     on: 'UPDATE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity SuspendOnUpdate               as
     projection on my.Car {
       ID,
@@ -327,8 +337,9 @@ service AnnotationService {
   @bpm.process.suspend: {
     on: 'UPDATE',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity SuspendOnUpdateWhen           as
     projection on my.Car {
       ID,
@@ -343,6 +354,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity SuspendOnDelete               as
     projection on my.Car {
       ID,
@@ -356,8 +368,9 @@ service AnnotationService {
   @bpm.process.suspend: {
     on: 'DELETE',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity SuspendOnDeleteWhen           as
     projection on my.Car {
       ID,
@@ -376,6 +389,7 @@ service AnnotationService {
     on: 'CREATE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity ResumeOnCreate                as
     projection on my.Car {
       ID,
@@ -389,8 +403,9 @@ service AnnotationService {
   @bpm.process.resume: {
     on: 'CREATE',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity ResumeOnCreateWhen            as
     projection on my.Car {
       ID,
@@ -405,6 +420,7 @@ service AnnotationService {
     on: 'UPDATE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity ResumeOnUpdate                as
     projection on my.Car {
       ID,
@@ -418,8 +434,9 @@ service AnnotationService {
   @bpm.process.resume: {
     on: 'UPDATE',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity ResumeOnUpdateWhen            as
     projection on my.Car {
       ID,
@@ -434,6 +451,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity ResumeOnDelete                as
     projection on my.Car {
       ID,
@@ -447,8 +465,9 @@ service AnnotationService {
   @bpm.process.resume: {
     on: 'DELETE',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity ResumeOnDeleteWhen            as
     projection on my.Car {
       ID,
@@ -463,7 +482,8 @@ service AnnotationService {
   // ============================================
 
   // Cancel on CREATE without cascade (should default to false)
-  @bpm.process.cancel: {on: 'CREATE', }
+  @bpm.process.cancel: {on: 'CREATE' }
+  @bpm.process.businessKey: (ID)
   entity CancelOnCreateDefaultCascade  as
     projection on my.Car {
       ID,
@@ -474,7 +494,8 @@ service AnnotationService {
     }
 
   // Cancel on UPDATE without cascade (should default to false)
-  @bpm.process.cancel: {on: 'UPDATE', }
+  @bpm.process.cancel: {on: 'UPDATE' }
+  @bpm.process.businessKey: (ID)
   entity CancelOnUpdateDefaultCascade  as
     projection on my.Car {
       ID,
@@ -485,7 +506,8 @@ service AnnotationService {
     }
 
   // Cancel on DELETE without cascade (should default to false)
-  @bpm.process.cancel: {on: 'DELETE', }
+  @bpm.process.cancel: {on: 'DELETE' }
+  @bpm.process.businessKey: (ID)
   entity CancelOnDeleteDefaultCascade  as
     projection on my.Car {
       ID,
@@ -496,7 +518,8 @@ service AnnotationService {
     }
 
   // Suspend on CREATE without cascade (should default to false)
-  @bpm.process.suspend: {on: 'CREATE', }
+  @bpm.process.suspend: {on: 'CREATE' }
+  @bpm.process.businessKey: (ID)
   entity SuspendOnCreateDefaultCascade as
     projection on my.Car {
       ID,
@@ -507,7 +530,8 @@ service AnnotationService {
     }
 
   // Suspend on UPDATE without cascade (should default to false)
-  @bpm.process.suspend: {on: 'UPDATE', }
+  @bpm.process.suspend: {on: 'UPDATE' }
+  @bpm.process.businessKey: (ID)
   entity SuspendOnUpdateDefaultCascade as
     projection on my.Car {
       ID,
@@ -518,7 +542,8 @@ service AnnotationService {
     }
 
   // Resume on CREATE without cascade (should default to false)
-  @bpm.process.resume: {on: 'CREATE', }
+  @bpm.process.resume: {on: 'CREATE' }
+  @bpm.process.businessKey: (ID)
   entity ResumeOnCreateDefaultCascade  as
     projection on my.Car {
       ID,
@@ -529,7 +554,8 @@ service AnnotationService {
     }
 
   // Resume on UPDATE without cascade (should default to false)
-  @bpm.process.resume: {on: 'UPDATE', }
+  @bpm.process.resume: {on: 'UPDATE' }
+  @bpm.process.businessKey: (ID)
   entity ResumeOnUpdateDefaultCascade  as
     projection on my.Car {
       ID,
@@ -556,6 +582,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: true,
   }
+  @bpm.process.businessKey: (ID)
   entity BasicLifecycle                as
     projection on my.Car {
       ID,
@@ -577,8 +604,9 @@ service AnnotationService {
   @bpm.process.cancel: {
     on: 'UPDATE',
     cascade: false,
-    if: (mileage > 1000)
+    if: (mileage > 1000),
   }
+  @bpm.process.businessKey: (ID)
   entity StatusBasedCancel             as
     projection on my.Car {
       ID,
@@ -601,13 +629,14 @@ service AnnotationService {
   @bpm.process.suspend: {
     on: 'UPDATE',
     cascade: false,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
   @bpm.process.resume: {
     on: 'UPDATE',
     cascade: false,
-    if: (mileage <= 500)
+    if: (mileage <= 500),
   }
+  @bpm.process.businessKey: (ID)
   entity SuspendResumeWorkflow         as
     projection on my.Car {
       ID,
@@ -629,17 +658,18 @@ service AnnotationService {
   @bpm.process.suspend: {
     on: 'UPDATE',
     cascade: false,
-    if: (mileage > 800)
+    if: (mileage > 800),
   }
   @bpm.process.resume: {
     on: 'UPDATE',
     cascade: false,
-    if: (mileage <= 800)
+    if: (mileage <= 800),
   }
   @bpm.process.cancel: {
     on: 'DELETE',
     cascade: true,
   }
+  @bpm.process.businessKey: (ID)
   entity FullLifecycle                 as
     projection on my.Car {
       ID,
@@ -662,8 +692,9 @@ service AnnotationService {
   @bpm.process.cancel: {
     on: 'UPDATE',
     cascade: false,
-    if: (mileage > 1500)
+    if: (mileage > 1500),
   }
+  @bpm.process.businessKey: (ID)
   entity ConditionalStartCancel        as
     projection on my.Car {
       ID,
@@ -682,17 +713,18 @@ service AnnotationService {
   @bpm.process.suspend: {
     on: 'UPDATE',
     cascade: false,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
   @bpm.process.resume: {
     on: 'UPDATE',
     cascade: false,
-    if: (mileage <= 500)
+    if: (mileage <= 500),
   }
   @bpm.process.cancel: {
     on: 'DELETE',
     cascade: true,
   }
+  @bpm.process.businessKey: (ID)
   entity ExternalWorkflowManagement    as
     projection on my.Car {
       ID,
@@ -718,6 +750,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: true,
   }
+  @bpm.process.businessKey: (ID)
   entity DeleteStartCancel as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
@@ -733,6 +766,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity DeleteStartResume as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
@@ -748,6 +782,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity DeleteCancelResume as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
@@ -763,6 +798,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: true,
   }
+  @bpm.process.businessKey: (ID)
   entity DeleteCancelSuspend as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
@@ -779,6 +815,7 @@ service AnnotationService {
     cascade: true,
     if: (mileage <= 500)
   }
+  @bpm.process.businessKey: (ID)
   entity DeleteCancelSuspendIfExpr as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
@@ -798,6 +835,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity DeleteStartCancelResume as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
@@ -821,6 +859,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: true,
   }
+  @bpm.process.businessKey: (ID)
   entity DeleteAllEvents as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
@@ -840,6 +879,7 @@ service AnnotationService {
     on: 'DELETE',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity DeleteStartInputsCancel as projection on my.Car {
     ID, model, manufacturer, mileage, year
   }
@@ -1051,6 +1091,7 @@ service AnnotationService {
     on: 'triggerCancel',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity CancelOnAction as projection on my.Car {
     ID, model, manufacturer, mileage, year
   } actions {
@@ -1063,8 +1104,9 @@ service AnnotationService {
   @bpm.process.cancel: {
     on: 'triggerCancelWhen',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity CancelOnActionWhen as projection on my.Car {
     ID, model, manufacturer, mileage, year
   } actions {
@@ -1078,6 +1120,7 @@ service AnnotationService {
     on: 'triggerSuspend',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity SuspendOnAction as projection on my.Car {
     ID, model, manufacturer, mileage, year
   } actions {
@@ -1090,8 +1133,9 @@ service AnnotationService {
   @bpm.process.suspend: {
     on: 'triggerSuspendWhen',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity SuspendOnActionWhen as projection on my.Car {
     ID, model, manufacturer, mileage, year
   } actions {
@@ -1105,6 +1149,7 @@ service AnnotationService {
     on: 'triggerResume',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity ResumeOnAction as projection on my.Car {
     ID, model, manufacturer, mileage, year
   } actions {
@@ -1117,8 +1162,9 @@ service AnnotationService {
   @bpm.process.resume: {
     on: 'triggerResumeWhen',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity ResumeOnActionWhen as projection on my.Car {
     ID, model, manufacturer, mileage, year
   } actions {
@@ -1164,6 +1210,7 @@ service AnnotationService {
     on: '*',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity CancelOnWildcard as projection on my.Car {
     ID, model, manufacturer, mileage, year
   } actions {
@@ -1177,6 +1224,7 @@ service AnnotationService {
     on: '*',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity SuspendOnWildcard as projection on my.Car {
     ID, model, manufacturer, mileage, year
   } actions {
@@ -1190,6 +1238,7 @@ service AnnotationService {
     on: '*',
     cascade: false,
   }
+  @bpm.process.businessKey: (ID)
   entity ResumeOnWildcard as projection on my.Car {
     ID, model, manufacturer, mileage, year
   } actions {
@@ -1202,8 +1251,9 @@ service AnnotationService {
   @bpm.process.cancel: {
     on: '*',
     cascade: true,
-    if: (mileage > 500)
+    if: (mileage > 500),
   }
+  @bpm.process.businessKey: (ID)
   entity CancelOnWildcardWhen as projection on my.Car {
     ID, model, manufacturer, mileage, year
   } actions {
@@ -1437,4 +1487,153 @@ service AnnotationService {
     key ID   : UUID;
         name : String(100);
   }
+
+  // ============================================
+  // BUSINESS KEY LENGTH VALIDATION TESTS
+  // Testing businessKey max length (255 chars) on processStart
+  // ============================================
+
+  // Start on CREATE with businessKey (short value - well under 255 chars)
+  @bpm.process.start: {
+    id: 'startShortBusinessKeyProcess',
+    on: 'CREATE',
+  }
+  @bpm.process.businessKey: (ID)
+  entity StartWithShortBusinessKey       as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Start on CREATE with businessKey at exactly 255 chars
+  @bpm.process.start: {
+    id: 'startExactLimitBusinessKeyProcess',
+    on: 'CREATE',
+  }
+  @bpm.process.businessKey: (longValue)
+  entity StartWithExactLimitBusinessKey {
+    key ID        : UUID;
+        longValue : String(300);
+        name      : String(100);
+  }
+
+  // Start on CREATE with businessKey exceeding 255 chars
+  @bpm.process.start: {
+    id: 'startExceedingBusinessKeyProcess',
+    on: 'CREATE',
+  }
+  @bpm.process.businessKey: (longValue)
+  entity StartWithExceedingBusinessKey {
+    key ID        : UUID;
+        longValue : String(300);
+        name      : String(100);
+  }
+
+  // Start on DELETE with businessKey exceeding 255 chars
+  @bpm.process.start: {
+    id: 'startOnDeleteExceedingBusinessKeyProcess',
+    on: 'DELETE',
+  }
+  @bpm.process.businessKey: (longValue)
+  entity StartOnDeleteExceedingBusinessKey {
+    key ID        : UUID;
+        longValue : String(300);
+        name      : String(100);
+  }
+
+  // Start on UPDATE with businessKey exceeding 255 chars
+  @bpm.process.start: {
+    id: 'startOnUpdateExceedingBusinessKeyProcess',
+    on: 'UPDATE',
+  }
+  @bpm.process.businessKey: (longValue)
+  entity StartOnUpdateExceedingBusinessKey {
+    key ID        : UUID;
+        longValue : String(300);
+        name      : String(100);
+  }
+
+  // ============================================
+  // COMPOSITE BUSINESS KEY TESTS
+  // Testing businessKey with concat expressions
+  // ============================================
+
+  // Cancel with businessKey composed from two fields
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: false,
+  }
+  @bpm.process.businessKey: (model || '-' || manufacturer)
+  entity CancelCompositeKey             as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Suspend with businessKey composed from two fields
+  @bpm.process.suspend: {
+    on: 'UPDATE',
+    cascade: false,
+    if: (mileage > 500),
+  }
+  @bpm.process.businessKey: (manufacturer || '_' || model)
+  entity SuspendCompositeKey            as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Resume with businessKey composed from two fields
+  @bpm.process.resume: {
+    on: 'UPDATE',
+    cascade: false,
+    if: (mileage <= 500),
+  }
+  @bpm.process.businessKey: (manufacturer || '_' || model)
+  entity ResumeCompositeKey             as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
+
+  // Full lifecycle with composite businessKey on all action annotations
+  @bpm.process.start: {
+    id: 'compositeKeyLifecycleProcess',
+    on: 'CREATE',
+  }
+  @bpm.process.suspend: {
+    on: 'UPDATE',
+    cascade: false,
+    if: (mileage > 500),
+  }
+  @bpm.process.resume: {
+    on: 'UPDATE',
+    cascade: false,
+    if: (mileage <= 500),
+  }
+  @bpm.process.cancel: {
+    on: 'DELETE',
+    cascade: true,
+  }
+  @bpm.process.businessKey: (model || '/' || manufacturer)
+  entity CompositeKeyLifecycle          as
+    projection on my.Car {
+      ID,
+      model,
+      manufacturer,
+      mileage,
+      year
+    }
 }

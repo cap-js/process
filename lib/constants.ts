@@ -13,6 +13,17 @@ export const PROCESS_LOGGER_PREFIX = 'process' as const;
  */
 export const CUD_EVENTS = ['CREATE', 'UPDATE', 'DELETE'] as const;
 
+/** Business Key Annotations
+ *
+ */
+export const BUSINESS_KEY = '@bpm.process.businessKey' as const;
+export const BUSINESS_KEY_MAX_LENGTH = 255;
+
+/**
+ * Business key alias const
+ */
+export const BUSINESS_KEY_ALIAS = 'as businessKey' as const;
+
 /**
  * Process Start Annotations
  */
