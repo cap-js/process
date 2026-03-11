@@ -1,0 +1,39 @@
+{
+  "uid": "7f5f89d7-a48d-4019-b206-1c89cbc96f4a",
+  "name": " Lifecycle_Test_Process",
+  "description": "",
+  "type": "bpi.process",
+  "createdAt": "2026-03-11T12:45:55.991322Z",
+  "updatedAt": "2026-03-11T12:46:28.481181Z",
+  "header": {
+    "inputs": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "inputs",
+      "type": "object",
+      "properties": {}
+    },
+    "outputs": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "outputs",
+      "type": "object",
+      "properties": {}
+    },
+    "processAttributes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "processAttributes",
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  "dependencies": [
+    {
+      "artifactUid": "25ab1d56-63e5-4082-806f-9e41763f40f3",
+      "type": "content"
+    }
+  ],
+  "identifier": "lifecycle_Test_Process",
+  "valid": true,
+  "projectId": "eu12.cdsmunich.capprocesspluginhybridtest",
+  "dataTypes": []
+}
