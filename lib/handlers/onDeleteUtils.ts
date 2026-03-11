@@ -3,7 +3,7 @@ import { BUSINESS_KEY, PROCESS_LOGGER_PREFIX } from '../constants';
 import { EntityRow } from './utils';
 import { WILDCARD } from '../shared/input-parser';
 import { getColumnsForProcessStart } from './processStart';
-import { getBusinessKeyColumnProcessStart } from '../shared/businessKey-helper';
+import { getBusinessKeyColumn } from '../shared/businessKey-helper';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -97,10 +97,7 @@ export function addBusinessKeyToStartColumns(req: cds.Request): (column_expr | s
   const target = req.target as Target;
   const startColumns = getColumnsForProcessStart(target);
 
-  const businessKeyColumns = getBusinessKeyColumnProcessStart(
-    req,
-    (target[BUSINESS_KEY] as { '=': string })?.['='],
-  );
+  const businessKeyColumns = getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
 
   if (businessKeyColumns) {
     startColumns.push(businessKeyColumns);

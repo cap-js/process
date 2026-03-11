@@ -32,7 +32,7 @@ import {
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
-import { getBusinessKeyColumnProcessStart } from '../shared/businessKey-helper';
+import { getBusinessKeyColumn } from '../shared/businessKey-helper';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // Use InputTreeNode as ProcessStartInput (same structure)
@@ -76,10 +76,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
     columns = convertToColumnsExpr(startSpecs.inputs);
   }
 
-  const businessKeyColumn = getBusinessKeyColumnProcessStart(
-    req,
-    (target[BUSINESS_KEY] as { '=': string })?.['='],
-  );
+  const businessKeyColumn = getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
   if (businessKeyColumn) {
     columns.push(businessKeyColumn);
   }
