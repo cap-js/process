@@ -165,7 +165,11 @@ function buildCsnModel(process: ProcessHeader): csn.CsnModel {
   }
 
   addProcessTypes(process, serviceName, definitions);
-  addProcessActions(serviceName, definitions);
+
+  const inputProperties = process.header?.inputs?.properties ?? {};
+  const hasInputProperties = Object.keys(inputProperties).length > 0;
+  const hasRequiredInputs = (process.header?.inputs?.required?.length ?? 0) > 0;
+  addProcessActions(serviceName, definitions, hasInputProperties, hasRequiredInputs);
 
   return {
     $version: '2.0',
@@ -285,6 +289,8 @@ function addProcessTypes(
 function addProcessActions(
   serviceName: string,
   definitions: Record<string, csn.CsnDefinition>,
+  hasInputProperties: boolean,
+  hasRequiredInputs: boolean,
 ): void {
   const inputsType = fqn(serviceName, 'ProcessInputs');
   const outputsType = fqn(serviceName, 'ProcessOutputs');
@@ -292,14 +298,27 @@ function addProcessActions(
   const instancesType = fqn(serviceName, 'ProcessInstances');
   const statusType = fqn(serviceName, 'ProcessInstanceStatus');
 
-  // Start action
-  definitions[fqn(serviceName, 'start')] = {
-    kind: 'action',
-    name: fqn(serviceName, 'start'),
-    params: {
-      inputs: { type: inputsType, notNull: true },
-    },
-  };
+  // Start action — three tiers:
+  //   1. No input properties:       start() with no params
+  //   2. All inputs optional:       start(inputs: ProcessInputs)        — inputs param is optional
+  //   3. Some/all inputs required:  start(inputs: ProcessInputs not null) — inputs param is required
+  if (!hasInputProperties) {
+    definitions[fqn(serviceName, 'start')] = {
+      kind: 'action',
+      name: fqn(serviceName, 'start'),
+    };
+  } else {
+    definitions[fqn(serviceName, 'start')] = {
+      kind: 'action',
+      name: fqn(serviceName, 'start'),
+      params: {
+        inputs: {
+          type: inputsType,
+          notNull: hasRequiredInputs ? true : undefined,
+        },
+      },
+    };
+  }
 
   // Query functions
   definitions[fqn(serviceName, 'getAttributes')] = {
