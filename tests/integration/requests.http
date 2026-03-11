@@ -1,36 +1,6 @@
 @server = http://localhost:4004
 
 # @name createShipment with annotation
-POST {{server}}/odata/v4/test/NewBusinessKey
-Content-Type: application/json
-
-{
-    "ID": "1234567",
-    "name": "Test Name",
-    "age": 21,
-    "testNum": 1,
-    "ssn": "45772",
-    "longfield": "t"
-}
-
-###
-
-# @name createShipment with annotation
-PATCH {{server}}/odata/v4/test/NewBusinessKey('1234567')
-Content-Type: application/json
-
-{
-    "testNum": 19
-}
-
-###
-
-# @name createShipment with annotation
-DELETE {{server}}/odata/v4/test/NewBusinessKey('1234567')
-
-###
-
-# @name createShipment with annotation
 POST {{server}}/odata/v4/test/AnnotatedShipments
 Content-Type: application/json
 
