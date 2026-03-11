@@ -97,7 +97,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
     LOG.error(msg);
     return req.reject({ status: 400, message: msg });
   } else {
-    row.businessKey = undefined;
+    delete row.businessKey;
   }
 
   // emit process start

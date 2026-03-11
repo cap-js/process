@@ -140,7 +140,7 @@ export async function resolveEntityRowOrReject(
     row = req.event === 'DELETE' ? data : await fetchEntity(data, req, conditionExpr, columns);
   } catch (error) {
     LOG.error(fetchFailedMsg, error);
-    req.reject({
+    return req.reject({
       status: 500,
       message: fetchFailedMsg,
     });
@@ -168,6 +168,6 @@ export async function emitProcessEvent(
     await queuedProcessService.emit(event, payload);
   } catch (error) {
     LOG.error(processEventFailedMsg, error);
-    req.reject({ status: 500, message: processEventFailedMsg });
+    return req.reject({ status: 500, message: processEventFailedMsg });
   }
 }

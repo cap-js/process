@@ -215,7 +215,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     }
 
     if (hasOn && hasBusinessKey) {
-      validateBusinessKeyAnnotation(def, entityName, annotationPrefix, this);
+      validateBusinessKeyAnnotation(def, entityName, this);
     }
   }
 }

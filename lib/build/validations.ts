@@ -88,7 +88,6 @@ export function validateIfAnnotation(
 export function validateBusinessKeyAnnotation(
   def: CsnEntity,
   entityName: string,
-  annotationIf: string,
   buildPlugin: ProcessValidationPlugin,
 ) {
   const bKeyExpr = def[BUSINESS_KEY];
