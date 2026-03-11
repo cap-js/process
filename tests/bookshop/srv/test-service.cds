@@ -1,18 +1,5 @@
 service TestService {
 
-  @bpm.process.businessKey: (longfield || '-' || longfield || '-' || longfield)
-  @bpm.process.start: {
-    id: 'TESTeu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler',
-    on: 'DELETE',
-  }
-  entity NewBusinessKey {
-    key ID: String;
-    name: String;
-    age: Integer;
-    testNum: Integer;
-    ssn: String;
-    longfield: String(100);
-  }
   @bpm.process.start: {
     id: 'ShipmentProcess',
     on: 'UPDATE',
