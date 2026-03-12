@@ -4,7 +4,7 @@
   "description": "",
   "type": "bpi.process",
   "createdAt": "2026-03-11T12:45:55.991322Z",
-  "updatedAt": "2026-03-12T12:04:51.178953Z",
+  "updatedAt": "2026-03-12T12:39:19.653411Z",
   "header": {
     "inputs": {
       "title": "inputs",
@@ -33,14 +33,14 @@
         }
       },
       "properties": {
-        "id": {
+        "ID": {
           "type": "string",
           "title": "ID",
           "description": ""
         }
       },
       "required": [
-        "id"
+        "ID"
       ]
     },
     "outputs": {
