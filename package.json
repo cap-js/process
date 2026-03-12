@@ -7,6 +7,7 @@
     "test": "jest --silent",
     "test:watch": "jest --watch",
     "test:integration": "jest tests/integration",
+    "test:hybrid": "npx jest tests/integration/annotations/lifeCycleAnnotation.test.ts",
     "build": "npm run cds-build && npm run cds-typer",
     "cds-build": "cds-tsx build",
     "cds-typer": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models",

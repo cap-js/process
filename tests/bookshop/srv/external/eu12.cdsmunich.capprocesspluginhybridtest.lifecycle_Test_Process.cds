@@ -1,11 +1,13 @@
-/* checksum : 028d26693d00c3ca9ccb078aa03ba43e */
+/* checksum : cb0ce39586b63add5b93ff5b7368789a */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
 @protocol : 'none'
 @bpm.process : 'eu12.cdsmunich.capprocesspluginhybridtest.lifecycle_Test_Process'
 service Lifecycle_Test_ProcessService {
-  type ProcessInputs { };
+  type ProcessInputs {
+    id : String not null;
+  };
 
   type ProcessOutputs { };
 
@@ -29,6 +31,8 @@ service Lifecycle_Test_ProcessService {
 
   type ProcessInstances : many ProcessInstance;
 
+  type ProcessInstanceStatus : many String;
+
   action start(
     inputs : ProcessInputs not null
   );
@@ -42,7 +46,8 @@ service Lifecycle_Test_ProcessService {
   ) returns ProcessOutputs;
 
   function getInstancesByBusinessKey(
-    businessKey : String not null
+    businessKey : String not null,
+    status : ProcessInstanceStatus
   ) returns ProcessInstances;
 
   action suspend(
