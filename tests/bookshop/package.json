@@ -31,8 +31,12 @@
         }
       },
       "eu12.bpm-horizon-walkme.sdshipmentprocessor.ShipmentHandlerService": {
-        "kind": "external",
+        "kind": "rest",
         "model": "srv/external/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler"
+      },
+      "eu12.cdsmunich.capprocesspluginhybridtest.Lifecycle_Test_ProcessService": {
+        "kind": "rest",
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.lifecycle_Test_Process"
       }
     }
   },
