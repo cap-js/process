@@ -31,10 +31,11 @@ function registerStartHandler(service: cds.Service, definitionId: string): void 
   service.on('start', async (req) => {
     LOG.debug(`Starting process: ${definitionId}`);
 
-    const { inputs } = req.data;
-    if (!inputs) {
-      return req.reject({ status: 400, message: 'Missing required parameter: inputs' });
+    if (!req.data) {
+      return req.reject({ status: 400, message: 'Malformed request: missing request data' });
     }
+
+    const inputs = req.data.inputs ?? {};
     const payload: ProcessStartPayload = { definitionId, context: inputs };
 
     await emitProcessEvent('start', req, payload, `Failed to start workflow: ${definitionId}`);

@@ -175,6 +175,8 @@ describe('Process Import Integration Tests', () => {
         expect(startAction).toBeDefined();
         expect(startAction.kind).toBe('action');
         expect(startAction.params.inputs).toBeDefined();
+        expect(startAction.params.inputs.type).toBe(`${serviceName}.ProcessInputs`);
+        expect(startAction.params.inputs.notNull).toBe(true);
         expect(startAction.returns).toBeUndefined();
         for (const action of ['suspend', 'resume', 'cancel']) {
           const lifecycleAction = definitions[`${serviceName}.${action}`] as any;
@@ -312,7 +314,7 @@ describe('Process Import Integration Tests', () => {
         expect(outputsType.elements.processedCount.type).toBe('cds.Integer');
       });
 
-      it('should generate start action with empty inputs parameter', async () => {
+      it('should generate start action with no inputs parameter when process has no inputs', async () => {
         const csn = await importProcess(noInputsProcessPath);
         const definitions = getDefinitions(csn);
         const serviceName = 'test.scheduled.NoInputsProcessService';
@@ -320,8 +322,7 @@ describe('Process Import Integration Tests', () => {
 
         expect(startAction).toBeDefined();
         expect(startAction.kind).toBe('action');
-        expect(startAction.params.inputs).toBeDefined();
-        expect(startAction.params.inputs.type).toBe(`${serviceName}.ProcessInputs`);
+        expect(startAction.params).toBeUndefined();
         expect(startAction.returns).toBeUndefined();
       });
 
@@ -473,6 +474,10 @@ describe('Process Import Integration Tests', () => {
       expect(definitions[serviceName]).toBeDefined();
       expect(definitions[`${serviceName}.ProcessInputs`]).toBeDefined();
       expect((definitions[`${serviceName}.ProcessInputs`] as any).elements).toEqual({});
+
+      // Start action should have no params when inputs type is empty
+      const startAction = definitions[`${serviceName}.start`] as any;
+      expect(startAction.params).toBeUndefined();
     });
 
     it('should handle process with missing optional header sections', async () => {
@@ -497,6 +502,12 @@ describe('Process Import Integration Tests', () => {
       expect(definitions[serviceName]).toBeDefined();
       expect(definitions[`${serviceName}.ProcessOutputs`]).toBeDefined();
       expect(definitions[`${serviceName}.ProcessAttributes`]).toBeDefined();
+
+      // All inputs are optional (required: []) — inputs param should exist but not be notNull
+      const startAction = definitions[`${serviceName}.start`] as any;
+      expect(startAction.params.inputs).toBeDefined();
+      expect(startAction.params.inputs.type).toBe(`${serviceName}.ProcessInputs`);
+      expect(startAction.params.inputs.notNull).toBeUndefined();
     });
 
     it('should sanitize invalid identifier characters in type names', async () => {
@@ -531,6 +542,108 @@ describe('Process Import Integration Tests', () => {
       expect(inputsType.elements.my_field).toBeDefined();
       expect(inputsType.elements._123startsWithNumber).toBeDefined();
       expect(inputsType.elements.field_with_dots).toBeDefined();
+    });
+  });
+
+  describe('Start Action Input Tiers', () => {
+    it('Tier 1: should generate start action with no params when process has no input properties', async () => {
+      const process = {
+        uid: 'tier1',
+        name: 'Tier 1 Process',
+        type: 'bpi.process',
+        header: {
+          outputs: { type: 'object', properties: {}, required: [] },
+          processAttributes: { type: 'object', properties: {}, required: [] },
+        },
+        identifier: 'tier1Process',
+        projectId: 'test.tiers',
+      };
+
+      const targetPath = path.join(tempDir, 'srv', 'external', 'tier1.json');
+      await fs.promises.writeFile(targetPath, JSON.stringify(process, null, 2));
+
+      const csn = await importProcess(targetPath);
+      const definitions = getDefinitions(csn);
+      const serviceName = 'test.tiers.Tier1ProcessService';
+      const startAction = definitions[`${serviceName}.start`] as any;
+
+      expect(startAction).toBeDefined();
+      expect(startAction.kind).toBe('action');
+      expect(startAction.params).toBeUndefined();
+    });
+
+    it('Tier 2: should generate start action with optional inputs param when all input fields are optional', async () => {
+      const process = {
+        uid: 'tier2',
+        name: 'Tier 2 Process',
+        type: 'bpi.process',
+        header: {
+          inputs: {
+            type: 'object',
+            properties: {
+              comment: { type: 'string' },
+              priority: { type: 'integer' },
+            },
+            required: [],
+          },
+          outputs: { type: 'object', properties: {}, required: [] },
+          processAttributes: { type: 'object', properties: {}, required: [] },
+        },
+        identifier: 'tier2Process',
+        projectId: 'test.tiers',
+      };
+
+      const targetPath = path.join(tempDir, 'srv', 'external', 'tier2.json');
+      await fs.promises.writeFile(targetPath, JSON.stringify(process, null, 2));
+
+      const csn = await importProcess(targetPath);
+      const definitions = getDefinitions(csn);
+      const serviceName = 'test.tiers.Tier2ProcessService';
+      const startAction = definitions[`${serviceName}.start`] as any;
+
+      expect(startAction).toBeDefined();
+      expect(startAction.kind).toBe('action');
+      expect(startAction.params).toBeDefined();
+      expect(startAction.params.inputs).toBeDefined();
+      expect(startAction.params.inputs.type).toBe(`${serviceName}.ProcessInputs`);
+      expect(startAction.params.inputs.notNull).toBeUndefined();
+    });
+
+    it('Tier 3: should generate start action with required inputs param when some inputs are required', async () => {
+      const process = {
+        uid: 'tier3',
+        name: 'Tier 3 Process',
+        type: 'bpi.process',
+        header: {
+          inputs: {
+            type: 'object',
+            properties: {
+              orderId: { type: 'string' },
+              comment: { type: 'string' },
+            },
+            required: ['orderId'],
+          },
+          outputs: { type: 'object', properties: {}, required: [] },
+          processAttributes: { type: 'object', properties: {}, required: [] },
+        },
+        identifier: 'tier3Process',
+        projectId: 'test.tiers',
+      };
+
+      const targetPath = path.join(tempDir, 'srv', 'external', 'tier3.json');
+      await fs.promises.writeFile(targetPath, JSON.stringify(process, null, 2));
+
+      const csn = await importProcess(targetPath);
+      const definitions = getDefinitions(csn);
+      const serviceName = 'test.tiers.Tier3ProcessService';
+      const startAction = definitions[`${serviceName}.start`] as any;
+
+      expect(startAction).toBeDefined();
+      expect(startAction.kind).toBe('action');
+      expect(startAction.params).toBeDefined();
+      expect(startAction.params.inputs).toBeDefined();
+      expect(startAction.params.inputs.type).toBe(`${serviceName}.ProcessInputs`);
+      expect(startAction.params.inputs.notNull).toBe(true);
     });
   });
 });

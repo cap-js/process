@@ -41,8 +41,7 @@ Important: for process events defined on 'DELETE' operation, a before handler fe
   - `@bpm.process.start.on`
   - `@bpm.process.start.if` -- only starting process if expression is true
 - `@bpm.process.start.inputs` -- array of input mappings that control which entity fields are passed as process context (optional)
-
-**Important:** The target process must have an input attribute `businesskey` of type string. The entity's key is used as the `businesskey` value, which links the process instance to the entity for later CANCEL/SUSPEND/RESUME operations.
+- if a businessKey is annotated on the entity using `@bpm.process.businessKey`, at process start this businessKey expression will be evaluated. If the length of the businessKey exceeds SBPAs character limit of 255, the request will also be rejected as process start will fail for that case
 
 ### Input Mapping
 
@@ -313,6 +312,8 @@ service MyService {
   - `@bpm.process.<cancel|resume|suspend>.cascade` -- boolean (optional, defaults to false)
   - `@bpm.process.<cancel|resume|suspend>.if` -- only starting process if expression is true
     - example: `@bpm.process.suspend.if: (weight > 10)`
+- for cancelling/resuming/suspending it is required to have a businessKey expression annotated on the entity using `@bpm.process.businessKey`. If no businessKey is annotated, the request will be rejected
+  - example: `@bpm.process.businessKey: (id || '-' || name)`
 
 Example:
 
@@ -381,6 +382,9 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
   - A bound action defined on the entity
 - `@bpm.process.<cancel|suspend|resume>.cascade` is optional (defaults to false); if provided, must be a boolean
 - `@bpm.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
+- if any annotation with `@bpm.process.<cancel|suspend|resume>` is defined, a valid businessKey expression must be defined using `@bpm.process.businessKey`
+  - example: `@bpm.process.businessKey: (id || '-' || name)` would concatenate id and name with a '-' string as a business key
+  - the businessKey definition here must reflect the one configured in SBPA Process Builder
 
 ### Warnings
 

@@ -2,7 +2,6 @@ import { column_expr, expr, Target } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
-  getBusinessKeyOrReject,
   getEntityDataFromRequest,
   resolveEntityRowOrReject,
 } from './utils';
@@ -13,6 +12,8 @@ import {
   PROCESS_START_INPUTS,
   LOG_MESSAGES,
   PROCESS_LOGGER_PREFIX,
+  BUSINESS_KEY,
+  BUSINESS_KEY_MAX_LENGTH,
 } from './../constants';
 import {
   InputCSNEntry,
@@ -25,11 +26,13 @@ import {
 
 import cds from '@sap/cds';
 import {
+  addBusinessKeyToStartColumns,
   createAddDeletedEntityHandler,
   isDeleteWithoutProcess,
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
+import { getBusinessKeyColumn } from '../shared/businessKey-helper';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // Use InputTreeNode as ProcessStartInput (same structure)
@@ -73,6 +76,11 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
     columns = convertToColumnsExpr(startSpecs.inputs);
   }
 
+  const businessKeyColumn = getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
+  if (businessKeyColumn) {
+    columns.push(businessKeyColumn);
+  }
+
   // fetch entity
   const row = await resolveEntityRowOrReject(
     req,
@@ -84,20 +92,16 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   );
   if (!row) return;
 
-  // get business key
-  const businessKey = getBusinessKeyOrReject(
-    target as cds.entity,
-    row,
-    req,
-    'Failed to build business key for process start.',
-    'Business key is empty for process start.',
-  );
-  if (!businessKey) return;
-
-  const context = { ...row, businesskey: businessKey };
+  if ((row.businessKey as string)?.length > BUSINESS_KEY_MAX_LENGTH) {
+    const msg = `Business key value exceeds maximum length of ${BUSINESS_KEY_MAX_LENGTH} characters. Process start will fail.`;
+    LOG.error(msg);
+    return req.reject({ status: 400, message: msg });
+  } else {
+    delete row.businessKey;
+  }
 
   // emit process start
-  const payload = { definitionId: startSpecs.id!, context };
+  const payload = { definitionId: startSpecs.id!, context: row };
   await emitProcessEvent(
     'start',
     req,
@@ -112,7 +116,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
 export const addDeletedEntityToRequestStart = createAddDeletedEntityHandler({
   action: 'start',
   ifAnnotation: PROCESS_START_IF,
-  getColumns: (req) => getColumnsForProcessStart(req.target as Target),
+  getColumns: (req) => addBusinessKeyToStartColumns(req),
 });
 
 function initStartSpecs(target: Target): ProcessStartSpec {

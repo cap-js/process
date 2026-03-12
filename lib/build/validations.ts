@@ -1,7 +1,7 @@
 import cds from '@sap/cds';
 import { ProcessValidationPlugin } from './plugin';
 import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
-import { PROCESS_START_ID, PROCESS_START_ON } from '../constants';
+import { BUSINESS_KEY, PROCESS_START_ID, PROCESS_START_ON } from '../constants';
 import {
   createCsnEntityContext,
   ElementType,
@@ -18,6 +18,7 @@ import {
   ERROR_START_ID_REQUIRES_ON,
   ERROR_START_ID_MUST_BE_STRING,
   ERROR_ON_REQUIRED,
+  ERROR_BUSINESS_KEY_REQUIRED,
   WARNING_TYPE_MISMATCH,
   WARNING_ARRAY_MISMATCH,
   ERROR_MISSING_MANDATORY_PROCESS_INPUT,
@@ -27,6 +28,7 @@ import {
   WARNING_NO_PROCESS_DEFINITION,
   ERROR_START_BUSINESSKEY_INPUT_MISSING,
   WARNING_INPUT_PATH_NOT_IN_ENTITY,
+  ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION,
 } from './constants';
 import { EntityContext, ParsedInputEntry } from '../shared/input-parser';
 
@@ -81,6 +83,16 @@ export function validateIfAnnotation(
   const ifExpr = def[annotationIf as `@${string}`];
   if (!ifExpr || !ifExpr['='] || !ifExpr['xpr']) {
     buildPlugin.pushMessage(ERROR_IF_MUST_BE_EXPRESSION(entityName, annotationIf), ERROR);
+  }
+}
+export function validateBusinessKeyAnnotation(
+  def: CsnEntity,
+  entityName: string,
+  buildPlugin: ProcessValidationPlugin,
+) {
+  const bKeyExpr = def[BUSINESS_KEY];
+  if (!bKeyExpr || !bKeyExpr['='] || (!bKeyExpr['xpr'] && !bKeyExpr['ref'])) {
+    buildPlugin.pushMessage(ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION(entityName, BUSINESS_KEY), ERROR);
   }
 }
 
@@ -138,11 +150,17 @@ export function validateRequiredGenericAnnotations(
   entityName: string,
   annotationOn: string,
   annotationPrefix: string,
+  hasBusinessKey: boolean,
   buildPlugin: ProcessValidationPlugin,
 ) {
   // If any annotation with this prefix is defined, .on is required
   if (hasAnyAnnotationWithPrefix && !hasOn) {
     buildPlugin.pushMessage(ERROR_ON_REQUIRED(entityName, annotationPrefix, annotationOn), ERROR);
+  }
+  // If .on is defined or any annotation with this prefix is defined,
+  // businessKey must exist
+  if ((hasOn || hasAnyAnnotationWithPrefix) && !hasBusinessKey) {
+    buildPlugin.pushMessage(ERROR_BUSINESS_KEY_REQUIRED(entityName, annotationPrefix), ERROR);
   }
 }
 

@@ -3,9 +3,7 @@ import { expr, Target } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
-  getBusinessKeyOrReject,
   getEntityDataFromRequest,
-  getKeyFieldsForEntity,
   ProcessLifecyclePayload,
   resolveEntityRowOrReject,
 } from './utils';
@@ -15,6 +13,8 @@ import {
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
+import { getBusinessKeyColumnOrReject } from '../shared/businessKey-helper';
+import { BUSINESS_KEY } from '../constants';
 
 type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
@@ -22,6 +22,7 @@ interface ProcessActionSpec {
   on?: string;
   cascade: boolean;
   conditionExpr: expr | undefined;
+  businessKey: string | undefined;
 }
 
 interface ProcessActionConfig {
@@ -57,6 +58,7 @@ function initSpecs(
     conditionExpr: targetAnnotations[annotations.IF]
       ? (targetAnnotations[annotations.IF] as { xpr: expr }).xpr
       : undefined,
+    businessKey: targetAnnotations[BUSINESS_KEY]?.['='],
   };
 }
 
@@ -71,6 +73,10 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
     // Initialize specifications from annotations
     const specs = initSpecs(target, config.annotations);
 
+    // Get business key column
+    const businessKeyColumn = getBusinessKeyColumnOrReject(req, specs.businessKey);
+    if (!businessKeyColumn) return;
+
     // fetch entity
     const row = await resolveEntityRowOrReject(
       req,
@@ -78,21 +84,16 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
       specs.conditionExpr,
       config.logMessages.FETCH_FAILED,
       config.logMessages.NOT_TRIGGERED,
+      [businessKeyColumn],
     );
     if (!row) return;
 
-    // Get business key
-    const businessKey = getBusinessKeyOrReject(
-      target as cds.entity,
-      row,
-      req,
-      config.logMessages.INVALID_KEY,
-      config.logMessages.EMPTY_KEY,
-    );
-    if (!businessKey) return;
-
     // Emit process event
-    const payload: ProcessLifecyclePayload = { businessKey, cascade: specs.cascade };
+
+    const payload: ProcessLifecyclePayload = {
+      businessKey: (row as { businessKey: string }).businessKey,
+      cascade: specs.cascade,
+    };
     await emitProcessEvent(config.action, req, payload, config.logMessages.FAILED);
   };
 }
@@ -101,6 +102,8 @@ export function createProcessActionAddDeletedEntityHandler(config: ProcessAction
   return createAddDeletedEntityHandler({
     action: config.action,
     ifAnnotation: config.annotations.IF,
-    getColumns: (req) => getKeyFieldsForEntity(req.target as cds.entity),
+    getColumns: (req) => [
+      getBusinessKeyColumnOrReject(req, (req.target as cds.entity)[BUSINESS_KEY]?.['=']),
+    ],
   });
 }

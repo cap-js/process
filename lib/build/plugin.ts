@@ -9,6 +9,7 @@ import {
   validateRequiredGenericAnnotations,
   validateRequiredStartAnnotations,
   validateIfAnnotation,
+  validateBusinessKeyAnnotation,
 } from './index';
 import {
   PROCESS_START_ID,
@@ -29,6 +30,7 @@ import {
   PROCESS_RESUME,
   PROCESS_START,
   PROCESS_PREFIX,
+  BUSINESS_KEY,
 } from '../constants';
 
 import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
@@ -183,6 +185,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     const hasOn = def[annotationOn] !== undefined;
     const hasCascade = def[annotationCascade] !== undefined;
     const hasIf = def[annotationIf] !== undefined;
+    const hasBusinessKey = def[BUSINESS_KEY] !== undefined;
 
     const hasAnyAnnotationWithPrefix = Object.keys(def).some((key) =>
       key.startsWith(annotationPrefix + '.'),
@@ -195,6 +198,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       entityName,
       annotationOn,
       annotationPrefix,
+      hasBusinessKey,
       this,
     );
 
@@ -208,6 +212,10 @@ export class ProcessValidationPlugin extends BuildPluginBase {
 
     if (hasIf) {
       validateIfAnnotation(def, entityName, annotationIf, this);
+    }
+
+    if (hasOn && hasBusinessKey) {
+      validateBusinessKeyAnnotation(def, entityName, this);
     }
   }
 }
