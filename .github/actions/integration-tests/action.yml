@@ -70,7 +70,7 @@ runs:
     - name: Set node env for HANA
       run: echo "NODE_VERSION_HANA=$(echo ${{ inputs.NODE_VERSION }} | tr . _)" >> $GITHUB_ENV
       shell: bash
-    Deploy model to HANA
+    # Deploy model to HANA
     - name: Create HDI Container
       shell: bash
       run: cf create-service hana hdi-shared cap-js-process-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}-$NODE_VERSION_HANA-${{ matrix.cds-version }}
