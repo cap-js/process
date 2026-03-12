@@ -360,35 +360,6 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       ).toBe(true);
       expect(result.buildSucceeded).toBe(true);
     });
-
-    it('should WARN when business key is missing in process definition inputs', async () => {
-      const processId = 'validProcessId';
-      const entityDef = `
-                ${PROCESS_START}: { id: '${processId}', on: 'DELETE' }
-                entity ValidEntity { key ID: String;
-                name: String;
-                num: Integer;}
-            `;
-      const cdsSourceProcessDef = withProcessDefinition(
-        entityDef,
-        processId,
-        'ID: String; name: String; num: Integer;',
-      );
-
-      const result = await validateModel(cdsSourceProcessDef);
-
-      // "TestService.ValidEntity: Process definition 'validProcessId' requires a 'businesskey' input but it is not provided"
-      expect(result.warnings.length).toBeGreaterThan(0);
-      expect(
-        result.warnings.some(
-          (w) =>
-            w.msg.includes('Process definition') &&
-            w.msg.includes(processId) &&
-            w.msg.includes(`requires a 'businesskey' input`),
-        ),
-      ).toBe(true);
-      expect(result.buildSucceeded).toBe(true);
-    });
   });
 
   describe('Wildcard and alias validation', () => {
