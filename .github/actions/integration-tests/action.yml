@@ -65,7 +65,7 @@ runs:
         npm install
     - name: Generate Types for sample project
       shell: bash
-      run: npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models
+      run: cd tests/bookshop && npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models
 
     # HANA Cloud Deployment and binding
     # Uncomment when you want to run your hybrid integration tests against HANA Cloud
