@@ -8,7 +8,7 @@
   "devDependencies": {
     "@cap-js/sqlite": "^2",
     "tsx": "^4",
-    "@cap-js/cds-types": "^0.16.0",
+    "@cap-js/cds-types": "^0.15.0",
     "@types/node": "^25.5.0",
     "typescript": "^5",
     "@cap-js/cds-typer": ">=0.38"
