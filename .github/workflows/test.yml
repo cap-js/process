@@ -22,6 +22,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm i -g @sap/cds-dk@${{ matrix.cds-version }}
+      - run: cds -v
       - run: npm i
       - run: npm run build
       - run: cd tests/bookshop && npm i && npm run build
