@@ -94,4 +94,3 @@ service ShipmentHandlerService {
     cascade : Boolean
   );
 };
-
