@@ -105,13 +105,6 @@ export const ERROR_CASCADE_MUST_BE_BOOLEAN = (
 // Input Validation Messages
 // =============================================================================
 
-export const WARNING_START_BUSINESSKEY_INPUT_MISSING = (
-  entityName: string,
-  processDefId: string,
-): string => {
-  return `${entityName}: Process definition '${processDefId}' requires a 'businesskey' input but it is not provided`;
-};
-
 export const WARNING_ATTRIBUTE_NOT_IN_PROCESS_DEF = (
   entityName: string,
   attributeKey: string,
