@@ -4,13 +4,44 @@
   "description": "",
   "type": "bpi.process",
   "createdAt": "2026-03-11T12:45:55.991322Z",
-  "updatedAt": "2026-03-11T12:46:28.481181Z",
+  "updatedAt": "2026-03-12T12:04:51.178953Z",
   "header": {
     "inputs": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "inputs",
       "type": "object",
-      "properties": {}
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "ID",
+          "description": ""
+        }
+      },
+      "required": [
+        "id"
+      ]
     },
     "outputs": {
       "$schema": "http://json-schema.org/draft-07/schema#",
