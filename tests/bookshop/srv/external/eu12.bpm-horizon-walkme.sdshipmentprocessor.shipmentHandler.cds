@@ -78,7 +78,6 @@ service ShipmentHandlerService {
 
   function getInstancesByBusinessKey(
     businessKey : String not null,
-    status : ProcessInstanceStatus
   ) returns ProcessInstances;
 
   action suspend(
