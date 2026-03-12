@@ -24,9 +24,9 @@ import {
   ERROR_MISSING_MANDATORY_PROCESS_INPUT,
   ERROR_CASCADE_MUST_BE_BOOLEAN,
   WARNING_MANDATORY_MISMATCH,
-  ERROR_ATTRIBUTE_NOT_IN_PROCESS_DEF,
+  WARNING_ATTRIBUTE_NOT_IN_PROCESS_DEF,
   WARNING_NO_PROCESS_DEFINITION,
-  ERROR_START_BUSINESSKEY_INPUT_MISSING,
+  WARNING_START_BUSINESSKEY_INPUT_MISSING,
   WARNING_INPUT_PATH_NOT_IN_ENTITY,
   ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION,
 } from './constants';
@@ -189,9 +189,11 @@ export function validateInputTypes(
   // process def inputs from csn model
   const processDefInputs = getProcessDefInputsAndTypes(processDef, allDefinitions || {});
   if (!processDefInputs['businesskey']) {
+    // The businesskey is mapped via @bpm.process.businessKey annotation on the entity,
+    // not through the ProcessInputs type. Warn if missing, but don't fail the build.
     buildPlugin.pushMessage(
-      ERROR_START_BUSINESSKEY_INPUT_MISSING(entityName, def[PROCESS_START_ID]),
-      ERROR,
+      WARNING_START_BUSINESSKEY_INPUT_MISSING(entityName, def[PROCESS_START_ID]),
+      WARNING,
     );
   } else {
     delete processDefInputs['businesskey'];
@@ -276,9 +278,11 @@ function validateInputsMatch(
         processDefId,
       );
     } else {
+      // Entity sends extra attributes the process doesn't define - warn, don't fail.
+      // The process will simply ignore unknown inputs.
       buildPlugin.pushMessage(
-        ERROR_ATTRIBUTE_NOT_IN_PROCESS_DEF(entityName, fullKey, processDefId),
-        ERROR,
+        WARNING_ATTRIBUTE_NOT_IN_PROCESS_DEF(entityName, fullKey, processDefId),
+        WARNING,
       );
     }
   }

@@ -267,7 +267,7 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       expect(result.buildSucceeded).toBe(true);
     });
 
-    it('should ERROR when entity input is not in process definition', async () => {
+    it('should WARN when entity input is not in process definition', async () => {
       const entityDef = `
                 ${PROCESS_START}: {
                     id: 'validProcessID',
@@ -288,15 +288,15 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
 
       const result = await validateModel(cdsSourceProcessDef);
 
-      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.warnings.length).toBeGreaterThan(0);
       expect(
-        result.errors.some(
-          (e) =>
-            e.msg.includes('Entity attribute') &&
-            e.msg.includes('is not defined in process definition'),
+        result.warnings.some(
+          (w) =>
+            w.msg.includes('Entity attribute') &&
+            w.msg.includes('is not defined in process definition'),
         ),
       ).toBe(true);
-      expect(result.buildSucceeded).toBe(false);
+      expect(result.buildSucceeded).toBe(true);
     });
 
     it('should ERROR when mandatory process input is missing from entity', async () => {
@@ -361,7 +361,7 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       expect(result.buildSucceeded).toBe(true);
     });
 
-    it('should ERROR when business key is missing in process definition inputs', async () => {
+    it('should WARN when business key is missing in process definition inputs', async () => {
       const processId = 'validProcessId';
       const entityDef = `
                 ${PROCESS_START}: { id: '${processId}', on: 'DELETE' }
@@ -378,16 +378,16 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       const result = await validateModel(cdsSourceProcessDef);
 
       // "TestService.ValidEntity: Process definition 'validProcessId' requires a 'businesskey' input but it is not provided"
-      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.warnings.length).toBeGreaterThan(0);
       expect(
-        result.errors.some(
-          (e) =>
-            e.msg.includes('Process definition') &&
-            e.msg.includes(processId) &&
-            e.msg.includes(`requires a 'businesskey' input`),
+        result.warnings.some(
+          (w) =>
+            w.msg.includes('Process definition') &&
+            w.msg.includes(processId) &&
+            w.msg.includes(`requires a 'businesskey' input`),
         ),
       ).toBe(true);
-      expect(result.buildSucceeded).toBe(false);
+      expect(result.buildSucceeded).toBe(true);
     });
   });
 
@@ -481,20 +481,11 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
 
       const result = await validateModel(cdsSourceProcessDef);
 
-      console.log('DEBUG composition - errors:', JSON.stringify(result.errors, null, 2));
-      console.log('DEBUG composition - warnings:', JSON.stringify(result.warnings, null, 2));
-      console.log('DEBUG composition - buildSucceeded:', result.buildSucceeded);
-      console.log(
-        'DEBUG composition - buildError:',
-        result.buildError?.message,
-        result.buildError?.stack,
-      );
-
       expect(result.errors).toHaveLength(0);
       expect(result.buildSucceeded).toBe(true);
     });
 
-    it('should ERROR when $self wildcard is used but process definition is missing a field', async () => {
+    it('should WARN when $self wildcard is used but process definition is missing a field', async () => {
       const processId = 'wildcardMissingFieldProcess';
       const entityDef = `
                 ${PROCESS_START}: { 
@@ -514,17 +505,17 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
 
       const result = await validateModel(cdsSourceProcessDef);
 
-      // Should error because 'status' from entity is not in process definition
-      expect(result.errors.length).toBeGreaterThan(0);
+      // Should warn because 'status' from entity is not in process definition
+      expect(result.warnings.length).toBeGreaterThan(0);
       expect(
-        result.errors.some(
-          (e) => e.msg.includes('status') && e.msg.includes('not defined in process definition'),
+        result.warnings.some(
+          (w) => w.msg.includes('status') && w.msg.includes('not defined in process definition'),
         ),
       ).toBe(true);
-      expect(result.buildSucceeded).toBe(false);
+      expect(result.buildSucceeded).toBe(true);
     });
 
-    it('should ERROR when alias field is missing from process definition', async () => {
+    it('should WARN when alias field is missing from process definition', async () => {
       const processId = 'aliasMissingProcess';
       const entityDef = `
                 ${PROCESS_START}: { 
@@ -545,14 +536,14 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
 
       const result = await validateModel(cdsSourceProcessDef);
 
-      // Should error because 'EntityId' (alias) is not in process definition
-      expect(result.errors.length).toBeGreaterThan(0);
+      // Should warn because 'EntityId' (alias) is not in process definition
+      expect(result.warnings.length).toBeGreaterThan(0);
       expect(
-        result.errors.some(
-          (e) => e.msg.includes('EntityId') && e.msg.includes('not defined in process definition'),
+        result.warnings.some(
+          (w) => w.msg.includes('EntityId') && w.msg.includes('not defined in process definition'),
         ),
       ).toBe(true);
-      expect(result.buildSucceeded).toBe(false);
+      expect(result.buildSucceeded).toBe(true);
     });
 
     it('should PASS when using multiple aliases on the same scalar field', async () => {
@@ -629,7 +620,7 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       expect(result.buildSucceeded).toBe(true);
     });
 
-    it('should ERROR when one of multiple aliases is missing from process definition', async () => {
+    it('should WARN when one of multiple aliases is missing from process definition', async () => {
       const processId = 'multipleAliasMissingProcess';
       const entityDef = `
                 ${PROCESS_START}: { 
@@ -650,15 +641,15 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
 
       const result = await validateModel(cdsSourceProcessDef);
 
-      // Should error because 'ReferenceId' (alias) is not in process definition
-      expect(result.errors.length).toBeGreaterThan(0);
+      // Should warn because 'ReferenceId' (alias) is not in process definition
+      expect(result.warnings.length).toBeGreaterThan(0);
       expect(
-        result.errors.some(
-          (e) =>
-            e.msg.includes('ReferenceId') && e.msg.includes('not defined in process definition'),
+        result.warnings.some(
+          (w) =>
+            w.msg.includes('ReferenceId') && w.msg.includes('not defined in process definition'),
         ),
       ).toBe(true);
-      expect(result.buildSucceeded).toBe(false);
+      expect(result.buildSucceeded).toBe(true);
     });
   });
 
