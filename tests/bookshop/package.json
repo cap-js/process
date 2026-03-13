@@ -40,6 +40,10 @@
       "eu12.cdsmunich.capprocesspluginhybridtest.Lifecycle_Test_ProcessService": {
         "kind": "external",
         "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.lifecycle_Test_Process"
+      },
+      "eu12.cdsmunich.capprocesspluginhybridtest.Programatically_Lifecycle_ProcessService": {
+        "kind": "external",
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.programatically_Lifecycle_Process"
       }
     }
   },
