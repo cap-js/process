@@ -273,6 +273,29 @@ describe('Integration tests for Business Key Length Validation on processStart',
   });
 });
 
+describe('BusinessKey alias collision test', () => {
+  it('should not override an entity field named "businessKey" with the businessKey alias column', async () => {
+    const entity = {
+      ID: '550e8400-e29b-41d4-a716-446655440099',
+      businessKey: 'my-custom-business-key-value',
+      name: 'Test Entity',
+    };
+
+    const response = await POST('/odata/v4/annotation/BusinessKeyCollisionTest', entity);
+
+    expect(response.status).toBe(201);
+    expect(foundMessages.length).toBe(1);
+
+    const msg = foundMessages[0];
+    expect(msg.data.definitionId).toBe('businessKeyCollisionProcess');
+
+    // The entity's own "businessKey" field should retain its original value
+    // in the context, NOT be overridden by the "ID as businessKey" alias.
+    // This works because the businessKey is now fetched in a separate query.
+    expect(msg.data.context.businessKey).toBe('my-custom-business-key-value');
+  });
+});
+
 describe('Integration tests for Composite Business Key', () => {
   // Helper function to create a test car entity
   const createTestCar = (id?: string, mileage: number = 100) => ({

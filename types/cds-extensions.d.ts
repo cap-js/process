@@ -89,6 +89,7 @@ declare module '@sap/cds' {
 
   type DeleteProcessObject = {
     Start?: Results;
+    StartBusinessKey?: Results;
     Cancel?: Results;
     Suspend?: Results;
     Resume?: Results;

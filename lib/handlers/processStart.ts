@@ -77,11 +77,8 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   }
 
   const businessKeyColumn = getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
-  if (businessKeyColumn) {
-    columns.push(businessKeyColumn);
-  }
 
-  // fetch entity
+  // fetch entity data (without businessKey to avoid alias collision)
   const row = await resolveEntityRowOrReject(
     req,
     data,
@@ -92,12 +89,30 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   );
   if (!row) return;
 
-  if ((row.businessKey as string)?.length > BUSINESS_KEY_MAX_LENGTH) {
-    const msg = `Business key value exceeds maximum length of ${BUSINESS_KEY_MAX_LENGTH} characters. Process start will fail.`;
-    LOG.error(msg);
-    return req.reject({ status: 400, message: msg });
-  } else {
-    delete row.businessKey;
+  let businessKeyValue: string | undefined;
+  if (businessKeyColumn) {
+    if (req.event === 'DELETE') {
+      const businessKeyData = (req as ProcessDeleteRequest)._Process?.[
+        PROCESS_EVENT_MAP['startBusinessKey']
+      ] as EntityRow | undefined;
+      businessKeyValue = businessKeyData?.businessKey as string | undefined;
+    } else {
+      const businessKeyRow = await resolveEntityRowOrReject(
+        req,
+        data,
+        startSpecs.conditionExpr,
+        'Failed to fetch business key for process start.',
+        LOG_MESSAGES.PROCESS_NOT_STARTED,
+        [businessKeyColumn],
+      );
+      businessKeyValue = businessKeyRow?.businessKey as string | undefined;
+    }
+
+    if (businessKeyValue && businessKeyValue.length > BUSINESS_KEY_MAX_LENGTH) {
+      const msg = `Business key value exceeds maximum length of ${BUSINESS_KEY_MAX_LENGTH} characters. Process start will fail.`;
+      LOG.error(msg);
+      return req.reject({ status: 400, message: msg });
+    }
   }
 
   // emit process start
@@ -117,6 +132,20 @@ export const addDeletedEntityToRequestStart = createAddDeletedEntityHandler({
   action: 'start',
   ifAnnotation: PROCESS_START_IF,
   getColumns: (req) => addBusinessKeyToStartColumns(req),
+});
+
+/**
+ * Fetches and attaches businessKey data separately for DELETE operations
+ * to avoid alias collision with entity fields named "businessKey"
+ */
+export const addDeletedEntityToRequestStartBusinessKey = createAddDeletedEntityHandler({
+  action: 'startBusinessKey',
+  ifAnnotation: PROCESS_START_IF,
+  getColumns: (req) => {
+    const target = req.target as Target;
+    const businessKeyCol = getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
+    return businessKeyCol ? [businessKeyCol] : [];
+  },
 });
 
 function initStartSpecs(target: Target): ProcessStartSpec {
