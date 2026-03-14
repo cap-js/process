@@ -38,7 +38,7 @@ export interface IWorkflowInstanceClient {
 
   getWorkflowsByBusinessKey(
     businessKey: string,
-    status: WorkflowStatus | WorkflowStatus[],
+    status: WorkflowStatus[],
   ): Promise<WorkflowInstance[]>;
 
   updateWorkflowStatus(
@@ -93,13 +93,12 @@ export async function getWorkflowsByBusinessKey(
   serviceUrl: string,
   jwt: string,
   businessKey: string,
-  status: WorkflowStatus | WorkflowStatus[],
+  status: WorkflowStatus[],
 ): Promise<WorkflowInstance[]> {
   const encodedBusinessKey = encodeURIComponent(businessKey);
   let queryUrl = `${serviceUrl}${BASE_PATH}/v1/workflow-instances?businessKey=${encodedBusinessKey}`;
 
-  const statuses = Array.isArray(status) ? status : [status];
-  statuses.forEach((s) => {
+  status.forEach((s) => {
     queryUrl += `&status=${s}`;
   });
   LOG.debug('Invoking url: ' + queryUrl);
