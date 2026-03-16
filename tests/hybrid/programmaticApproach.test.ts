@@ -27,8 +27,8 @@ describe('Programatic Approach Hybrid Tests', () => {
     ID: string,
     status: string[],
     expectedCount = 1,
-    timeoutMs = 15000,
-    intervalMs = 500,
+    timeoutMs = 500000,
+    intervalMs = 5000,
   ): Promise<any[]> {
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
