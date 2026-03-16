@@ -33,6 +33,14 @@
       "eu12.bpm-horizon-walkme.sdshipmentprocessor.ShipmentHandlerService": {
         "kind": "process-service",
         "model": "srv/external/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler"
+      },
+      "StartNoInputProcessService": {
+        "kind": "process-service",
+        "model": "srv/external/startNoInputProcess"
+      },
+      "StartNoInputWithAssocProcessService": {
+        "kind": "process-service",
+        "model": "srv/external/startNoInputWithAssocProcess"
       }
     }
   },

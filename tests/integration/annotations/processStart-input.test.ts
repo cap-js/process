@@ -30,11 +30,11 @@ describe('Integration tests for START annotation with inputs array', () => {
   };
 
   // ================================================
-  // Test 1: No inputs array specified
-  // All entity fields should be included in context
+  // Test 1: No inputs array specified, but ProcessInputs type exists
+  // Only entity fields matching ProcessInputs should be included
   // ================================================
-  describe('Test 1: No inputs array (all fields included)', () => {
-    it('should include all entity fields in process context', async () => {
+  describe('Test 1: No inputs array (filtered by ProcessInputs)', () => {
+    it('should include only entity fields matching ProcessInputs element names', async () => {
       const shipment = {
         ID: '550e8400-e29b-41d4-a716-446655440000',
         status: 'PENDING',
@@ -54,8 +54,11 @@ describe('Integration tests for START annotation with inputs array', () => {
       const context = getStartContext();
       expect(context).toBeDefined();
 
-      // All fields should be present
-      expect(context).toEqual({ ...shipment });
+      // Only fields matching ProcessInputs (status, origin) should be present
+      expect(context).toEqual({
+        status: shipment.status,
+        origin: shipment.origin,
+      });
     });
   });
 
@@ -604,10 +607,10 @@ describe('Integration tests for START annotation with inputs array', () => {
 
   // ================================================
   // Test 14: No inputs with Composition and Association
-  // Without inputs array, all fields should be included
+  // ProcessInputs type matches all scalar fields, so all should be included
   // ================================================
   describe('Test 14: No inputs with Composition and Association', () => {
-    it('should include all fields including compositions and associations', async () => {
+    it('should include all scalar fields matching ProcessInputs', async () => {
       const author = {
         ID: '550e8400-e29b-41d4-a716-446655440099',
       };
@@ -629,7 +632,7 @@ describe('Integration tests for START annotation with inputs array', () => {
       const context = getStartContext();
       expect(context).toBeDefined();
 
-      // No inputs specified - should include all fields
+      // ProcessInputs has {ID, status, author_ID} — all match entity scalar fields
       expect(context).toEqual({
         ID: entity.ID,
         status: entity.status,
@@ -678,6 +681,34 @@ describe('Integration tests for START annotation with inputs array', () => {
           name: author.name,
         },
       });
+    });
+  });
+
+  // ================================================
+  // Test 16: No inputs, ProcessInputs exists but zero entity fields match
+  // Should send empty context {}
+  // ================================================
+  describe('Test 16: No inputs, ProcessInputs exists but zero fields match', () => {
+    it('should send empty context when no entity fields match ProcessInputs', async () => {
+      const entity = {
+        ID: '550e8400-e29b-41d4-a716-44665544ff01',
+        shipmentDate: '2026-01-15',
+        expectedDelivery: '2026-01-25',
+        totalValue: 2500.0,
+        notes: 'Handle with care',
+      };
+
+      const response = await POST('/odata/v4/annotation/StartNoInputZeroMatch', entity);
+
+      expect(response.status).toBe(201);
+      expect(foundMessages.length).toBe(1);
+
+      const context = getStartContext();
+      expect(context).toBeDefined();
+
+      // ProcessInputs has {status, origin} but entity has {ID, shipmentDate, expectedDelivery, totalValue, notes}
+      // No field names match, so context should be empty
+      expect(context).toEqual({});
     });
   });
 });

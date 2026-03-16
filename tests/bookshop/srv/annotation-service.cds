@@ -890,8 +890,8 @@ service AnnotationService {
   // ============================================
 
   // --------------------------------------------
-  // Test 1: No inputs specified
-  // All entity fields should be included in context
+  // Test 1: No inputs specified, but ProcessInputs type exists
+  // Only entity fields matching ProcessInputs should be included
   // --------------------------------------------
   @bpm.process.start: {
     id: 'startNoInputProcess',
@@ -1440,8 +1440,8 @@ service AnnotationService {
     key ID : UUID;
   }
 
-  // Test 14: No inputs (all fields including Composition and Association)
-  // Without inputs array, all fields should be included
+  // Test 14: No inputs with Composition and Association
+  // ProcessInputs type matches all scalar fields, so all should be included
   // --------------------------------------------
   @bpm.process.start: {
     id: 'startNoInputWithAssocProcess',
@@ -1486,6 +1486,21 @@ service AnnotationService {
   entity StartWithAuthorInputAuthors {
     key ID   : UUID;
         name : String(100);
+  }
+
+  // Test 16: No inputs, ProcessInputs exists but zero entity fields match
+  // Should send empty context {}
+  // --------------------------------------------
+  @bpm.process.start: {
+    id: 'startNoInputProcess',
+    on: 'CREATE'
+  }
+  entity StartNoInputZeroMatch {
+    key ID               : UUID;
+        shipmentDate     : Date;
+        expectedDelivery : Date;
+        totalValue       : Decimal(15, 2);
+        notes            : String(1000);
   }
 
   // ============================================

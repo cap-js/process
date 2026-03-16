@@ -12,6 +12,7 @@ import {
   PROCESS_START_INPUTS,
   LOG_MESSAGES,
   PROCESS_LOGGER_PREFIX,
+  PROCESS_PREFIX,
   BUSINESS_KEY,
   BUSINESS_KEY_MAX_LENGTH,
 } from './../constants';
@@ -49,8 +50,9 @@ export function getColumnsForProcessStart(target: Target): (column_expr | string
   const startSpecs = initStartSpecs(target);
   startSpecs.inputs = parseInputToTree(target);
   if (startSpecs.inputs.length === 0) {
-    LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
-    return ['*'];
+    LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
+
+    return resolveColumnsFromProcessDefinition(startSpecs.id!, target);
   } else {
     return convertToColumnsExpr(startSpecs.inputs);
   }
@@ -67,11 +69,11 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   const startSpecs = initStartSpecs(target);
   startSpecs.inputs = parseInputToTree(target);
 
-  // if startSpecs.input = [] --> no input defined, fetch entire row
+  // if startSpecs.input = [] --> no input annotation defined, resolve from process definition
   let columns: (column_expr | string)[];
   if (startSpecs.inputs.length === 0) {
-    columns = [WILDCARD];
-    LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
+    columns = resolveColumnsFromProcessDefinition(startSpecs.id!, target);
+    LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
   } else {
     columns = convertToColumnsExpr(startSpecs.inputs);
   }
@@ -158,6 +160,45 @@ function parseInputToTree(target: Target): ProcessStartInput[] {
   const parsedEntries = parseInputsArray(inputsCSN);
   const runtimeContext = createRuntimeEntityContext(target as cds.entity);
   return buildInputTree(parsedEntries, runtimeContext);
+}
+
+function getProcessInputFieldNames(definitionId: string): string[] | undefined {
+  const definitions = cds.model?.definitions;
+  if (!definitions) return undefined;
+  let serviceName: string | undefined;
+  for (const name in definitions) {
+    if (Object.hasOwn(definitions, name)) {
+      const def = definitions[name] as unknown as Record<string, unknown>;
+      if (def[PROCESS_PREFIX] === definitionId) {
+        serviceName = name;
+        break;
+      }
+    }
+  }
+
+  if (!serviceName) return undefined;
+
+  const processInputsType = definitions[`${serviceName}.ProcessInputs`] as
+    | { elements?: Record<string, unknown> }
+    | undefined;
+
+  if (!processInputsType?.elements) return undefined;
+
+  return Object.keys(processInputsType.elements);
+}
+
+function resolveColumnsFromProcessDefinition(
+  definitionId: string,
+  target: Target,
+): (column_expr | string)[] {
+  const processFields = getProcessInputFieldNames(definitionId);
+  if (processFields) {
+    const entityElements = Object.keys((target as cds.entity).elements ?? {});
+    const matchingFields = processFields.filter((f) => entityElements.includes(f));
+    return matchingFields;
+  }
+
+  return [WILDCARD];
 }
 
 function convertToColumnsExpr(array: ProcessStartInput[]): (column_expr | string)[] {
