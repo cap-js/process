@@ -6,9 +6,9 @@ const app = path.join(__dirname, '../bookshop/');
 const { test, POST } = cds.test(app);
 
 describe('Programatic Approach Hybrid Tests', () => {
-  beforeEach(async () => {
-    await test.data.reset();
-  });
+  // beforeEach(async () => {
+  //   await test.data.reset();
+  // });
 
   function generateID(): string {
     return cds.utils.uuid();
