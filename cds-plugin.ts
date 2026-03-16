@@ -17,6 +17,7 @@ import {
   EntityRow,
   addDeletedEntityToRequestCancel,
   addDeletedEntityToRequestStart,
+  addDeletedEntityToRequestStartBusinessKey,
   addDeletedEntityToRequestResume,
   addDeletedEntityToRequestSuspend,
   ProcessDeleteRequest,
@@ -51,6 +52,7 @@ cds.on('serving', async (service: cds.Service) => {
     const results = await Promise.all(
       [
         cached.hasStart && addDeletedEntityToRequestStart(req),
+        cached.hasStart && addDeletedEntityToRequestStartBusinessKey(req),
         cached.hasCancel && addDeletedEntityToRequestCancel(req),
         cached.hasResume && addDeletedEntityToRequestResume(req),
         cached.hasSuspend && addDeletedEntityToRequestSuspend(req),

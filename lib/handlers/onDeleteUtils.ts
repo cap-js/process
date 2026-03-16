@@ -1,14 +1,13 @@
-import cds, { column_expr, expr, Results, Target } from '@sap/cds';
-import { BUSINESS_KEY, PROCESS_LOGGER_PREFIX } from '../constants';
+import cds, { column_expr, expr, Results } from '@sap/cds';
+import { PROCESS_LOGGER_PREFIX } from '../constants';
 import { EntityRow } from './utils';
 import { WILDCARD } from '../shared/input-parser';
-import { getColumnsForProcessStart } from './processStart';
-import { getBusinessKeyColumn } from '../shared/businessKey-helper';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 export const PROCESS_EVENT_MAP: Record<string, keyof DeleteProcessObject> = {
   start: 'Start',
+  startBusinessKey: 'StartBusinessKey',
   cancel: 'Cancel',
   suspend: 'Suspend',
   resume: 'Resume',
@@ -26,6 +25,7 @@ export interface ProcessDeleteRequest extends cds.Request {
 
 type DeleteProcessObject = {
   Start?: Results;
+  StartBusinessKey?: Results;
   Cancel?: Results;
   Suspend?: Results;
   Resume?: Results;
@@ -91,17 +91,4 @@ export function createAddDeletedEntityHandler(config: AddDeletedEntityConfig) {
       return { [processEventKey]: entity };
     }
   };
-}
-
-export function addBusinessKeyToStartColumns(req: cds.Request): (column_expr | string)[] {
-  const target = req.target as Target;
-  const startColumns = getColumnsForProcessStart(target);
-
-  const businessKeyColumns = getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
-
-  if (businessKeyColumns) {
-    startColumns.push(businessKeyColumns);
-  }
-
-  return startColumns;
 }
