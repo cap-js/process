@@ -26,6 +26,9 @@
   },
   "private": true,
   "cds": {
+    "env": {
+      "ieee754compatible": true
+    },
     "requires": {
       "db-ext": {
         "[development]": {
