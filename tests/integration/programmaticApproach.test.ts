@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import cds from '@sap/cds';
 import * as path from 'path';
+import * as crypto from 'crypto';
 
 const app = path.join(__dirname, '../bookshop/');
 const { test, POST } = cds.test(app);
@@ -22,148 +23,140 @@ describe('Programatic Approach Integration Tests', () => {
     foundMessages = [];
   });
 
-  async function createShipment(status = 'PENDING'): Promise<string> {
-    const res = await POST('/odata/v4/shipment/Shipments', { status });
-    return res.data.ID;
+  function generateID(): string {
+    return crypto.randomUUID();
   }
 
-  async function startShipment(shipmentID: string) {
-    return POST('/odata/v4/shipment/startShipment', { shipmentID });
+  async function startProcess(ID: string) {
+    return POST('/odata/v4/programatical/startLifeCycleProcess', { ID });
   }
 
   describe('Process Start Event', () => {
-    it('should start a shipment and emit a start event', async () => {
-      const shipmentID = await createShipment();
-      const response = await startShipment(shipmentID);
+    it('should emit a start event to the outbox', async () => {
+      const ID = generateID();
+      const response = await startProcess(ID);
 
       expect(response.status).toBe(204);
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].event).toBe('start');
-      expect(foundMessages[0].data.context).toBeDefined();
-      expect(foundMessages[0].data.context.businesskey).toBeDefined();
-      expect(foundMessages[0].data.context.businesskey).toEqual(shipmentID);
     });
 
     it('should include definitionId in the start event payload', async () => {
-      const shipmentID = await createShipment();
-      await startShipment(shipmentID);
+      const ID = generateID();
+      await startProcess(ID);
 
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].data.definitionId).toBeDefined();
     });
 
-    it('should include the shipment ID in the start context via startingShipment', async () => {
-      const shipmentID = await createShipment();
-      await startShipment(shipmentID);
+    it('should include the ID in the start event context', async () => {
+      const ID = generateID();
+      await startProcess(ID);
 
-      const context = foundMessages[0].data.context;
-      expect(context.startingShipment).toBeDefined();
-      expect(context.startingShipment.identifier).toEqual(shipmentID);
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].data.context).toBeDefined();
+      expect(foundMessages[0].data.context.ID).toEqual(ID);
     });
 
-    it('should start multiple independent shipments as separate events', async () => {
-      const idA = await createShipment();
-      const idB = await createShipment();
+    it('should emit separate start events for multiple processes', async () => {
+      const idA = generateID();
+      const idB = generateID();
 
-      await startShipment(idA);
-      await startShipment(idB);
+      await startProcess(idA);
+      await startProcess(idB);
 
       expect(foundMessages.length).toBe(2);
-      expect(foundMessages[0].data.context.businesskey).toEqual(idA);
-      expect(foundMessages[1].data.context.businesskey).toEqual(idB);
+      expect(foundMessages[0].event).toBe('start');
+      expect(foundMessages[1].event).toBe('start');
+      expect(foundMessages[0].data.context.ID).toEqual(idA);
+      expect(foundMessages[1].data.context.ID).toEqual(idB);
     });
   });
 
   describe('Process Cancel Event', () => {
-    it('should call cancelShipment and emit a cancel event', async () => {
-      const shipmentID = await createShipment();
-      const response = await POST('/odata/v4/shipment/cancelShipment', { shipmentID });
+    it('should emit a cancel event to the outbox', async () => {
+      const ID = generateID();
+      const response = await POST('/odata/v4/programatical/cancelProcess', { ID });
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(204);
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].event).toBe('cancel');
-      expect(foundMessages[0].data.businessKey).toBeDefined();
-      expect(foundMessages[0].data.businessKey).toEqual(shipmentID);
+      expect(foundMessages[0].data.businessKey).toEqual(ID);
     });
 
-    it('should return the shipment record after cancel', async () => {
-      const shipmentID = await createShipment();
-      const response = await POST('/odata/v4/shipment/cancelShipment', { shipmentID });
+    it('should include cascade=false by default in cancel payload', async () => {
+      const ID = generateID();
+      await POST('/odata/v4/programatical/cancelProcess', { ID });
 
-      expect(response.status).toBe(200);
-      expect(response.data).toBeDefined();
-      expect(response.data.ID).toEqual(shipmentID);
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].data.cascade).toBe(false);
     });
   });
 
   describe('Process Suspend Event', () => {
-    it('should emit a suspend event when status is SUSPENDED', async () => {
-      const shipmentID = await createShipment();
-      const response = await POST('/odata/v4/shipment/updateShipmentStatus', {
-        shipmentID,
-        newStatus: 'SUSPENDED',
+    it('should emit a suspend event to the outbox', async () => {
+      const ID = generateID();
+      const response = await POST('/odata/v4/programatical/updateProcess', {
+        ID,
+        newStatus: 'SUSPEND',
       });
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(204);
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].event).toBe('suspend');
-      expect(foundMessages[0].data.businessKey).toBeDefined();
-      expect(foundMessages[0].data.businessKey).toEqual(shipmentID);
+      expect(foundMessages[0].data.businessKey).toEqual(ID);
     });
 
-    it('should return the shipment record after suspend', async () => {
-      const shipmentID = await createShipment();
-      const response = await POST('/odata/v4/shipment/updateShipmentStatus', {
-        shipmentID,
-        newStatus: 'SUSPENDED',
+    it('should include cascade=false by default in suspend payload', async () => {
+      const ID = generateID();
+      await POST('/odata/v4/programatical/updateProcess', {
+        ID,
+        newStatus: 'SUSPEND',
       });
 
-      expect(response.status).toBe(200);
-      expect(response.data).toBeDefined();
-      expect(response.data.ID).toEqual(shipmentID);
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].data.cascade).toBe(false);
     });
   });
 
   describe('Process Resume Event', () => {
-    it('should emit a resume event when status is RESUMED', async () => {
-      const shipmentID = await createShipment('SUSPENDED');
-      const response = await POST('/odata/v4/shipment/updateShipmentStatus', {
-        shipmentID,
-        newStatus: 'RESUMED',
+    it('should emit a resume event to the outbox', async () => {
+      const ID = generateID();
+      const response = await POST('/odata/v4/programatical/updateProcess', {
+        ID,
+        newStatus: 'RESUME',
       });
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(204);
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].event).toBe('resume');
-      expect(foundMessages[0].data.businessKey).toBeDefined();
-      expect(foundMessages[0].data.businessKey).toEqual(shipmentID);
+      expect(foundMessages[0].data.businessKey).toEqual(ID);
     });
 
-    it('should return the shipment record after resume', async () => {
-      const shipmentID = await createShipment('SUSPENDED');
-      const response = await POST('/odata/v4/shipment/updateShipmentStatus', {
-        shipmentID,
-        newStatus: 'RESUMED',
+    it('should include cascade=false by default in resume payload', async () => {
+      const ID = generateID();
+      await POST('/odata/v4/programatical/updateProcess', {
+        ID,
+        newStatus: 'RESUME',
       });
 
-      expect(response.status).toBe(200);
-      expect(response.data).toBeDefined();
-      expect(response.data.ID).toEqual(shipmentID);
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].data.cascade).toBe(false);
     });
   });
 
   describe('Sequential lifecycle operations', () => {
     it('should emit start, suspend, and resume events in order', async () => {
-      const shipmentID = await createShipment();
+      const ID = generateID();
 
-      await startShipment(shipmentID);
-      await POST('/odata/v4/shipment/updateShipmentStatus', {
-        shipmentID,
-        newStatus: 'SUSPENDED',
+      await startProcess(ID);
+      await POST('/odata/v4/programatical/updateProcess', {
+        ID,
+        newStatus: 'SUSPEND',
       });
-      await POST('/odata/v4/shipment/updateShipmentStatus', {
-        shipmentID,
-        newStatus: 'RESUMED',
+      await POST('/odata/v4/programatical/updateProcess', {
+        ID,
+        newStatus: 'RESUME',
       });
 
       expect(foundMessages.length).toBe(3);
@@ -173,148 +166,66 @@ describe('Programatic Approach Integration Tests', () => {
     });
 
     it('should emit start then cancel events in order', async () => {
-      const shipmentID = await createShipment();
+      const ID = generateID();
 
-      await startShipment(shipmentID);
-      await POST('/odata/v4/shipment/cancelShipment', { shipmentID });
+      await startProcess(ID);
+      await POST('/odata/v4/programatical/cancelProcess', { ID });
 
       expect(foundMessages.length).toBe(2);
       expect(foundMessages[0].event).toBe('start');
       expect(foundMessages[1].event).toBe('cancel');
-      expect(foundMessages[0].data.context.businesskey).toEqual(shipmentID);
-      expect(foundMessages[1].data.businessKey).toEqual(shipmentID);
+      expect(foundMessages[0].data.context.ID).toEqual(ID);
+      expect(foundMessages[1].data.businessKey).toEqual(ID);
     });
   });
 
-  describe('Get Shipment Attributes', () => {
-    it('should return attributes for a started shipment workflow', async () => {
-      const shipmentID = await createShipment();
-      await startShipment(shipmentID);
-
-      const response = await POST('/odata/v4/shipment/getShipmentAttributes', { shipmentID });
-
-      expect(response.status).toBe(200);
-      expect(response.data).toBeDefined();
-    });
-
-    it('should return a JSON array with attribute entries for a started workflow', async () => {
-      const shipmentID = await createShipment();
-      await startShipment(shipmentID);
-
-      const response = await POST('/odata/v4/shipment/getShipmentAttributes', { shipmentID });
-
-      const parsed = JSON.parse(response.data.value);
-      expect(Array.isArray(parsed)).toBe(true);
-      expect(parsed.length).toBeGreaterThan(0);
-      expect(parsed[0]).toHaveProperty('workflowId');
-      expect(parsed[0]).toHaveProperty('attributes');
-    });
-
-    it('should return an empty array when no workflow has been started', async () => {
-      const shipmentID = await createShipment();
-
-      const response = await POST('/odata/v4/shipment/getShipmentAttributes', { shipmentID });
-
-      expect(response.status).toBe(200);
-      const parsed = JSON.parse(response.data.value);
-      expect(Array.isArray(parsed)).toBe(true);
-      expect(parsed.length).toBe(0);
-    });
-  });
-
-  describe('Get Instances by Shipment ID', () => {
-    it('should return instances with expected properties', async () => {
-      const shipmentID = await createShipment();
-      await startShipment(shipmentID);
-
-      const response = await POST('/odata/v4/shipment/getInstancesByShipmentID', { shipmentID });
-
-      const parsed = JSON.parse(response.data.value);
-      expect(Array.isArray(parsed)).toBe(true);
-      expect(parsed.length).toBeGreaterThan(0);
-      expect(parsed[0]).toHaveProperty('id');
-      expect(parsed[0]).toHaveProperty('status');
-      expect(parsed[0]).toHaveProperty('definitionId');
-    });
-
-    it('should return an empty array when no workflow has been started', async () => {
-      const shipmentID = await createShipment();
-
-      const response = await POST('/odata/v4/shipment/getInstancesByShipmentID', { shipmentID });
-
-      expect(response.status).toBe(200);
-      const parsed = JSON.parse(response.data.value);
-      expect(Array.isArray(parsed)).toBe(true);
-      expect(parsed.length).toBe(0);
-    });
-
-    it('should filter instances by status', async () => {
-      const shipmentID = await createShipment();
-      await startShipment(shipmentID);
-
-      const response = await POST('/odata/v4/shipment/getInstancesByShipmentID', {
-        shipmentID,
-        status: ['COMPLETED'],
+  describe('Output Process Start Event', () => {
+    async function startOutputProcess(
+      ID: string,
+      mandetory_date: string,
+      mandetory_string: string,
+      optional_string?: string,
+      optional_date?: string,
+    ) {
+      return POST('/odata/v4/programatical/startForGetOutputs', {
+        ID,
+        mandetory_date,
+        mandetory_string,
+        optional_string,
+        optional_date,
       });
+    }
 
-      expect(response.status).toBe(200);
-      const parsed = JSON.parse(response.data.value);
-      expect(Array.isArray(parsed)).toBe(true);
-      // All returned instances should have the requested status
-      for (const instance of parsed) {
-        expect(instance.status).toBe('COMPLETED');
-      }
+    it('should emit a start event with input context to the outbox', async () => {
+      const ID = generateID();
+      const mandetory_date = new Date().toISOString();
+      const mandetory_string = 'test-output-string';
+
+      const response = await startOutputProcess(ID, mandetory_date, mandetory_string);
+
+      expect(response.status).toBe(204);
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].event).toBe('start');
+      expect(foundMessages[0].data.definitionId).toBeDefined();
+      expect(foundMessages[0].data.context).toBeDefined();
+      expect(foundMessages[0].data.context.ID).toEqual(ID);
+      expect(foundMessages[0].data.context.mandetory_date).toEqual(mandetory_date);
+      expect(foundMessages[0].data.context.mandetory_string).toEqual(mandetory_string);
     });
 
-    it('should return no instances for a non-matching status filter', async () => {
-      const shipmentID = await createShipment();
-      await startShipment(shipmentID);
+    it('should include optional fields in context when provided', async () => {
+      const ID = generateID();
+      const mandetory_date = new Date().toISOString();
+      const mandetory_string = 'test-mandatory';
+      const optional_string = 'test-optional';
+      const optional_date = new Date().toISOString();
 
-      const response = await POST('/odata/v4/shipment/getInstancesByShipmentID', {
-        shipmentID,
-        status: ['CANCELED'],
-      });
+      await startOutputProcess(ID, mandetory_date, mandetory_string, optional_string, optional_date);
 
-      expect(response.status).toBe(200);
-      const parsed = JSON.parse(response.data.value);
-      expect(Array.isArray(parsed)).toBe(true);
-      expect(parsed.length).toBe(0);
-    });
-  });
-
-  describe('Get Shipment Outputs', () => {
-    it('should return outputs for a started (COMPLETED) shipment workflow', async () => {
-      const shipmentID = await createShipment();
-      await startShipment(shipmentID);
-
-      const response = await POST('/odata/v4/shipment/getShipmentOutputs', { shipmentID });
-
-      expect(response.status).toBe(200);
-      expect(response.data).toBeDefined();
-    });
-
-    it('should return a JSON array with output entries for COMPLETED workflow instances', async () => {
-      const shipmentID = await createShipment();
-      await startShipment(shipmentID);
-
-      const response = await POST('/odata/v4/shipment/getShipmentOutputs', { shipmentID });
-
-      const parsed = JSON.parse(response.data.value);
-      expect(Array.isArray(parsed)).toBe(true);
-      expect(parsed.length).toBeGreaterThan(0);
-      expect(parsed[0]).toHaveProperty('workflowId');
-      expect(parsed[0]).toHaveProperty('outputs');
-    });
-
-    it('should return an empty array when no workflow has been started', async () => {
-      const shipmentID = await createShipment();
-
-      const response = await POST('/odata/v4/shipment/getShipmentOutputs', { shipmentID });
-
-      expect(response.status).toBe(200);
-      const parsed = JSON.parse(response.data.value);
-      expect(Array.isArray(parsed)).toBe(true);
-      expect(parsed.length).toBe(0);
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].event).toBe('start');
+      expect(foundMessages[0].data.context.optional_string).toEqual(optional_string);
+      expect(foundMessages[0].data.context.optional_date).toEqual(optional_date);
     });
   });
 });
