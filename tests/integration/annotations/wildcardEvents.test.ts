@@ -25,7 +25,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
 
   // Helper function to create a test car entity
   const createTestCar = (id?: string, mileage: number = 100) => ({
-    ID: id || '550e8400-e29b-41d4-a716-446655440000',
+    ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',
     mileage,
