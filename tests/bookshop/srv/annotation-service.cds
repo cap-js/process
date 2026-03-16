@@ -1558,8 +1558,7 @@ service AnnotationService {
 
   // ============================================
   // BUSINESS KEY ALIAS COLLISION TEST
-  // Validates that "ID as businessKey" alias doesn't
-  // override an entity field also named "businessKey"
+  // Validates that there is no collision between the businessKey alias and an entity field named "businessKey"
   // ============================================
 
   @bpm.process.start: {

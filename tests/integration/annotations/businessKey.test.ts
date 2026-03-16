@@ -290,7 +290,7 @@ describe('BusinessKey alias collision test', () => {
     expect(msg.data.definitionId).toBe('businessKeyCollisionProcess');
 
     // The entity's own "businessKey" field should retain its original value
-    // in the context, NOT be overridden by the "ID as businessKey" alias.
+    // in the context, NOT be overridden by the businessKey alias of a process.
     // This works because the businessKey is now fetched in a separate query.
     expect(msg.data.context.businessKey).toBe('my-custom-business-key-value');
   });

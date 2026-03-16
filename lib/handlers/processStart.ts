@@ -26,7 +26,6 @@ import {
 
 import cds from '@sap/cds';
 import {
-  addBusinessKeyToStartColumns,
   createAddDeletedEntityHandler,
   isDeleteWithoutProcess,
   PROCESS_EVENT_MAP,
@@ -131,7 +130,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
 export const addDeletedEntityToRequestStart = createAddDeletedEntityHandler({
   action: 'start',
   ifAnnotation: PROCESS_START_IF,
-  getColumns: (req) => addBusinessKeyToStartColumns(req),
+  getColumns: (req) => getColumnsForProcessStart(req.target as Target),
 });
 
 /**

@@ -93,8 +93,3 @@ export function createAddDeletedEntityHandler(config: AddDeletedEntityConfig) {
     }
   };
 }
-
-export function addBusinessKeyToStartColumns(req: cds.Request): (column_expr | string)[] {
-  const target = req.target as Target;
-  return getColumnsForProcessStart(target);
-}
