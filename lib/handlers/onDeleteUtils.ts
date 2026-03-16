@@ -1,8 +1,7 @@
-import cds, { column_expr, expr, Results, Target } from '@sap/cds';
+import cds, { column_expr, expr, Results } from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX } from '../constants';
 import { EntityRow } from './utils';
 import { WILDCARD } from '../shared/input-parser';
-import { getColumnsForProcessStart } from './processStart';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
