@@ -161,11 +161,15 @@ export async function emitProcessEvent(
   req: cds.Request,
   payload: ProcessStartPayload | ProcessLifecyclePayload,
   processEventFailedMsg: string,
+  businessKeyValue?: string,
 ): Promise<void> {
   try {
     const processService = await cds.connect.to(PROCESS_SERVICE);
     const queuedProcessService = cds.queued(processService);
-    await queuedProcessService.emit(event, payload);
+    await queuedProcessService.emit(event, payload, {
+      ...req.headers,
+      businessKey: businessKeyValue,
+    });
   } catch (error) {
     LOG.error(processEventFailedMsg, error);
     return req.reject({ status: 500, message: processEventFailedMsg });
