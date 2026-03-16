@@ -51,10 +51,7 @@ export function getColumnsForProcessStart(target: Target): (column_expr | string
   if (startSpecs.inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
 
-    if (!startSpecs.id) {
-      return [WILDCARD];
-    }
-    return resolveColumnsFromProcessDefinition(startSpecs.id, target);
+    return resolveColumnsFromProcessDefinition(startSpecs.id!, target);
   } else {
     return convertToColumnsExpr(startSpecs.inputs);
   }
@@ -74,11 +71,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   // if startSpecs.input = [] --> no input annotation defined, resolve from process definition
   let columns: (column_expr | string)[];
   if (startSpecs.inputs.length === 0) {
-    if (!startSpecs.id) {
-      columns = [WILDCARD];
-    } else {
-      columns = resolveColumnsFromProcessDefinition(startSpecs.id, target);
-    }
+    columns = resolveColumnsFromProcessDefinition(startSpecs.id!, target);
     LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
   } else {
     columns = convertToColumnsExpr(startSpecs.inputs);

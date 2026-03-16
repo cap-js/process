@@ -671,7 +671,7 @@ describe('Integration tests for START annotation with inputs array', () => {
   // Test 15: No inputs, ProcessInputs exists but zero entity fields match
   // Should send empty context {}
   // ================================================
-  describe('Test 16: No inputs, ProcessInputs exists but zero fields match', () => {
+  describe('Test 15: No inputs, ProcessInputs exists but zero fields match', () => {
     it('should send empty context when no entity fields match ProcessInputs', async () => {
       const entity = {
         ID: '550e8400-e29b-41d4-a716-44665544ff01',
