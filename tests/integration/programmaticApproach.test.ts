@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import cds from '@sap/cds';
 import * as path from 'path';
-import * as crypto from 'crypto';
 
 const app = path.join(__dirname, '../bookshop/');
 const { test, POST } = cds.test(app);
@@ -24,7 +23,7 @@ describe('Programatic Approach Integration Tests', () => {
   });
 
   function generateID(): string {
-    return crypto.randomUUID();
+    return cds.utils.uuid();
   }
 
   async function startProcess(ID: string) {

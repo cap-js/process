@@ -1,10 +1,10 @@
-import crypto from 'crypto';
 import {
   WorkflowStatus,
   WorkflowInstance,
   StartWorkflowResult,
   UpdateStatusResult,
 } from './workflow-client';
+import cds from '@sap/cds';
 
 export interface LocalWorkflowInstance extends WorkflowInstance {
   context: Record<string, unknown>;
@@ -27,7 +27,7 @@ export class LocalWorkflowStore {
     const { definitionId, businessKey, context = {} } = params;
 
     const instance: LocalWorkflowInstance = {
-      id: crypto.randomUUID(),
+      id: cds.utils.uuid(),
       definitionId,
       businessKey,
       status: WorkflowStatus.RUNNING,

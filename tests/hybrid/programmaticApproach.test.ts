@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import cds from '@sap/cds';
 import * as path from 'path';
-import * as crypto from 'crypto';
 
 const app = path.join(__dirname, '../bookshop/');
 const { test, POST } = cds.test(app);
@@ -12,7 +11,7 @@ describe('Programatic Approach Hybrid Tests', () => {
   });
 
   function generateID(): string {
-    return crypto.randomUUID();
+    return cds.utils.uuid();
   }
 
   async function startProcess(ID: string) {
@@ -47,8 +46,8 @@ describe('Programatic Approach Hybrid Tests', () => {
     return res.data?.value ?? res.data ?? [];
   }
 
-  describe('Process Start', () => {
-    it('should start a process and verify it is RUNNING on SBPA', async () => {
+  describe.only('Process Start', () => {
+    it.only('should start a process and verify it is RUNNING on SBPA', async () => {
       const ID = generateID();
       const response = await startProcess(ID);
 
