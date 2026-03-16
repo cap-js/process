@@ -1,10 +1,10 @@
-/* checksum : 5d15df873426db3131530b7d110f59be */
+/* checksum : 2365826f2b0b2661a4f9ebd32c09fc28 */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
 @protocol : 'none'
-@bpm.process : 'eu12.cdsmunich.capprocesspluginhybridtest.lifecycle_Test_Process'
-service Lifecycle_Test_ProcessService {
+@bpm.process : 'eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process'
+service Annotation_Lifecycle_ProcessService {
   type ProcessInputs {
     ID : String not null;
   };

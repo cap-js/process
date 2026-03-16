@@ -1662,4 +1662,127 @@ service AnnotationService {
             mileage,
             year
         }
+
+    // ============================================
+    // COMBINATION ENTITIES - Real-world lifecycle scenarios
+    // ============================================
+
+    // --------------------------------------------
+    // Scenario 1: Basic Workflow Lifecycle
+    // Start process on CREATE, Cancel on DELETE
+    // Use case: Order processing, ticket management
+    // --------------------------------------------
+    @bpm.process.start      : {
+        id: 'lifecycle_Process',
+        on: 'CREATE',
+    }
+    @bpm.process.cancel     : {
+        on     : 'DELETE',
+        cascade: true,
+    }
+    @bpm.process.businessKey: (ID)
+    entity BasicLifecycle {
+        key ID           : UUID;
+            model        : String(100);
+            manufacturer : String(100);
+            mileage      : Integer;
+            year         : Integer;
+    }
+
+    // --------------------------------------------
+    // Scenario 2: Status-based Cancellation
+    // Start on CREATE, Cancel on UPDATE when mileage exceeds threshold
+    // Use case: Auto-cancel workflow when entity reaches terminal state
+    // --------------------------------------------
+    @bpm.process.start      : {
+        id: 'lifecycle_Process',
+        on: 'CREATE',
+    }
+    @bpm.process.cancel     : {
+        on: 'UPDATE',
+        if: (mileage > 1000),
+    }
+    @bpm.process.businessKey: (ID)
+    entity StatusBasedCancel {
+        key ID           : UUID;
+            model        : String(100);
+            manufacturer : String(100);
+            mileage      : Integer;
+            year         : Integer;
+    }
+
+    // --------------------------------------------
+    // Scenario 3: Suspend/Resume Workflow
+    // Start on CREATE, Suspend on UPDATE (if mileage > 500),
+    // Resume on UPDATE (if mileage <= 500)
+    // Use case: Pause processing when item is on hold
+    // --------------------------------------------
+    @bpm.process.start      : {
+        id: 'lifecycle_Process',
+        on: 'CREATE',
+    }
+    @bpm.process.suspend    : {
+        on: 'UPDATE',
+        if: (mileage > 500),
+    }
+    @bpm.process.resume     : {
+        on: 'UPDATE',
+        if: (mileage <= 500),
+    }
+    @bpm.process.businessKey: (ID)
+    entity SuspendResumeWorkflow {
+        key ID           : UUID;
+            model        : String(100);
+            manufacturer : String(100);
+            mileage      : Integer;
+            year         : Integer;
+    }
+
+    // --------------------------------------------
+    // Scenario 5: Conditional Start and Cancel
+    // Start on UPDATE when condition met, Cancel on UPDATE when different condition
+    // Use case: Workflow triggered by status change, cancelled by another status
+    // --------------------------------------------
+    @bpm.process.start      : {
+        id: 'lifecycle_Process',
+        on: 'UPDATE',
+        if: (mileage > 500)
+    }
+    @bpm.process.cancel     : {
+        on: 'UPDATE',
+        if: (mileage > 1500),
+    }
+    @bpm.process.businessKey: (ID)
+    entity ConditionalStartCancel {
+        key ID           : UUID;
+            model        : String(100);
+            manufacturer : String(100);
+            mileage      : Integer;
+            year         : Integer;
+    }
+
+    // --------------------------------------------
+    // Scenario 6: External Workflow Management
+    // No start annotation - workflow started externally
+    // Suspend/Resume on UPDATE, Cancel on DELETE
+    // Use case: Entity linked to externally triggered workflow
+    // --------------------------------------------
+    @bpm.process.suspend    : {
+        on: 'UPDATE',
+        if: (mileage > 500),
+    }
+    @bpm.process.resume     : {
+        on: 'UPDATE',
+        if: (mileage <= 500),
+    }
+    @bpm.process.cancel     : {on: 'DELETE'}
+    @bpm.process.businessKey: (ID)
+    entity ExternalWorkflowManagement {
+        key ID           : UUID;
+            model        : String(100);
+            manufacturer : String(100);
+            mileage      : Integer;
+            year         : Integer;
+    }
+
 }
