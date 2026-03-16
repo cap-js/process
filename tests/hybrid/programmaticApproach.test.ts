@@ -46,8 +46,8 @@ describe('Programatic Approach Hybrid Tests', () => {
     return res.data?.value ?? res.data ?? [];
   }
 
-  describe.only('Process Start', () => {
-    it.only('should start a process and verify it is RUNNING on SBPA', async () => {
+  describe('Process Start', () => {
+    it('should start a process and verify it is RUNNING on SBPA', async () => {
       const ID = generateID();
       const response = await startProcess(ID);
 
@@ -268,7 +268,13 @@ describe('Programatic Approach Hybrid Tests', () => {
       const optional_string = 'test-optional';
       const optional_date = new Date().toISOString();
 
-      await startOutputProcess(ID, mandetory_date, mandetory_string, optional_string, optional_date);
+      await startOutputProcess(
+        ID,
+        mandetory_date,
+        mandetory_string,
+        optional_string,
+        optional_date,
+      );
 
       const instances = await waitForOutputInstances(ID, ['COMPLETED']);
       expect(instances.length).toBe(1);
