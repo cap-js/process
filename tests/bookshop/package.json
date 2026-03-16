@@ -6,7 +6,9 @@
     "@cap-js/process": "file:../../",
     "@sap-cloud-sdk/connectivity": "^4",
     "@sap-cloud-sdk/http-client": "^4",
-    "@sap-cloud-sdk/resilience": "^4"
+    "@sap-cloud-sdk/resilience": "^4",
+    "@cap-js/db-service": "^2",
+    "@cap-js/hana": "^2",
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2",
