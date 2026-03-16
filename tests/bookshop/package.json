@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "description": "A simple CAP project.",
   "dependencies": {
-    "@cap-js/process": "file:../../",
-    "@sap-cloud-sdk/connectivity": "^4",
-    "@sap-cloud-sdk/http-client": "^4",
-    "@sap-cloud-sdk/resilience": "^4"
+    "@cap-js/process": "file:../../"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2",
@@ -38,11 +35,11 @@
         "model": "srv/external/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler"
       },
       "eu12.cdsmunich.capprocesspluginhybridtest.Lifecycle_Test_ProcessService": {
-        "kind": "external",
+        "kind": "process-service",
         "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.lifecycle_Test_Process"
       },
       "eu12.cdsmunich.capprocesspluginhybridtest.Programatically_Lifecycle_ProcessService": {
-        "kind": "external",
+        "kind": "process-service",
         "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.programatically_Lifecycle_Process"
       }
     }
