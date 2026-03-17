@@ -112,6 +112,9 @@ export async function getWorkflowsByBusinessKey(
     },
   });
 
+  console.log("Simon Yannis - getWorkflowsByBusinessKey - Response status:", res.status);
+  console.log("Simon Yannis - getWorkflowsByBusinessKey - Response body:", await res.clone().text());
+
   if (!res.ok) {
     const body = await res.text();
     const errorMessage = `Failed to retrieve workflow instances: ${body || res.statusText || 'Unknown error'}`;
