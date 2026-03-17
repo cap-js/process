@@ -66,6 +66,10 @@
         "[hana]": {
           "model": "@cap-js/process/srv/localProcessService",
           "outbox": true
+        },
+        "[hana]": {
+          "model": "@cap-js/process/srv/localProcessService",
+          "outbox": true
         }
       }
     }
