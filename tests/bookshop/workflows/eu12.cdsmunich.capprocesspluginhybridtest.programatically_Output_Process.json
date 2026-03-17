@@ -59,11 +59,7 @@
           "description": ""
         }
       },
-      "required": [
-        "ID",
-        "mandetory_date",
-        "mandetory_string"
-      ]
+      "required": ["ID", "mandetory_date", "mandetory_string"]
     },
     "outputs": {
       "title": "outputs",
@@ -113,10 +109,7 @@
           "description": ""
         }
       },
-      "required": [
-        "mandetory_string",
-        "mandetory_date"
-      ]
+      "required": ["mandetory_string", "mandetory_date"]
     },
     "processAttributes": {
       "$schema": "http://json-schema.org/draft-07/schema#",

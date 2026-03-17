@@ -3,7 +3,7 @@ import cds from '@sap/cds';
 const { join } = cds.utils.path;
 
 const app = join(__dirname, '../../bookshop');
-const { test, POST } = cds.test(app);
+const { POST } = cds.test(app);
 
 describe('Integration tests for Process Annotations with Custom Events (Bound Actions)', () => {
   let foundMessages: any[] = [];

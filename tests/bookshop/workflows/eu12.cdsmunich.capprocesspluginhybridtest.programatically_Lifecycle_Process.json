@@ -49,9 +49,7 @@
           "description": ""
         }
       },
-      "required": [
-        "ID"
-      ]
+      "required": ["ID"]
     },
     "outputs": {
       "$schema": "http://json-schema.org/draft-07/schema#",

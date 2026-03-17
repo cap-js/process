@@ -3,7 +3,7 @@ import cds from '@sap/cds';
 const { join } = cds.utils.path;
 
 const app = join(__dirname, '../../bookshop');
-const { test, POST, DELETE } = cds.test(app);
+const { POST, DELETE } = cds.test(app);
 
 describe('Integration tests for multiple process events on DELETE', () => {
   let foundMessages: any[] = [];

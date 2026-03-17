@@ -3,7 +3,7 @@ import cds from '@sap/cds';
 import * as path from 'path';
 
 const app = path.join(__dirname, '../bookshop/');
-const { test, POST } = cds.test(app);
+const { POST } = cds.test(app);
 
 describe('Programatic Approach Integration Tests', () => {
   let foundMessages: any[] = [];
