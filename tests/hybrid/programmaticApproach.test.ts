@@ -30,6 +30,7 @@ describe('Programatic Approach Hybrid Tests', () => {
     timeoutMs = 15000,
     intervalMs = 1000,
   ): Promise<any[]> {
+    await new Promise((r) => setTimeout(r, 10000));
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
       const instances = await getInstances(ID, status);
@@ -58,7 +59,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(instances[0]).toHaveProperty('id');
       expect(instances[0]).toHaveProperty('status', 'RUNNING');
       expect(instances[0]).toHaveProperty('definitionId');
-    }, 30000);
+    }, 40000);
 
     it('should start multiple independent processes', async () => {
       const idA = generateID();
@@ -73,7 +74,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(instancesA.length).toBe(1);
       expect(instancesB.length).toBe(1);
       expect(instancesA[0].id).not.toEqual(instancesB[0].id);
-    }, 30000);
+    }, 50000);
   });
 
   describe('Process Suspend', () => {
@@ -226,6 +227,8 @@ describe('Programatic Approach Hybrid Tests', () => {
       timeoutMs = 30000,
       intervalMs = 1000,
     ): Promise<any[]> {
+      // Wait 10s after the API request before polling to avoid rate limiting
+      await new Promise((r) => setTimeout(r, 10000));
       const start = Date.now();
       while (Date.now() - start < timeoutMs) {
         const instances = await getOutputInstances(ID, status);
