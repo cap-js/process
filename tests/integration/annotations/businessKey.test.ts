@@ -27,8 +27,8 @@ describe('Integration tests for Business Key Length Validation on processStart',
   // ================================================
   // START ON CREATE - businessKey length validation
   // ================================================
-  describe.only('Start on CREATE with businessKey length validation', () => {
-    it.only('should start process when businessKey is well under 255 characters', async () => {
+  describe('Start on CREATE with businessKey length validation', () => {
+    it('should start process when businessKey is well under 255 characters', async () => {
       const car = {
         ID: cds.utils.uuid(),
         model: 'Test Model',
