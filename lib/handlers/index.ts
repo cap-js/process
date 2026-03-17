@@ -2,6 +2,7 @@ export {
   handleProcessStart,
   getColumnsForProcessStart,
   addDeletedEntityToRequestStart,
+  addDeletedEntityToRequestStartBusinessKey,
 } from './processStart';
 export { handleProcessCancel, addDeletedEntityToRequestCancel } from './processCancel';
 export { handleProcessSuspend, addDeletedEntityToRequestSuspend } from './processSuspend';

@@ -1572,6 +1572,22 @@ service AnnotationService {
   }
 
   // ============================================
+  // BUSINESS KEY ALIAS COLLISION TEST
+  // Validates that there is no collision between the businessKey alias and an entity field named "businessKey"
+  // ============================================
+
+  @bpm.process.start: {
+    id: 'businessKeyCollisionProcess',
+    on: 'CREATE',
+  }
+  @bpm.process.businessKey: (ID)
+  entity BusinessKeyCollisionTest {
+    key ID          : UUID;
+        businessKey : String(100);
+        name        : String(100);
+  }
+
+  // ============================================
   // COMPOSITE BUSINESS KEY TESTS
   // Testing businessKey with concat expressions
   // ============================================
