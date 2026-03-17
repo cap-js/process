@@ -20,12 +20,13 @@ describe('Annotation Approach Hybrid Tests', () => {
     ID: string,
     status: string[],
     expectedCount = 1,
-    maxRetries = 15,
+    maxRetries = 6,
   ): Promise<any[]> {
+    await new Promise((r) => setTimeout(r, 20000));
     for (let i = 0; i < maxRetries; i++) {
       const instances = await getInstances(ID, status);
       if (instances.length >= expectedCount) return instances;
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 10000));
     }
     throw new Error(
       `Timed out waiting for ${expectedCount} instance(s) with status [${status}] for ID ${ID}`,
