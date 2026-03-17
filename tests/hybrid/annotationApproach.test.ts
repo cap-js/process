@@ -62,7 +62,7 @@ describe('Annotation Approach Hybrid Tests', () => {
     const resumedInstances = await waitForInstances(ID, ['RUNNING']);
     expect(resumedInstances.length).toBe(1);
     expect(resumedInstances[0]).toHaveProperty('status', 'RUNNING');
-  }, 90000);
+  });
 
   it('should go through start -> cancel and end up CANCELED', async () => {
     const ID = generateID();
@@ -86,5 +86,5 @@ describe('Annotation Approach Hybrid Tests', () => {
     const canceledInstances = await waitForInstances(ID, ['CANCELED']);
     expect(canceledInstances.length).toBe(1);
     expect(canceledInstances[0]).toHaveProperty('status', 'CANCELED');
-  }, 65000);
+  });
 });

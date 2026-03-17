@@ -58,7 +58,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(instances[0]).toHaveProperty('id');
       expect(instances[0]).toHaveProperty('status', 'RUNNING');
       expect(instances[0]).toHaveProperty('definitionId');
-    }, 40000);
+    });
 
     it('should start multiple independent processes', async () => {
       const idA = generateID();
@@ -73,7 +73,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(instancesA.length).toBe(1);
       expect(instancesB.length).toBe(1);
       expect(instancesA[0].id).not.toEqual(instancesB[0].id);
-    }, 50000);
+    });
   });
 
   describe('Process Suspend', () => {
@@ -92,7 +92,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['SUSPENDED']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'SUSPENDED');
-    }, 50000);
+    });
   });
 
   describe('Process Resume', () => {
@@ -117,7 +117,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['RUNNING']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'RUNNING');
-    }, 60000);
+    });
   });
 
   describe('Process Cancel', () => {
@@ -133,7 +133,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['CANCELED']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'CANCELED');
-    }, 50000);
+    });
   });
 
   describe('Sequential lifecycle operations', () => {
@@ -157,7 +157,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['RUNNING']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'RUNNING');
-    }, 75000);
+    });
 
     it('should go through start -> cancel and end up CANCELED', async () => {
       const ID = generateID();
@@ -170,7 +170,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['CANCELED']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'CANCELED');
-    }, 50000);
+    });
   });
 
   describe('Get Attributes', () => {
@@ -185,7 +185,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(attributes.length).toBeGreaterThan(0);
       expect(attributes[0]).toHaveProperty('workflowId');
       expect(attributes[0]).toHaveProperty('attributes');
-    }, 40000);
+    });
 
     it('should return an empty array when no process has been started', async () => {
       const ID = generateID();
@@ -194,7 +194,7 @@ describe('Programatic Approach Hybrid Tests', () => {
 
       expect(Array.isArray(attributes)).toBe(true);
       expect(attributes.length).toBe(0);
-    }, 15000);
+    });
   });
 
   describe('Get Outputs', () => {
@@ -258,7 +258,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(outputs).toHaveProperty('mandetory_date');
       expect(outputs.mandetory_string).toBeDefined();
       expect(outputs.mandetory_date).toBeDefined();
-    }, 70000);
+    });
 
     it('should return optional fields in outputs when provided', async () => {
       const ID = generateID();
@@ -284,6 +284,6 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(outputs).toHaveProperty('mandetory_date');
       expect(outputs).toHaveProperty('optional_string');
       expect(outputs).toHaveProperty('optional_date');
-    }, 70000);
+    });
   });
 });
