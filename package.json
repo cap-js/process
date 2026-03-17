@@ -64,13 +64,11 @@
           "vcap": {
             "tag": "process"
           }
-        }
-      }
-    },
-    "kinds": {
-      "sql": {
-        "[hana]": {
-          "kind": "hana"
+        },
+        "sql": {
+          "[hana]": {
+            "kind": "hana"
+          }
         }
       }
     }
