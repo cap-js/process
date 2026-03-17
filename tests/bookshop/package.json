@@ -61,6 +61,19 @@
         "[hybrid]": {
           "kind": "hana"
         }
+      },
+      "ProcessService": {
+        "[hana]": {
+          "model": "@cap-js/process/srv/localProcessService",
+          "outbox": true
+        },
+        "[hybrid]": {
+          "model": "@cap-js/process/srv/BTPProcessService",
+          "outbox": true,
+          "vcap": {
+            "tag": "process"
+          }
+        }
       }
     }
   },
