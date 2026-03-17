@@ -43,6 +43,9 @@
         "[development]": {
           "kind": "local-process-service"
         },
+        "[hana]": {
+          "kind": "deployed-process-service"
+        },
         "[hybrid]": {
           "kind": "deployed-process-service"
         },
