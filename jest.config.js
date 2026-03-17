@@ -9,6 +9,9 @@ const config = {
   forceExit: true,
   detectOpenHandles: true,
   extensionsToTreatAsEsm: ['.ts'],
+  transform: {
+    '^.+\\.ts$': ['ts-jest', { diagnostics: { ignoreCodes: [151002] } }],
+  },
 };
 
 module.exports = config;

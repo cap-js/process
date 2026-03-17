@@ -19,7 +19,6 @@ describe('Integration tests for multiple process events on DELETE', () => {
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
   });
 

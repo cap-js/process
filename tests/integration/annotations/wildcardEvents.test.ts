@@ -19,7 +19,6 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
   });
 

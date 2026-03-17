@@ -20,7 +20,6 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await test.data.reset();
   foundMessages = [];
 });
 

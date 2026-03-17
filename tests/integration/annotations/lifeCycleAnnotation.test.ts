@@ -19,7 +19,6 @@ describe('Integration tests for Process Annotation Combinations', () => {
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
   });
 
@@ -56,9 +55,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
 
       const startMessages = findStartMessages();
       expect(startMessages.length).toBe(1);
-      expect(startMessages[0].data.definitionId).toBe(
-        'lifecycle_Process',
-      );
+      expect(startMessages[0].data.definitionId).toBe('lifecycle_Process');
     });
 
     it('should cancel process on DELETE', async () => {
@@ -69,9 +66,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
       foundMessages = [];
 
       // Delete entity
-      const deleteResponse = await DELETE(
-        `/odata/v4/annotation/BasicLifecycle('${car.ID}')`,
-      );
+      const deleteResponse = await DELETE(`/odata/v4/annotation/BasicLifecycle('${car.ID}')`);
 
       expect(deleteResponse.status).toBe(204);
       expect(foundMessages.length).toBe(1);
@@ -92,12 +87,9 @@ describe('Integration tests for Process Annotation Combinations', () => {
       foundMessages = [];
 
       // Update entity
-      const updateResponse = await PATCH(
-        `/odata/v4/annotation/BasicLifecycle('${car.ID}')`,
-        {
-          mileage: 500,
-        },
-      );
+      const updateResponse = await PATCH(`/odata/v4/annotation/BasicLifecycle('${car.ID}')`, {
+        mileage: 500,
+      });
 
       expect(updateResponse.status).toBe(200);
       expect(foundMessages.length).toBe(0);
@@ -134,9 +126,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
 
       expect(response.status).toBe(201);
       expect(findStartMessages().length).toBe(1);
-      expect(findStartMessages()[0].data.definitionId).toBe(
-        'lifecycle_Process',
-      );
+      expect(findStartMessages()[0].data.definitionId).toBe('lifecycle_Process');
     });
 
     it('should NOT cancel process on UPDATE when condition NOT met', async () => {
@@ -146,12 +136,9 @@ describe('Integration tests for Process Annotation Combinations', () => {
       foundMessages = [];
 
       // Update but keep mileage <= 1000
-      const updateResponse = await PATCH(
-        `/odata/v4/annotation/StatusBasedCancel('${car.ID}')`,
-        {
-          mileage: 500,
-        },
-      );
+      const updateResponse = await PATCH(`/odata/v4/annotation/StatusBasedCancel('${car.ID}')`, {
+        mileage: 500,
+      });
 
       expect(updateResponse.status).toBe(200);
       expect(foundMessages.length).toBe(0);
@@ -164,12 +151,9 @@ describe('Integration tests for Process Annotation Combinations', () => {
       foundMessages = [];
 
       // Update to mileage > 1000
-      const updateResponse = await PATCH(
-        `/odata/v4/annotation/StatusBasedCancel('${car.ID}')`,
-        {
-          mileage: 1500,
-        },
-      );
+      const updateResponse = await PATCH(`/odata/v4/annotation/StatusBasedCancel('${car.ID}')`, {
+        mileage: 1500,
+      });
 
       expect(updateResponse.status).toBe(200);
       expect(findCancelMessages().length).toBe(1);
@@ -210,9 +194,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
 
       expect(response.status).toBe(201);
       expect(findStartMessages().length).toBe(1);
-      expect(findStartMessages()[0].data.definitionId).toBe(
-        'lifecycle_Process',
-      );
+      expect(findStartMessages()[0].data.definitionId).toBe('lifecycle_Process');
     });
 
     it('should suspend process on UPDATE when mileage > 500', async () => {
@@ -396,9 +378,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
       });
 
       expect(findStartMessages().length).toBe(1);
-      expect(findStartMessages()[0].data.definitionId).toBe(
-        'lifecycle_Process',
-      );
+      expect(findStartMessages()[0].data.definitionId).toBe('lifecycle_Process');
     });
 
     it('should cancel process on UPDATE when cancel condition IS met', async () => {

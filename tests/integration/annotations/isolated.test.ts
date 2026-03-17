@@ -19,7 +19,6 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
   });
 

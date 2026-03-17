@@ -19,7 +19,6 @@ describe('Integration tests for START annotation with inputs array', () => {
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
   });
 

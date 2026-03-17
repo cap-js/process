@@ -18,7 +18,6 @@ describe('Programatic Approach Integration Tests', () => {
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
   });
 
@@ -219,7 +218,13 @@ describe('Programatic Approach Integration Tests', () => {
       const optional_string = 'test-optional';
       const optional_date = new Date().toISOString();
 
-      await startOutputProcess(ID, mandetory_date, mandetory_string, optional_string, optional_date);
+      await startOutputProcess(
+        ID,
+        mandetory_date,
+        mandetory_string,
+        optional_string,
+        optional_date,
+      );
 
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].event).toBe('start');

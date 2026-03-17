@@ -19,7 +19,6 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
   });
 
