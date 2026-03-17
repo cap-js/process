@@ -6,8 +6,8 @@
   "scripts": {
     "test": "jest --silent --testPathIgnorePatterns=/tests/hybrid/programmaticApproach.test.ts",
     "test:watch": "jest --watch",
-    "test:hana": "jest tests/integration/annotations/businessKey.test.ts",
-    "test:hybrid": "npx jest tests/hybrid --silent",
+    "test:hana": "jest tests/integration --silent",
+    "test:hybrid": "jest tests/hybrid --silent",
     "build": "npm run cds-build && npm run cds-typer",
     "cds-build": "cds-tsx build",
     "cds-typer": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models",
