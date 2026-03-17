@@ -51,7 +51,11 @@ export function getColumnsForProcessStart(target: Target): (column_expr | string
   if (startSpecs.inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
 
-    return resolveColumnsFromProcessDefinition(startSpecs.id!, target);
+    if (!startSpecs.id) {
+      LOG.warn('No process definition id found on target, falling back to wildcard.');
+      return [WILDCARD];
+    }
+    return resolveColumnsFromProcessDefinition(startSpecs.id, target);
   } else {
     return convertToColumnsExpr(startSpecs.inputs);
   }
@@ -71,7 +75,12 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   // if startSpecs.input = [] --> no input annotation defined, resolve from process definition
   let columns: (column_expr | string)[];
   if (startSpecs.inputs.length === 0) {
-    columns = resolveColumnsFromProcessDefinition(startSpecs.id!, target);
+    if (!startSpecs.id) {
+      LOG.warn('No process definition id found on target, falling back to wildcard.');
+      columns = [WILDCARD];
+    } else {
+      columns = resolveColumnsFromProcessDefinition(startSpecs.id, target);
+    }
     LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
   } else {
     columns = convertToColumnsExpr(startSpecs.inputs);
