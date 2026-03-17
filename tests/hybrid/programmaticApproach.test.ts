@@ -3,7 +3,7 @@ import cds from '@sap/cds';
 import * as path from 'path';
 
 const app = path.join(__dirname, '../bookshop/');
-const { test, POST } = cds.test(app);
+const { POST } = cds.test(app);
 
 describe('Programatic Approach Hybrid Tests', () => {
   // beforeEach(async () => {
@@ -30,7 +30,7 @@ describe('Programatic Approach Hybrid Tests', () => {
     timeoutMs = 15000,
     intervalMs = 1000,
   ): Promise<any[]> {
-    await new Promise((r) => setTimeout(r, 10000));
+    await new Promise((r) => setTimeout(r, 5000));
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
       const instances = await getInstances(ID, status);
@@ -59,7 +59,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(instances[0]).toHaveProperty('id');
       expect(instances[0]).toHaveProperty('status', 'RUNNING');
       expect(instances[0]).toHaveProperty('definitionId');
-    }, 40000);
+    }, 35000);
 
     it('should start multiple independent processes', async () => {
       const idA = generateID();
@@ -74,7 +74,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(instancesA.length).toBe(1);
       expect(instancesB.length).toBe(1);
       expect(instancesA[0].id).not.toEqual(instancesB[0].id);
-    }, 50000);
+    }, 40000);
   });
 
   describe('Process Suspend', () => {
@@ -93,7 +93,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['SUSPENDED']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'SUSPENDED');
-    }, 30000);
+    }, 40000);
   });
 
   describe('Process Resume', () => {
@@ -118,7 +118,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['RUNNING']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'RUNNING');
-    }, 30000);
+    }, 45000);
   });
 
   describe('Process Cancel', () => {
@@ -134,7 +134,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['CANCELED']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'CANCELED');
-    }, 30000);
+    }, 40000);
   });
 
   describe('Sequential lifecycle operations', () => {
@@ -158,7 +158,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['RUNNING']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'RUNNING');
-    }, 45000);
+    }, 60000);
 
     it('should go through start -> cancel and end up CANCELED', async () => {
       const ID = generateID();
@@ -171,7 +171,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['CANCELED']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'CANCELED');
-    }, 30000);
+    }, 40000);
   });
 
   describe('Get Attributes', () => {
@@ -186,7 +186,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(attributes.length).toBeGreaterThan(0);
       expect(attributes[0]).toHaveProperty('workflowId');
       expect(attributes[0]).toHaveProperty('attributes');
-    }, 30000);
+    }, 35000);
 
     it('should return an empty array when no process has been started', async () => {
       const ID = generateID();
@@ -227,8 +227,8 @@ describe('Programatic Approach Hybrid Tests', () => {
       timeoutMs = 30000,
       intervalMs = 1000,
     ): Promise<any[]> {
-      // Wait 10s after the API request before polling to avoid rate limiting
-      await new Promise((r) => setTimeout(r, 10000));
+      // Wait 5s after the API request before polling to avoid rate limiting
+      await new Promise((r) => setTimeout(r, 5000));
       const start = Date.now();
       while (Date.now() - start < timeoutMs) {
         const instances = await getOutputInstances(ID, status);
@@ -262,7 +262,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(outputs).toHaveProperty('mandetory_date');
       expect(outputs.mandetory_string).toBeDefined();
       expect(outputs.mandetory_date).toBeDefined();
-    }, 60000);
+    }, 55000);
 
     it('should return optional fields in outputs when provided', async () => {
       const ID = generateID();
@@ -288,6 +288,6 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(outputs).toHaveProperty('mandetory_date');
       expect(outputs).toHaveProperty('optional_string');
       expect(outputs).toHaveProperty('optional_date');
-    }, 60000);
+    }, 55000);
   });
 });
