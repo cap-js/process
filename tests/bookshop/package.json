@@ -53,6 +53,17 @@
       "eu12.cdsmunich.capprocesspluginhybridtest.Annotation_Lifecycle_ProcessService": {
         "kind": "process-service",
         "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process"
+      },
+      "db": {
+        "[hana]": {
+          "kind": "hana"
+        }
+      },
+      "ProcessService": {
+        "[hana]": {
+          "model": "@cap-js/process/srv/localProcessService",
+          "outbox": true
+        }
       }
     }
   },

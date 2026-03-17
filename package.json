@@ -43,9 +43,6 @@
         "[development]": {
           "kind": "local-process-service"
         },
-        "[hana]": {
-          "kind": "local-process-service"
-        },
         "[hybrid]": {
           "kind": "deployed-process-service"
         },
@@ -63,11 +60,6 @@
           "outbox": true,
           "vcap": {
             "tag": "process"
-          }
-        },
-        "sql": {
-          "[hana]": {
-            "kind": "hana"
           }
         }
       }
