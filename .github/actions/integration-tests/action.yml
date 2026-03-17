@@ -80,6 +80,15 @@ runs:
     - run: cd tests/bookshop/ && cds deploy --to hana:cap-js-process-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}-$NODE_VERSION_HANA-${{ matrix.cds-version }}
       shell: bash
     # Bind HANA Cloud instance
+    - name: Bind -2 HANA
+      run: |
+        if [ "$WITH_PROCESS" = "true" ]; then
+          cds bind db -2 cap-js-process-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}-$NODE_VERSION_HANA-${{ matrix.cds-version }} -o package.json
+        else
+          cds bind db -2 cap-js-process-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}-$NODE_VERSION_HANA-${{ matrix.cds-version }} -o package.json -4 hana
+        fi
+      shell: bash
+
     - run: cds bind db -2 cap-js-process-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}-$NODE_VERSION_HANA-${{ matrix.cds-version }} -o package.json
       shell: bash
 
@@ -93,7 +102,7 @@ runs:
         if [ "$WITH_PROCESS" = "true" ]; then
           cds bind --exec -- npm run test:hybrid
         else
-          cds bind --exec -- npm run test:hana
+          cds bind --exec --profile hana -- npm run test:hana
         fi
       shell: bash
 

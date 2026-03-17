@@ -63,6 +63,13 @@
           }
         }
       }
+    },
+    "kinds": {
+      "sql": {
+        "[hana]": {
+          "kind": "hana"
+        }
+      }
     }
   },
   "devDependencies": {
