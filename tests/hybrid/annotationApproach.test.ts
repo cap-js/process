@@ -22,7 +22,6 @@ describe('Annotation Approach Hybrid Tests', () => {
     expectedCount = 1,
     maxRetries = 15,
   ): Promise<any[]> {
-    await new Promise((r) => setTimeout(r, 10000));
     for (let i = 0; i < maxRetries; i++) {
       const instances = await getInstances(ID, status);
       if (instances.length >= expectedCount) return instances;
