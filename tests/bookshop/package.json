@@ -57,6 +57,9 @@
       "db": {
         "[hana]": {
           "kind": "hana"
+        },
+        "[hybrid]": {
+          "kind": "hana"
         }
       },
       "ProcessService": {
