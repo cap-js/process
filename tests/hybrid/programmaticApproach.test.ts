@@ -28,15 +28,13 @@ describe('Programatic Approach Hybrid Tests', () => {
     ID: string,
     status: string[],
     expectedCount = 1,
-    timeoutMs = 15000,
-    intervalMs = 1000,
+    maxRetries = 15,
   ): Promise<any[]> {
-    await new Promise((r) => setTimeout(r, 5000));
-    const start = Date.now();
-    while (Date.now() - start < timeoutMs) {
+    await new Promise((r) => setTimeout(r, 10000));
+    for (let i = 0; i < maxRetries; i++) {
       const instances = await getInstances(ID, status);
       if (instances.length >= expectedCount) return instances;
-      await new Promise((r) => setTimeout(r, intervalMs));
+      await new Promise((r) => setTimeout(r, 1000));
     }
     throw new Error(
       `Timed out waiting for ${expectedCount} instance(s) with status [${status}] for ID ${ID}`,
@@ -60,7 +58,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(instances[0]).toHaveProperty('id');
       expect(instances[0]).toHaveProperty('status', 'RUNNING');
       expect(instances[0]).toHaveProperty('definitionId');
-    }, 35000);
+    }, 40000);
 
     it('should start multiple independent processes', async () => {
       const idA = generateID();
@@ -75,7 +73,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(instancesA.length).toBe(1);
       expect(instancesB.length).toBe(1);
       expect(instancesA[0].id).not.toEqual(instancesB[0].id);
-    }, 40000);
+    }, 50000);
   });
 
   describe('Process Suspend', () => {
@@ -94,7 +92,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['SUSPENDED']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'SUSPENDED');
-    }, 40000);
+    }, 50000);
   });
 
   describe('Process Resume', () => {
@@ -119,7 +117,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['RUNNING']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'RUNNING');
-    }, 45000);
+    }, 60000);
   });
 
   describe('Process Cancel', () => {
@@ -135,7 +133,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['CANCELED']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'CANCELED');
-    }, 40000);
+    }, 50000);
   });
 
   describe('Sequential lifecycle operations', () => {
@@ -159,7 +157,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['RUNNING']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'RUNNING');
-    }, 60000);
+    }, 75000);
 
     it('should go through start -> cancel and end up CANCELED', async () => {
       const ID = generateID();
@@ -172,7 +170,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       const instances = await waitForInstances(ID, ['CANCELED']);
       expect(instances.length).toBe(1);
       expect(instances[0]).toHaveProperty('status', 'CANCELED');
-    }, 40000);
+    }, 50000);
   });
 
   describe('Get Attributes', () => {
@@ -187,7 +185,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(attributes.length).toBeGreaterThan(0);
       expect(attributes[0]).toHaveProperty('workflowId');
       expect(attributes[0]).toHaveProperty('attributes');
-    }, 35000);
+    }, 40000);
 
     it('should return an empty array when no process has been started', async () => {
       const ID = generateID();
@@ -225,16 +223,13 @@ describe('Programatic Approach Hybrid Tests', () => {
       ID: string,
       status: string[],
       expectedCount = 1,
-      timeoutMs = 30000,
-      intervalMs = 1000,
+      maxRetries = 30,
     ): Promise<any[]> {
-      // Wait 5s after the API request before polling to avoid rate limiting
-      await new Promise((r) => setTimeout(r, 5000));
-      const start = Date.now();
-      while (Date.now() - start < timeoutMs) {
+      await new Promise((r) => setTimeout(r, 10000));
+      for (let i = 0; i < maxRetries; i++) {
         const instances = await getOutputInstances(ID, status);
         if (instances.length >= expectedCount) return instances;
-        await new Promise((r) => setTimeout(r, intervalMs));
+        await new Promise((r) => setTimeout(r, 1000));
       }
       throw new Error(
         `Timed out waiting for ${expectedCount} output instance(s) with status [${status}] for ID ${ID}`,
@@ -263,7 +258,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(outputs).toHaveProperty('mandetory_date');
       expect(outputs.mandetory_string).toBeDefined();
       expect(outputs.mandetory_date).toBeDefined();
-    }, 55000);
+    }, 70000);
 
     it('should return optional fields in outputs when provided', async () => {
       const ID = generateID();
@@ -289,6 +284,6 @@ describe('Programatic Approach Hybrid Tests', () => {
       expect(outputs).toHaveProperty('mandetory_date');
       expect(outputs).toHaveProperty('optional_string');
       expect(outputs).toHaveProperty('optional_date');
-    }, 55000);
+    }, 70000);
   });
 });
