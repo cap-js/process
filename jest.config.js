@@ -5,7 +5,7 @@ const config = {
   testEnvironment: 'node',
   testTimeout: 600000,
   testMatch: ['**/*.test.ts'],
-  testPathIgnorePatterns: ['/node_modules/', '/tests/hybrid/programmaticApproach.test.ts'],
+  testPathIgnorePatterns: ['/node_modules/'],
   forceExit: true,
   detectOpenHandles: true,
   extensionsToTreatAsEsm: ['.ts'],

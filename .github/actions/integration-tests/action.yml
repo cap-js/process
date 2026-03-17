@@ -19,6 +19,9 @@ inputs:
   NODE_VERSION:
     description: 'Node.js version to use for tests'
     required: true
+  WITH_PROCESS:
+    description: 'Whether to bind -2 process instance'
+    required: true
 runs:
   using: 'composite'
   steps:
@@ -81,10 +84,17 @@ runs:
       shell: bash
 
     # Bind against BTP services
-    - run: cds bind process -2 sbpa-service-instance -o package.json
+    - name: Bind -2 process
+      if: ${{ inputs.WITH_PROCESS == 'true' }}
+      run: cds bind process -2 sbpa-service-instance -o package.json
       shell: bash
     # Run tests in hybrid mode
-    - run: cds bind --exec -- npm run test:hybrid
+    - run: |
+        if [ "$WITH_PROCESS" = "true" ]; then
+          cds bind --exec -- npm run test:hybrid
+        else
+          cds bind --exec -- npm run test:hana
+        fi
       shell: bash
 
     # HANA Cleanup

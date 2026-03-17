@@ -4,10 +4,10 @@
   "description": "",
   "main": "cds-plugin.ts",
   "scripts": {
-    "test": "jest --silent",
+    "test": "jest --silent --testPathIgnorePatterns=/tests/hybrid/programmaticApproach.test.ts",
     "test:watch": "jest --watch",
-    "test:integration": "jest tests/integration",
-    "test:hybrid": "npx jest tests/ --testPathIgnorePatterns=/node_modules/",
+    "test:hana": "jest tests/integration",
+    "test:hybrid": "npx jest tests/hybrid",
     "build": "npm run cds-build && npm run cds-typer",
     "cds-build": "cds-tsx build",
     "cds-typer": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models",
