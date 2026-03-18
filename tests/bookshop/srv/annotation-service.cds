@@ -1739,6 +1739,36 @@ service AnnotationService {
     }
 
     // --------------------------------------------
+    // Scenario 4: Full Lifecycle Management
+    // Start on CREATE, Suspend/Resume on UPDATE, Cancel on DELETE
+    // Use case: Complete process lifecycle managed through entity CRUD operations
+    // --------------------------------------------
+    @bpm.process.start      : {
+        id: 'lifecycle_Process',
+        on: 'CREATE',
+    }
+    @bpm.process.suspend    : {
+        on: 'UPDATE',
+        if: (mileage > 800),
+    }
+    @bpm.process.resume     : {
+        on: 'UPDATE',
+        if: (mileage <= 800),
+    }
+    @bpm.process.cancel     : {
+        on     : 'DELETE',
+        cascade: true
+    }
+    @bpm.process.businessKey: (ID)
+    entity FullLifecycle {
+        key ID           : UUID;
+            model        : String(100);
+            manufacturer : String(100);
+            mileage      : Integer;
+            year         : Integer;
+    }
+
+    // --------------------------------------------
     // Scenario 5: Conditional Start and Cancel
     // Start on UPDATE when condition met, Cancel on UPDATE when different condition
     // Use case: Workflow triggered by status change, cancelled by another status

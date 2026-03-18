@@ -277,22 +277,20 @@ describe('Integration tests for Process Annotation Combinations', () => {
     it('should start process on CREATE', async () => {
       const car = createTestCar(undefined, 100);
 
-      const response = await POST('/odata/v4/annotation-hybrid/FullLifecycle', car);
+      const response = await POST('/odata/v4/annotation/FullLifecycle', car);
 
       expect(response.status).toBe(201);
       expect(findStartMessages().length).toBe(1);
-      expect(findStartMessages()[0].data.definitionId).toBe(
-        'eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process',
-      );
+      expect(findStartMessages()[0].data.definitionId).toBe('lifecycle_Process');
     });
 
     it('should suspend on UPDATE when mileage > 800', async () => {
       const car = createTestCar(undefined, 100);
 
-      await POST('/odata/v4/annotation-hybrid/FullLifecycle', car);
+      await POST('/odata/v4/annotation/FullLifecycle', car);
       foundMessages = [];
 
-      await PATCH(`/odata/v4/annotation-hybrid/FullLifecycle('${car.ID}')`, { mileage: 900 });
+      await PATCH(`/odata/v4/annotation/FullLifecycle('${car.ID}')`, { mileage: 900 });
 
       expect(findSuspendMessages().length).toBe(1);
       expect(findResumeMessages().length).toBe(0);
@@ -301,10 +299,10 @@ describe('Integration tests for Process Annotation Combinations', () => {
     it('should resume on UPDATE when mileage <= 800', async () => {
       const car = createTestCar(undefined, 900);
 
-      await POST('/odata/v4/annotation-hybrid/FullLifecycle', car);
+      await POST('/odata/v4/annotation/FullLifecycle', car);
       foundMessages = [];
 
-      await PATCH(`/odata/v4/annotation-hybrid/FullLifecycle('${car.ID}')`, { mileage: 700 });
+      await PATCH(`/odata/v4/annotation/FullLifecycle('${car.ID}')`, { mileage: 700 });
 
       expect(findResumeMessages().length).toBe(1);
       expect(findSuspendMessages().length).toBe(0);
@@ -313,10 +311,10 @@ describe('Integration tests for Process Annotation Combinations', () => {
     it('should cancel on DELETE', async () => {
       const car = createTestCar(undefined, 100);
 
-      await POST('/odata/v4/annotation-hybrid/FullLifecycle', car);
+      await POST('/odata/v4/annotation/FullLifecycle', car);
       foundMessages = [];
 
-      await DELETE(`/odata/v4/annotation-hybrid/FullLifecycle('${car.ID}')`);
+      await DELETE(`/odata/v4/annotation/FullLifecycle('${car.ID}')`);
 
       expect(findCancelMessages().length).toBe(1);
       expect(findCancelMessages()[0].data.cascade).toBe(true);
@@ -326,22 +324,22 @@ describe('Integration tests for Process Annotation Combinations', () => {
       const car = createTestCar(undefined, 100);
 
       // CREATE
-      await POST('/odata/v4/annotation-hybrid/FullLifecycle', car);
+      await POST('/odata/v4/annotation/FullLifecycle', car);
       expect(findStartMessages().length).toBe(1);
       foundMessages = [];
 
       // SUSPEND
-      await PATCH(`/odata/v4/annotation-hybrid/FullLifecycle('${car.ID}')`, { mileage: 900 });
+      await PATCH(`/odata/v4/annotation/FullLifecycle('${car.ID}')`, { mileage: 900 });
       expect(findSuspendMessages().length).toBe(1);
       foundMessages = [];
 
       // RESUME
-      await PATCH(`/odata/v4/annotation-hybrid/FullLifecycle('${car.ID}')`, { mileage: 500 });
+      await PATCH(`/odata/v4/annotation/FullLifecycle('${car.ID}')`, { mileage: 500 });
       expect(findResumeMessages().length).toBe(1);
       foundMessages = [];
 
       // DELETE (CANCEL)
-      await DELETE(`/odata/v4/annotation-hybrid/FullLifecycle('${car.ID}')`);
+      await DELETE(`/odata/v4/annotation/FullLifecycle('${car.ID}')`);
       expect(findCancelMessages().length).toBe(1);
     });
   });
