@@ -167,7 +167,6 @@ export async function emitProcessEvent(
     const processService = await cds.connect.to(PROCESS_SERVICE);
     const queuedProcessService = cds.queued(processService);
     await queuedProcessService.emit(event, payload, {
-      ...req.headers,
       businessKey: businessKeyValue,
     });
   } catch (error) {
