@@ -45,7 +45,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
   // Start on CREATE + Cancel on DELETE
   // ================================================
   describe('Scenario 1: Basic Workflow Lifecycle (Start on CREATE, Cancel on DELETE)', () => {
-    it.skip('should start process on CREATE', async () => {
+    it('should start process on CREATE', async () => {
       const car = createTestCar();
 
       const response = await POST('/odata/v4/annotation/BasicLifecycle', car);
