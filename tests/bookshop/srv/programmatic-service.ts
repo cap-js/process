@@ -1,19 +1,22 @@
 import cds from '@sap/cds';
-import Programatically_Lifecycle_ProcessService from '#cds-models/eu12/cdsmunich/capprocesspluginhybridtest/Programatically_Lifecycle_ProcessService';
-import Programatically_Output_ProcessService from '#cds-models/eu12/cdsmunich/capprocesspluginhybridtest/Programatically_Output_ProcessService';
-const lifecycleProcessService = Programatically_Lifecycle_ProcessService;
+import Programmatic_Lifecycle_ProcessService from '#cds-models/eu12/cdsmunich/capprocesspluginhybridtest/Programmatic_Lifecycle_ProcessService';
+import Programmatic_Outputs_ProcessService from '#cds-models/eu12/cdsmunich/capprocesspluginhybridtest/Programmatic_Output_ProcessService';
 
 class ProgrammaticService extends cds.ApplicationService {
   async init() {
     this.on('startLifeCycleProcess', async (req: cds.Request) => {
-      const programmaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
+      const programmaticLifecycleProcess = await cds.connect.to(
+        Programmatic_Lifecycle_ProcessService,
+      );
       const { ID } = req.data;
       await programmaticLifecycleProcess.start({ ID });
     });
 
     this.on('updateProcess', async (req: cds.Request) => {
       const { ID, newStatus } = req.data;
-      const programmaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
+      const programmaticLifecycleProcess = await cds.connect.to(
+        Programmatic_Lifecycle_ProcessService,
+      );
       if (newStatus === 'SUSPEND') {
         await programmaticLifecycleProcess.suspend({
           businessKey: ID,
@@ -27,13 +30,17 @@ class ProgrammaticService extends cds.ApplicationService {
 
     this.on('cancelProcess', async (req: cds.Request) => {
       const { ID } = req.data;
-      const programmaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
+      const programmaticLifecycleProcess = await cds.connect.to(
+        Programmatic_Lifecycle_ProcessService,
+      );
       await programmaticLifecycleProcess.cancel({ businessKey: ID });
     });
 
     this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const programmaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
+      const programmaticLifecycleProcess = await cds.connect.to(
+        Programmatic_Lifecycle_ProcessService,
+      );
       const instances = await programmaticLifecycleProcess.getInstancesByBusinessKey({
         businessKey: ID,
         status: status,
@@ -43,7 +50,9 @@ class ProgrammaticService extends cds.ApplicationService {
 
     this.on('getAttributes', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const programmaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
+      const programmaticLifecycleProcess = await cds.connect.to(
+        Programmatic_Lifecycle_ProcessService,
+      );
       const processInstances = await programmaticLifecycleProcess.getInstancesByBusinessKey({
         businessKey: ID,
         status: status,
@@ -62,20 +71,21 @@ class ProgrammaticService extends cds.ApplicationService {
     });
 
     this.on('startForGetOutputs', async (req: cds.Request) => {
-      const { ID, mandetory_date, mandetory_string, optional_date, optional_string } = req.data;
-      const programmaticOutputProcess = await cds.connect.to(Programatically_Output_ProcessService);
+      const { ID, mandatory_datetime, mandatory_string, optional_datetime, optional_string } =
+        req.data;
+      const programmaticOutputProcess = await cds.connect.to(Programmatic_Outputs_ProcessService);
       await programmaticOutputProcess.start({
         ID,
-        mandetory_date,
-        mandetory_string,
-        optional_date,
+        mandatory_datetime,
+        mandatory_string,
+        optional_datetime,
         optional_string,
       });
     });
 
     this.on('getInstanceIDForGetOutputs', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const programmaticOutputProcess = await cds.connect.to(Programatically_Output_ProcessService);
+      const programmaticOutputProcess = await cds.connect.to(Programmatic_Outputs_ProcessService);
       const processInstances = await programmaticOutputProcess.getInstancesByBusinessKey({
         businessKey: ID,
         status: status,
@@ -95,7 +105,7 @@ class ProgrammaticService extends cds.ApplicationService {
 
     this.on('getOutputs', async (req: cds.Request) => {
       const { instanceId } = req.data;
-      const programmaticOutputProcess = await cds.connect.to(Programatically_Output_ProcessService);
+      const programmaticOutputProcess = await cds.connect.to(Programmatic_Outputs_ProcessService);
       const outputs = await programmaticOutputProcess.getOutputs(instanceId);
       return outputs;
     });

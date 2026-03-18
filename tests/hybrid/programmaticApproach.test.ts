@@ -199,17 +199,17 @@ describe('Programmatic Approach Hybrid Tests', () => {
   describe('Get Outputs', () => {
     async function startOutputProcess(
       ID: string,
-      mandetory_date: string,
-      mandetory_string: string,
+      mandatory_datetime: string,
+      mandatory_string: string,
       optional_string?: string,
-      optional_date?: string,
+      optional_datetime?: string,
     ) {
       return POST('/odata/v4/programmatic/startForGetOutputs', {
         ID,
-        mandetory_date,
-        mandetory_string,
+        mandatory_datetime,
+        mandatory_string,
         optional_string,
-        optional_date,
+        optional_datetime,
       });
     }
 
@@ -241,10 +241,10 @@ describe('Programmatic Approach Hybrid Tests', () => {
 
     it('should retrieve outputs from a completed process', async () => {
       const ID = generateID();
-      const mandetory_date = new Date().toISOString();
-      const mandetory_string = 'test-output-string';
+      const mandatory_datetime = new Date().toISOString();
+      const mandatory_string = 'test-output-string';
 
-      await startOutputProcess(ID, mandetory_date, mandetory_string);
+      await startOutputProcess(ID, mandatory_datetime, mandatory_string);
 
       const instances = await waitForOutputInstances(ID, ['COMPLETED']);
       expect(instances.length).toBe(1);
@@ -252,25 +252,25 @@ describe('Programmatic Approach Hybrid Tests', () => {
 
       const outputs = await getOutputs(instances[0].workflowId);
 
-      expect(outputs).toHaveProperty('mandetory_string');
-      expect(outputs).toHaveProperty('mandetory_date');
-      expect(outputs.mandetory_string).toBeDefined();
-      expect(outputs.mandetory_date).toBeDefined();
+      expect(outputs).toHaveProperty('mandatory_string');
+      expect(outputs).toHaveProperty('mandatory_datetime');
+      expect(outputs.mandatory_string).toBeDefined();
+      expect(outputs.mandatory_datetime).toBeDefined();
     });
 
     it('should return optional fields in outputs when provided', async () => {
       const ID = generateID();
-      const mandetory_date = new Date().toISOString();
-      const mandetory_string = 'test-mandatory';
+      const mandatory_datetime = new Date().toISOString();
+      const mandatory_string = 'test-mandatory';
       const optional_string = 'test-optional';
-      const optional_date = new Date().toISOString();
+      const optional_datetime = new Date().toISOString();
 
       await startOutputProcess(
         ID,
-        mandetory_date,
-        mandetory_string,
+        mandatory_datetime,
+        mandatory_string,
         optional_string,
-        optional_date,
+        optional_datetime,
       );
 
       const instances = await waitForOutputInstances(ID, ['COMPLETED']);
@@ -278,10 +278,10 @@ describe('Programmatic Approach Hybrid Tests', () => {
 
       const outputs = await getOutputs(instances[0].workflowId);
 
-      expect(outputs).toHaveProperty('mandetory_string');
-      expect(outputs).toHaveProperty('mandetory_date');
+      expect(outputs).toHaveProperty('mandatory_string');
+      expect(outputs).toHaveProperty('mandatory_datetime');
       expect(outputs).toHaveProperty('optional_string');
-      expect(outputs).toHaveProperty('optional_date');
+      expect(outputs).toHaveProperty('optional_datetime');
     });
   });
 });

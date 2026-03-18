@@ -1,11 +1,11 @@
 using {
-  eu12.cdsmunich.capprocesspluginhybridtest.Programatically_Lifecycle_ProcessService.ProcessInstance,
-  eu12.cdsmunich.capprocesspluginhybridtest.Programatically_Lifecycle_ProcessService.ProcessAttribute
-} from './external/eu12.cdsmunich.capprocesspluginhybridtest.programatically_Lifecycle_Process';
+  eu12.cdsmunich.capprocesspluginhybridtest.Programmatic_Lifecycle_ProcessService.ProcessInstance,
+  eu12.cdsmunich.capprocesspluginhybridtest.Programmatic_Lifecycle_ProcessService.ProcessAttribute,
+} from './external/eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process';
 
 using {
-  eu12.cdsmunich.capprocesspluginhybridtest.Programatically_Output_ProcessService.ProcessOutputs
-} from './external/eu12.cdsmunich.capprocesspluginhybridtest.programatically_Output_Process';
+  eu12.cdsmunich.capprocesspluginhybridtest.Programmatic_Output_ProcessService.ProcessOutputs
+} from './external/eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Output_Process';
 
 service ProgrammaticService {
 
@@ -33,10 +33,10 @@ service ProgrammaticService {
                                   status: many String) returns many ProcessInstance;
 
   action startForGetOutputs(ID: UUID,
-                            mandetory_date: Timestamp,
-                            mandetory_string: String,
+                            mandatory_datetime: Timestamp,
+                            mandatory_string: String,
                             optional_string: String,
-                            optional_date: Timestamp);
+                            optional_datetime: Timestamp);
 
   action getInstanceIDForGetOutputs(ID: UUID,
                                     status: many String) returns many AttributeEntry;

@@ -184,26 +184,26 @@ describe('Programmatic Approach Integration Tests', () => {
   describe('Output Process Start Event', () => {
     async function startOutputProcess(
       ID: string,
-      mandetory_date: string,
-      mandetory_string: string,
+      mandatory_datetime: string,
+      mandatory_string: string,
       optional_string?: string,
-      optional_date?: string,
+      optional_datetime?: string,
     ) {
       return POST('/odata/v4/programmatic/startForGetOutputs', {
         ID,
-        mandetory_date,
-        mandetory_string,
+        mandatory_datetime,
+        mandatory_string,
         optional_string,
-        optional_date,
+        optional_datetime,
       });
     }
 
     it('should emit a start event with input context to the outbox', async () => {
       const ID = generateID();
-      const mandetory_date = new Date().toISOString();
-      const mandetory_string = 'test-output-string';
+      const mandatory_datetime = new Date().toISOString();
+      const mandatory_string = 'test-output-string';
 
-      const response = await startOutputProcess(ID, mandetory_date, mandetory_string);
+      const response = await startOutputProcess(ID, mandatory_datetime, mandatory_string);
 
       expect(response.status).toBe(204);
       expect(foundMessages.length).toBe(1);
@@ -211,29 +211,29 @@ describe('Programmatic Approach Integration Tests', () => {
       expect(foundMessages[0].data.definitionId).toBeDefined();
       expect(foundMessages[0].data.context).toBeDefined();
       expect(foundMessages[0].data.context.ID).toEqual(ID);
-      expect(foundMessages[0].data.context.mandetory_date).toEqual(mandetory_date);
-      expect(foundMessages[0].data.context.mandetory_string).toEqual(mandetory_string);
+      expect(foundMessages[0].data.context.mandatory_datetime).toEqual(mandatory_datetime);
+      expect(foundMessages[0].data.context.mandatory_string).toEqual(mandatory_string);
     });
 
     it('should include optional fields in context when provided', async () => {
       const ID = generateID();
-      const mandetory_date = new Date().toISOString();
-      const mandetory_string = 'test-mandatory';
+      const mandatory_datetime = new Date().toISOString();
+      const mandatory_string = 'test-mandatory';
       const optional_string = 'test-optional';
-      const optional_date = new Date().toISOString();
+      const optional_datetime = new Date().toISOString();
 
       await startOutputProcess(
         ID,
-        mandetory_date,
-        mandetory_string,
+        mandatory_datetime,
+        mandatory_string,
         optional_string,
-        optional_date,
+        optional_datetime,
       );
 
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].event).toBe('start');
       expect(foundMessages[0].data.context.optional_string).toEqual(optional_string);
-      expect(foundMessages[0].data.context.optional_date).toEqual(optional_date);
+      expect(foundMessages[0].data.context.optional_datetime).toEqual(optional_datetime);
     });
   });
 });

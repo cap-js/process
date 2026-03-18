@@ -1,24 +1,17 @@
-/* checksum : 373b97e50b45ca47d7838807ff957b15 */
+/* checksum : 0a304afe8e7feed2939e6a02b72700f2 */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
 @protocol : 'none'
-@bpm.process : 'eu12.cdsmunich.capprocesspluginhybridtest.programatically_Output_Process'
-service Programatically_Output_ProcessService {
+@bpm.process : 'eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process'
+service Programmatic_Lifecycle_ProcessService {
   type ProcessInputs {
     ID : String not null;
-    mandetory_date : Timestamp not null;
-    mandetory_string : String not null;
-    optional_string : String;
-    optional_date : Timestamp;
+    attribute1 : String;
+    attribute2 : String;
   };
 
-  type ProcessOutputs {
-    optional_string : String;
-    mandetory_string : String not null;
-    mandetory_date : Timestamp not null;
-    optional_date : String;
-  };
+  type ProcessOutputs { };
 
   type ProcessAttribute {
     id : String not null;

@@ -1,10 +1,10 @@
 {
-  "uid": "06fea7dd-5736-4ba8-be8f-4b5508d5af70",
-  "name": "Programatically_Lifecycle_Process",
+  "uid": "72320290-a084-47ba-9987-fc81d23b7082",
+  "name": "Programmatic_Lifecycle_Process",
   "description": "",
   "type": "bpi.process",
-  "createdAt": "2026-03-13T08:10:53.443448Z",
-  "updatedAt": "2026-03-13T08:24:08.243738Z",
+  "createdAt": "2026-03-18T13:11:55.357378Z",
+  "updatedAt": "2026-03-18T13:13:01.103860Z",
   "header": {
     "inputs": {
       "title": "inputs",
@@ -49,7 +49,9 @@
           "description": ""
         }
       },
-      "required": ["ID"]
+      "required": [
+        "ID"
+      ]
     },
     "outputs": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -71,7 +73,7 @@
       "type": "content"
     }
   ],
-  "identifier": "programatically_Lifecycle_Process",
+  "identifier": "programmatic_Lifecycle_Process",
   "valid": true,
   "projectId": "eu12.cdsmunich.capprocesspluginhybridtest",
   "dataTypes": []
