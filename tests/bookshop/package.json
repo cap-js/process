@@ -74,6 +74,18 @@
       "eu12.cdsmunich.capprocesspluginhybridtest.Programmatic_Output_ProcessService": {
         "kind": "process-service",
         "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Output_Process"
+      },
+      "eu12.cdsmunich.capprocesspluginhybridtest.ImportProcess_Attributes_And_OutputsService": {
+        "kind": "process-service",
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Attributes_And_Outputs"
+      },
+      "eu12.cdsmunich.capprocesspluginhybridtest.ImportProcess_Complex_InputsService": {
+        "kind": "process-service",
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Complex_Inputs"
+      },
+      "eu12.cdsmunich.capprocesspluginhybridtest.ImportProcess_Simple_InputsService": {
+        "kind": "process-service",
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Simple_Inputs"
       }
     }
   },

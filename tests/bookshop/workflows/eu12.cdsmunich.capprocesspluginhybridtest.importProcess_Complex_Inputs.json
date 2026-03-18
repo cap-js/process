@@ -1,0 +1,32 @@
+{
+  "uid": "edb7b7fd-8a1c-4c51-a19f-b357aece8428",
+  "name": "ImportProcess_Complex_Inputs",
+  "description": "",
+  "type": "bpi.process",
+  "createdAt": "2026-03-18T10:23:06.672697Z",
+  "updatedAt": "2026-03-18T10:23:06.672697Z",
+  "header": {
+    "inputs": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "inputs",
+      "type": "object",
+      "properties": {}
+    },
+    "outputs": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "outputs",
+      "type": "object",
+      "properties": {}
+    },
+    "processAttributes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "processAttributes",
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  "identifier": "importProcess_Complex_Inputs",
+  "valid": true,
+  "projectId": "eu12.cdsmunich.capprocesspluginhybridtest"
+}
