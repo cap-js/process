@@ -65,9 +65,6 @@ runs:
       run: |
         npm install @sap/cds@${{ matrix.cds-version }}
         npm install
-    - name: Generate Types for sample project
-      shell: bash
-      run: cd tests/bookshop && npm run cds-typer
 
     # HANA Cloud Deployment and binding
     - name: Set node env for HANA
@@ -94,6 +91,13 @@ runs:
       if: ${{ inputs.PROFILE == 'hana-process' }}
       run: cds bind process -2 sbpa-service-instance -o package.json
       shell: bash
+    - name: Import process
+      if: ${{ inputs.PROFILE == 'hana-process' }}
+      run: npm run import:process
+      shell: bash
+    - name: Generate Types for sample project
+      shell: bash
+      run: cd tests/bookshop && npm run cds-typer
     # Run tests
     - name: Run tests
       run: |
