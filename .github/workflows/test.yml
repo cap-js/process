@@ -4,11 +4,22 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-  pull_request:
+  pull_request_target:
     branches: [main]
+    types: [reopened, synchronize, opened]
 
 jobs:
+  requires-approval:
+    runs-on: ubuntu-latest
+    name: 'Waiting for PR approval as this workflow runs on pull_request_target'
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.owner.login != 'cap-js'
+    environment: pr-approval
+    steps:
+      - name: Approval Step
+        run: echo "This job has been approved!"
   test:
+    needs: requires-approval
+    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -16,9 +27,11 @@ jobs:
         node-version: [20.x, 22.x]
         cds-version: [latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm i -g @sap/cds-dk@${{ matrix.cds-version }}
@@ -27,6 +40,8 @@ jobs:
       - run: cd tests/bookshop && npm run build
       - run: npm run test
   hybrid-tests:
+    needs: requires-approval
+    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -36,7 +51,9 @@ jobs:
         profile: [hana, hana-process]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Integration tests
         uses: ./.github/actions/integration-tests
         with:
