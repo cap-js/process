@@ -80,7 +80,7 @@ runs:
     - name: Bind -2 HANA
       run: |
         if [ "${{ inputs.PROFILE }}" = "hana-process" ]; then
-          cd tests/bookshop && cds bind db -2 cap-js-process-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}-$NODE_VERSION_HANA-${{ matrix.cds-version }}-${{ inputs.PROFILE }}
+          cds bind db -2 cap-js-process-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}-$NODE_VERSION_HANA-${{ matrix.cds-version }}-${{ inputs.PROFILE }} -o package.json && cd tests/bookshop && cds bind db -2 cap-js-process-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}-$NODE_VERSION_HANA-${{ matrix.cds-version }}-${{ inputs.PROFILE }}
         else
           cds bind db -2 cap-js-process-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}-$NODE_VERSION_HANA-${{ matrix.cds-version }}-${{ inputs.PROFILE }} -o package.json -4 hana
         fi
@@ -89,7 +89,7 @@ runs:
     # Bind against BTP services
     - name: Bind -2 process
       if: ${{ inputs.PROFILE == 'hana-process' }}
-      run: cd tests/bookshop && cds bind process -2 sbpa-service-instance
+      run: cds bind process -2 sbpa-service-instance -o package.json && cd tests/bookshop && cds bind process -2 sbpa-service-instance
       shell: bash
     - name: Import process
       if: ${{ inputs.PROFILE == 'hana-process' }}
