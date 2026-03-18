@@ -3,13 +3,15 @@ import cds from '@sap/cds';
 const { join } = cds.utils.path;
 
 const app = join(__dirname, '../../bookshop');
-const { test, POST, DELETE, PATCH } = cds.test(app);
+const { POST, DELETE, PATCH } = cds.test(app);
 
 describe('Integration tests for Process Annotation Combinations', () => {
   let foundMessages: any[] = [];
 
   beforeAll(async () => {
     const db = await cds.connect.to('db');
+    // Warmup: ensure DB connection and ProcessService are fully initialized before tests
+    await cds.connect.to('ProcessService');
     db.before('*', (req) => {
       if (req.event === 'CREATE' && req.target?.name === 'cds.outbox.Messages') {
         const msg = JSON.parse(req.query?.INSERT?.entries[0].msg);
@@ -19,13 +21,16 @@ describe('Integration tests for Process Annotation Combinations', () => {
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
+  });
+
+  afterAll(async () => {
+    await (cds as any).flush();
   });
 
   // Helper function to create a test car entity
   const createTestCar = (id?: string, mileage: number = 100) => ({
-    ID: id || '550e8400-e29b-41d4-a716-446655440000',
+    ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',
     mileage,
@@ -56,7 +61,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
 
       const startMessages = findStartMessages();
       expect(startMessages.length).toBe(1);
-      expect(startMessages[0].data.definitionId).toBe('basicLifecycleProcess');
+      expect(startMessages[0].data.definitionId).toBe('lifecycle_Process');
     });
 
     it('should cancel process on DELETE', async () => {
@@ -127,7 +132,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
 
       expect(response.status).toBe(201);
       expect(findStartMessages().length).toBe(1);
-      expect(findStartMessages()[0].data.definitionId).toBe('statusCancelProcess');
+      expect(findStartMessages()[0].data.definitionId).toBe('lifecycle_Process');
     });
 
     it('should NOT cancel process on UPDATE when condition NOT met', async () => {
@@ -170,11 +175,15 @@ describe('Integration tests for Process Annotation Combinations', () => {
       foundMessages = [];
 
       // UPDATE below threshold - no cancel
-      await PATCH(`/odata/v4/annotation/StatusBasedCancel('${car.ID}')`, { mileage: 800 });
+      await PATCH(`/odata/v4/annotation/StatusBasedCancel('${car.ID}')`, {
+        mileage: 800,
+      });
       expect(foundMessages.length).toBe(0);
 
       // UPDATE above threshold - cancel
-      await PATCH(`/odata/v4/annotation/StatusBasedCancel('${car.ID}')`, { mileage: 1200 });
+      await PATCH(`/odata/v4/annotation/StatusBasedCancel('${car.ID}')`, {
+        mileage: 1200,
+      });
       expect(findCancelMessages().length).toBe(1);
     });
   });
@@ -191,7 +200,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
 
       expect(response.status).toBe(201);
       expect(findStartMessages().length).toBe(1);
-      expect(findStartMessages()[0].data.definitionId).toBe('suspendResumeProcess');
+      expect(findStartMessages()[0].data.definitionId).toBe('lifecycle_Process');
     });
 
     it('should suspend process on UPDATE when mileage > 500', async () => {
@@ -239,17 +248,23 @@ describe('Integration tests for Process Annotation Combinations', () => {
       foundMessages = [];
 
       // UPDATE to high mileage - suspend
-      await PATCH(`/odata/v4/annotation/SuspendResumeWorkflow('${car.ID}')`, { mileage: 700 });
+      await PATCH(`/odata/v4/annotation/SuspendResumeWorkflow('${car.ID}')`, {
+        mileage: 700,
+      });
       expect(findSuspendMessages().length).toBe(1);
       foundMessages = [];
 
       // UPDATE to low mileage - resume
-      await PATCH(`/odata/v4/annotation/SuspendResumeWorkflow('${car.ID}')`, { mileage: 300 });
+      await PATCH(`/odata/v4/annotation/SuspendResumeWorkflow('${car.ID}')`, {
+        mileage: 300,
+      });
       expect(findResumeMessages().length).toBe(1);
       foundMessages = [];
 
       // UPDATE to high mileage again - suspend
-      await PATCH(`/odata/v4/annotation/SuspendResumeWorkflow('${car.ID}')`, { mileage: 900 });
+      await PATCH(`/odata/v4/annotation/SuspendResumeWorkflow('${car.ID}')`, {
+        mileage: 900,
+      });
       expect(findSuspendMessages().length).toBe(1);
     });
   });
@@ -266,7 +281,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
 
       expect(response.status).toBe(201);
       expect(findStartMessages().length).toBe(1);
-      expect(findStartMessages()[0].data.definitionId).toBe('fullLifecycleProcess');
+      expect(findStartMessages()[0].data.definitionId).toBe('lifecycle_Process');
     });
 
     it('should suspend on UPDATE when mileage > 800', async () => {
@@ -349,7 +364,9 @@ describe('Integration tests for Process Annotation Combinations', () => {
       await POST('/odata/v4/annotation/ConditionalStartCancel', car);
       foundMessages = [];
 
-      await PATCH(`/odata/v4/annotation/ConditionalStartCancel('${car.ID}')`, { mileage: 400 });
+      await PATCH(`/odata/v4/annotation/ConditionalStartCancel('${car.ID}')`, {
+        mileage: 400,
+      });
 
       expect(foundMessages.length).toBe(0);
     });
@@ -360,10 +377,12 @@ describe('Integration tests for Process Annotation Combinations', () => {
       await POST('/odata/v4/annotation/ConditionalStartCancel', car);
       foundMessages = [];
 
-      await PATCH(`/odata/v4/annotation/ConditionalStartCancel('${car.ID}')`, { mileage: 600 });
+      await PATCH(`/odata/v4/annotation/ConditionalStartCancel('${car.ID}')`, {
+        mileage: 600,
+      });
 
       expect(findStartMessages().length).toBe(1);
-      expect(findStartMessages()[0].data.definitionId).toBe('conditionalStartCancelProcess');
+      expect(findStartMessages()[0].data.definitionId).toBe('lifecycle_Process');
     });
 
     it('should cancel process on UPDATE when cancel condition IS met', async () => {
@@ -373,11 +392,15 @@ describe('Integration tests for Process Annotation Combinations', () => {
       foundMessages = [];
 
       // Start the process first
-      await PATCH(`/odata/v4/annotation/ConditionalStartCancel('${car.ID}')`, { mileage: 600 });
+      await PATCH(`/odata/v4/annotation/ConditionalStartCancel('${car.ID}')`, {
+        mileage: 600,
+      });
       foundMessages = [];
 
       // Cancel
-      await PATCH(`/odata/v4/annotation/ConditionalStartCancel('${car.ID}')`, { mileage: 1600 });
+      await PATCH(`/odata/v4/annotation/ConditionalStartCancel('${car.ID}')`, {
+        mileage: 1600,
+      });
 
       expect(findCancelMessages().length).toBe(1);
     });
@@ -389,7 +412,9 @@ describe('Integration tests for Process Annotation Combinations', () => {
       foundMessages = [];
 
       // Update to value that meets both conditions (> 500 for start, > 1500 for cancel)
-      await PATCH(`/odata/v4/annotation/ConditionalStartCancel('${car.ID}')`, { mileage: 2000 });
+      await PATCH(`/odata/v4/annotation/ConditionalStartCancel('${car.ID}')`, {
+        mileage: 2000,
+      });
 
       // Both should be triggered
       expect(findStartMessages().length).toBe(1);
@@ -417,7 +442,9 @@ describe('Integration tests for Process Annotation Combinations', () => {
       await POST('/odata/v4/annotation/ExternalWorkflowManagement', car);
       foundMessages = [];
 
-      await PATCH(`/odata/v4/annotation/ExternalWorkflowManagement('${car.ID}')`, { mileage: 600 });
+      await PATCH(`/odata/v4/annotation/ExternalWorkflowManagement('${car.ID}')`, {
+        mileage: 600,
+      });
 
       expect(findSuspendMessages().length).toBe(1);
     });
@@ -428,7 +455,9 @@ describe('Integration tests for Process Annotation Combinations', () => {
       await POST('/odata/v4/annotation/ExternalWorkflowManagement', car);
       foundMessages = [];
 
-      await PATCH(`/odata/v4/annotation/ExternalWorkflowManagement('${car.ID}')`, { mileage: 400 });
+      await PATCH(`/odata/v4/annotation/ExternalWorkflowManagement('${car.ID}')`, {
+        mileage: 400,
+      });
 
       expect(findResumeMessages().length).toBe(1);
     });

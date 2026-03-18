@@ -9,7 +9,7 @@ class ProcessService extends cds.ApplicationService {
   async init() {
     this.on('start', async (req: cds.Request) => {
       const { definitionId, context } = req.data;
-      const businessKey = context?.businesskey ?? context?.businessKey;
+      const businessKey = req.headers['businessKey'] as string | undefined;
 
       LOG.debug(
         `==============================================================\n` +

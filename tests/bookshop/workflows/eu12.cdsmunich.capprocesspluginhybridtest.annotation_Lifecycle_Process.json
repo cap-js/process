@@ -1,0 +1,70 @@
+{
+  "uid": "3be598e1-dac8-4043-ab18-0fc2ecb3895a",
+  "name": "Annotation_Lifecycle_Process",
+  "description": "",
+  "type": "bpi.process",
+  "createdAt": "2026-03-16T14:38:50.163949Z",
+  "updatedAt": "2026-03-16T14:39:25.662280Z",
+  "header": {
+    "inputs": {
+      "title": "inputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "ID": {
+          "type": "string",
+          "title": "ID",
+          "description": ""
+        }
+      },
+      "required": [
+        "ID"
+      ]
+    },
+    "outputs": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "outputs",
+      "type": "object",
+      "properties": {}
+    },
+    "processAttributes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "processAttributes",
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  "dependencies": [
+    {
+      "artifactUid": "25ab1d56-63e5-4082-806f-9e41763f40f3",
+      "type": "content"
+    }
+  ],
+  "identifier": "annotation_Lifecycle_Process",
+  "valid": true,
+  "projectId": "eu12.cdsmunich.capprocesspluginhybridtest",
+  "dataTypes": []
+}

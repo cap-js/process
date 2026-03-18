@@ -1,0 +1,132 @@
+{
+  "uid": "c0b2b481-594b-407f-b4ef-220a016887e6",
+  "name": "Programmatic_Output_Process",
+  "description": "",
+  "type": "bpi.process",
+  "createdAt": "2026-03-18T13:11:37.749603Z",
+  "updatedAt": "2026-03-18T13:19:06.408007Z",
+  "header": {
+    "inputs": {
+      "title": "inputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "ID": {
+          "type": "string",
+          "title": "ID",
+          "description": ""
+        },
+        "mandatory_datetime": {
+          "$ref": "#/definitions/dateTime",
+          "title": "Mandatory_DateTime",
+          "description": ""
+        },
+        "mandatory_string": {
+          "type": "string",
+          "title": "Mandatory_String",
+          "description": ""
+        },
+        "optional_datetime": {
+          "$ref": "#/definitions/dateTime",
+          "title": "Optional_DateTime",
+          "description": ""
+        },
+        "optional_string": {
+          "type": "string",
+          "title": "Optional_String",
+          "description": ""
+        }
+      },
+      "required": [
+        "ID",
+        "mandatory_datetime",
+        "mandatory_string"
+      ]
+    },
+    "outputs": {
+      "title": "outputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "mandatory_string": {
+          "type": "string",
+          "title": "Mandatory_String",
+          "description": ""
+        },
+        "mandatory_datetime": {
+          "$ref": "#/definitions/dateTime",
+          "title": "Mandatory_DateTime",
+          "description": ""
+        },
+        "optional_datetime": {
+          "$ref": "#/definitions/dateTime",
+          "title": "Optional_DateTime",
+          "description": ""
+        },
+        "optional_string": {
+          "type": "string",
+          "title": "Optional_String",
+          "description": ""
+        }
+      },
+      "required": [
+        "mandatory_string",
+        "mandatory_datetime"
+      ]
+    },
+    "processAttributes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "processAttributes",
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  "identifier": "programmatic_Output_Process",
+  "valid": true,
+  "projectId": "eu12.cdsmunich.capprocesspluginhybridtest"
+}

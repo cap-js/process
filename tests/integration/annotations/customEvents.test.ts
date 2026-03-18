@@ -3,7 +3,7 @@ import cds from '@sap/cds';
 const { join } = cds.utils.path;
 
 const app = join(__dirname, '../../bookshop');
-const { test, POST } = cds.test(app);
+const { POST } = cds.test(app);
 
 describe('Integration tests for Process Annotations with Custom Events (Bound Actions)', () => {
   let foundMessages: any[] = [];
@@ -19,13 +19,16 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
+  });
+
+  afterAll(async () => {
+    await (cds as any).flush();
   });
 
   // Helper function to create a test car entity
   const createTestCar = (id?: string, mileage: number = 100) => ({
-    ID: id || '550e8400-e29b-41d4-a716-446655440000',
+    ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',
     mileage,

@@ -3,7 +3,7 @@ import cds from '@sap/cds';
 const { join } = cds.utils.path;
 
 const app = join(__dirname, '../../bookshop');
-const { test, POST, DELETE, PATCH } = cds.test(app);
+const { POST, DELETE, PATCH } = cds.test(app);
 
 const BUSINESS_KEY_MAX_LENGTH = 255;
 
@@ -20,8 +20,11 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await test.data.reset();
   foundMessages = [];
+});
+
+afterAll(async () => {
+  await (cds as any).flush();
 });
 
 describe('Integration tests for Business Key Length Validation on processStart', () => {
@@ -31,7 +34,7 @@ describe('Integration tests for Business Key Length Validation on processStart',
   describe('Start on CREATE with businessKey length validation', () => {
     it('should start process when businessKey is well under 255 characters', async () => {
       const car = {
-        ID: '550e8400-e29b-41d4-a716-446655440000',
+        ID: cds.utils.uuid(),
         model: 'Test Model',
         manufacturer: 'Test Manufacturer',
         mileage: 100,
@@ -299,7 +302,7 @@ describe('BusinessKey alias collision test', () => {
 describe('Integration tests for Composite Business Key', () => {
   // Helper function to create a test car entity
   const createTestCar = (id?: string, mileage: number = 100) => ({
-    ID: id || '550e8400-e29b-41d4-a716-446655440000',
+    ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',
     mileage,
