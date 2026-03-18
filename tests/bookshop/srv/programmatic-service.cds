@@ -7,7 +7,7 @@ using {
   eu12.cdsmunich.capprocesspluginhybridtest.Programatically_Output_ProcessService.ProcessOutputs
 } from './external/eu12.cdsmunich.capprocesspluginhybridtest.programatically_Output_Process';
 
-service ProgramaticalService {
+service ProgrammaticService {
 
   type AttributeEntry {
     workflowId : String;

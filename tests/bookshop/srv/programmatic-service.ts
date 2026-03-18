@@ -3,23 +3,23 @@ import Programatically_Lifecycle_ProcessService from '#cds-models/eu12/cdsmunich
 import Programatically_Output_ProcessService from '#cds-models/eu12/cdsmunich/capprocesspluginhybridtest/Programatically_Output_ProcessService';
 const lifecycleProcessService = Programatically_Lifecycle_ProcessService;
 
-class ProgramaticalService extends cds.ApplicationService {
+class ProgrammaticService extends cds.ApplicationService {
   async init() {
     this.on('startLifeCycleProcess', async (req: cds.Request) => {
-      const programaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
+      const programmaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
       const { ID } = req.data;
-      await programaticLifecycleProcess.start({ ID });
+      await programmaticLifecycleProcess.start({ ID });
     });
 
     this.on('updateProcess', async (req: cds.Request) => {
       const { ID, newStatus } = req.data;
-      const programaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
+      const programmaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
       if (newStatus === 'SUSPEND') {
-        await programaticLifecycleProcess.suspend({
+        await programmaticLifecycleProcess.suspend({
           businessKey: ID,
         });
       } else if (newStatus === 'RESUME') {
-        await programaticLifecycleProcess.resume({
+        await programmaticLifecycleProcess.resume({
           businessKey: ID,
         });
       }
@@ -27,14 +27,14 @@ class ProgramaticalService extends cds.ApplicationService {
 
     this.on('cancelProcess', async (req: cds.Request) => {
       const { ID } = req.data;
-      const programaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
-      await programaticLifecycleProcess.cancel({ businessKey: ID });
+      const programmaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
+      await programmaticLifecycleProcess.cancel({ businessKey: ID });
     });
 
     this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const programaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
-      const instances = await programaticLifecycleProcess.getInstancesByBusinessKey({
+      const programmaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
+      const instances = await programmaticLifecycleProcess.getInstancesByBusinessKey({
         businessKey: ID,
         status: status,
       });
@@ -43,15 +43,15 @@ class ProgramaticalService extends cds.ApplicationService {
 
     this.on('getAttributes', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const programaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
-      const processInstances = await programaticLifecycleProcess.getInstancesByBusinessKey({
+      const programmaticLifecycleProcess = await cds.connect.to(lifecycleProcessService);
+      const processInstances = await programmaticLifecycleProcess.getInstancesByBusinessKey({
         businessKey: ID,
         status: status,
       });
       const allAttributes = [];
       for (const instance of processInstances) {
         if (instance.id) {
-          const attributes = await programaticLifecycleProcess.getAttributes(instance.id);
+          const attributes = await programmaticLifecycleProcess.getAttributes(instance.id);
           allAttributes.push({
             workflowId: instance.id,
             attributes: attributes,
@@ -104,4 +104,4 @@ class ProgramaticalService extends cds.ApplicationService {
   }
 }
 
-export default ProgramaticalService;
+export default ProgrammaticService;

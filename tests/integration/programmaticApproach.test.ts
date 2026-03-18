@@ -5,7 +5,7 @@ import * as path from 'path';
 const app = path.join(__dirname, '../bookshop/');
 const { POST } = cds.test(app);
 
-describe('Programatic Approach Integration Tests', () => {
+describe('Programmatic Approach Integration Tests', () => {
   let foundMessages: any[] = [];
   beforeAll(async () => {
     const db = await cds.connect.to('db');
@@ -30,7 +30,7 @@ describe('Programatic Approach Integration Tests', () => {
   }
 
   async function startProcess(ID: string) {
-    return POST('/odata/v4/programatical/startLifeCycleProcess', { ID });
+    return POST('/odata/v4/programmatic/startLifeCycleProcess', { ID });
   }
 
   describe('Process Start Event', () => {
@@ -78,7 +78,7 @@ describe('Programatic Approach Integration Tests', () => {
   describe('Process Cancel Event', () => {
     it('should emit a cancel event to the outbox', async () => {
       const ID = generateID();
-      const response = await POST('/odata/v4/programatical/cancelProcess', { ID });
+      const response = await POST('/odata/v4/programmatic/cancelProcess', { ID });
 
       expect(response.status).toBe(204);
       expect(foundMessages.length).toBe(1);
@@ -88,7 +88,7 @@ describe('Programatic Approach Integration Tests', () => {
 
     it('should include cascade=false by default in cancel payload', async () => {
       const ID = generateID();
-      await POST('/odata/v4/programatical/cancelProcess', { ID });
+      await POST('/odata/v4/programmatic/cancelProcess', { ID });
 
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].data.cascade).toBe(false);
@@ -98,7 +98,7 @@ describe('Programatic Approach Integration Tests', () => {
   describe('Process Suspend Event', () => {
     it('should emit a suspend event to the outbox', async () => {
       const ID = generateID();
-      const response = await POST('/odata/v4/programatical/updateProcess', {
+      const response = await POST('/odata/v4/programmatic/updateProcess', {
         ID,
         newStatus: 'SUSPEND',
       });
@@ -111,7 +111,7 @@ describe('Programatic Approach Integration Tests', () => {
 
     it('should include cascade=false by default in suspend payload', async () => {
       const ID = generateID();
-      await POST('/odata/v4/programatical/updateProcess', {
+      await POST('/odata/v4/programmatic/updateProcess', {
         ID,
         newStatus: 'SUSPEND',
       });
@@ -124,7 +124,7 @@ describe('Programatic Approach Integration Tests', () => {
   describe('Process Resume Event', () => {
     it('should emit a resume event to the outbox', async () => {
       const ID = generateID();
-      const response = await POST('/odata/v4/programatical/updateProcess', {
+      const response = await POST('/odata/v4/programmatic/updateProcess', {
         ID,
         newStatus: 'RESUME',
       });
@@ -137,7 +137,7 @@ describe('Programatic Approach Integration Tests', () => {
 
     it('should include cascade=false by default in resume payload', async () => {
       const ID = generateID();
-      await POST('/odata/v4/programatical/updateProcess', {
+      await POST('/odata/v4/programmatic/updateProcess', {
         ID,
         newStatus: 'RESUME',
       });
@@ -152,11 +152,11 @@ describe('Programatic Approach Integration Tests', () => {
       const ID = generateID();
 
       await startProcess(ID);
-      await POST('/odata/v4/programatical/updateProcess', {
+      await POST('/odata/v4/programmatic/updateProcess', {
         ID,
         newStatus: 'SUSPEND',
       });
-      await POST('/odata/v4/programatical/updateProcess', {
+      await POST('/odata/v4/programmatic/updateProcess', {
         ID,
         newStatus: 'RESUME',
       });
@@ -171,7 +171,7 @@ describe('Programatic Approach Integration Tests', () => {
       const ID = generateID();
 
       await startProcess(ID);
-      await POST('/odata/v4/programatical/cancelProcess', { ID });
+      await POST('/odata/v4/programmatic/cancelProcess', { ID });
 
       expect(foundMessages.length).toBe(2);
       expect(foundMessages[0].event).toBe('start');
@@ -189,7 +189,7 @@ describe('Programatic Approach Integration Tests', () => {
       optional_string?: string,
       optional_date?: string,
     ) {
-      return POST('/odata/v4/programatical/startForGetOutputs', {
+      return POST('/odata/v4/programmatic/startForGetOutputs', {
         ID,
         mandetory_date,
         mandetory_string,

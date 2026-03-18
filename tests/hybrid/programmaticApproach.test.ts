@@ -6,7 +6,7 @@ import * as path from 'path';
 const app = path.join(__dirname, '../bookshop/');
 const { POST } = cds.test(app);
 
-describe('Programatic Approach Hybrid Tests', () => {
+describe('Programmatic Approach Hybrid Tests', () => {
   // beforeEach(async () => {
   //   await test.data.reset();
   // });
@@ -16,11 +16,11 @@ describe('Programatic Approach Hybrid Tests', () => {
   }
 
   async function startProcess(ID: string) {
-    return POST('/odata/v4/programatical/startLifeCycleProcess', { ID });
+    return POST('/odata/v4/programmatic/startLifeCycleProcess', { ID });
   }
 
   async function getInstances(ID: string, status?: string[]): Promise<any[]> {
-    const res = await POST('/odata/v4/programatical/getInstancesByBusinessKey', { ID, status });
+    const res = await POST('/odata/v4/programmatic/getInstancesByBusinessKey', { ID, status });
     return res.data?.value ?? res.data ?? [];
   }
 
@@ -41,7 +41,7 @@ describe('Programatic Approach Hybrid Tests', () => {
   }
 
   async function getAttributes(ID: string): Promise<any[]> {
-    const res = await POST('/odata/v4/programatical/getAttributes', { ID });
+    const res = await POST('/odata/v4/programmatic/getAttributes', { ID });
     return res.data?.value ?? res.data ?? [];
   }
 
@@ -81,7 +81,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       await startProcess(ID);
       await waitForInstances(ID, ['RUNNING']);
 
-      const response = await POST('/odata/v4/programatical/updateProcess', {
+      const response = await POST('/odata/v4/programmatic/updateProcess', {
         ID,
         newStatus: 'SUSPEND',
       });
@@ -100,13 +100,13 @@ describe('Programatic Approach Hybrid Tests', () => {
       await startProcess(ID);
       await waitForInstances(ID, ['RUNNING']);
 
-      await POST('/odata/v4/programatical/updateProcess', {
+      await POST('/odata/v4/programmatic/updateProcess', {
         ID,
         newStatus: 'SUSPEND',
       });
       await waitForInstances(ID, ['SUSPENDED']);
 
-      const response = await POST('/odata/v4/programatical/updateProcess', {
+      const response = await POST('/odata/v4/programmatic/updateProcess', {
         ID,
         newStatus: 'RESUME',
       });
@@ -125,7 +125,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       await startProcess(ID);
       await waitForInstances(ID, ['RUNNING']);
 
-      const response = await POST('/odata/v4/programatical/cancelProcess', { ID });
+      const response = await POST('/odata/v4/programmatic/cancelProcess', { ID });
 
       expect(response.status).toBe(204);
 
@@ -142,13 +142,13 @@ describe('Programatic Approach Hybrid Tests', () => {
       await startProcess(ID);
       await waitForInstances(ID, ['RUNNING']);
 
-      await POST('/odata/v4/programatical/updateProcess', {
+      await POST('/odata/v4/programmatic/updateProcess', {
         ID,
         newStatus: 'SUSPEND',
       });
       await waitForInstances(ID, ['SUSPENDED']);
 
-      await POST('/odata/v4/programatical/updateProcess', {
+      await POST('/odata/v4/programmatic/updateProcess', {
         ID,
         newStatus: 'RESUME',
       });
@@ -164,7 +164,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       await startProcess(ID);
       await waitForInstances(ID, ['RUNNING']);
 
-      await POST('/odata/v4/programatical/cancelProcess', { ID });
+      await POST('/odata/v4/programmatic/cancelProcess', { ID });
 
       const instances = await waitForInstances(ID, ['CANCELED']);
       expect(instances.length).toBe(1);
@@ -204,7 +204,7 @@ describe('Programatic Approach Hybrid Tests', () => {
       optional_string?: string,
       optional_date?: string,
     ) {
-      return POST('/odata/v4/programatical/startForGetOutputs', {
+      return POST('/odata/v4/programmatic/startForGetOutputs', {
         ID,
         mandetory_date,
         mandetory_string,
@@ -214,7 +214,7 @@ describe('Programatic Approach Hybrid Tests', () => {
     }
 
     async function getOutputInstances(ID: string, status?: string[]): Promise<any[]> {
-      const res = await POST('/odata/v4/programatical/getInstanceIDForGetOutputs', { ID, status });
+      const res = await POST('/odata/v4/programmatic/getInstanceIDForGetOutputs', { ID, status });
       return res.data?.value ?? res.data ?? [];
     }
 
@@ -235,7 +235,7 @@ describe('Programatic Approach Hybrid Tests', () => {
     }
 
     async function getOutputs(instanceId: string): Promise<any> {
-      const res = await POST('/odata/v4/programatical/getOutputs', { instanceId });
+      const res = await POST('/odata/v4/programmatic/getOutputs', { instanceId });
       return res.data;
     }
 
