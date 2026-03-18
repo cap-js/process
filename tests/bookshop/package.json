@@ -64,7 +64,7 @@
       },
       "ProcessService": {
         "[hana]": {
-          "model": "@cap-js/process/srv/localProcessService",
+          "kind": "local-process-service",
           "outbox": true
         },
         "[hybrid]": {
