@@ -22,6 +22,10 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
     foundMessages = [];
   });
 
+  afterAll(async () => {
+    await (cds as any).flush();
+  });
+
   // Helper function to create a test car entity
   const createTestCar = (id?: string, mileage: number = 100) => ({
     ID: id || cds.utils.uuid(),

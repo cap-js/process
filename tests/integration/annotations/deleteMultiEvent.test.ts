@@ -22,6 +22,10 @@ describe('Integration tests for multiple process events on DELETE', () => {
     foundMessages = [];
   });
 
+  afterAll(async () => {
+    await (cds as any).flush();
+  });
+
   const createTestCar = (id?: string, mileage: number = 100) => ({
     ID: id || cds.utils.uuid(),
     model: 'Test Model',

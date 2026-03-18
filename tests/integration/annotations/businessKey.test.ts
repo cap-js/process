@@ -23,6 +23,10 @@ beforeEach(async () => {
   foundMessages = [];
 });
 
+afterAll(async () => {
+  await (cds as any).flush();
+});
+
 describe('Integration tests for Business Key Length Validation on processStart', () => {
   // ================================================
   // START ON CREATE - businessKey length validation

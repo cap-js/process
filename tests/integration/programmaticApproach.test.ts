@@ -21,6 +21,10 @@ describe('Programatic Approach Integration Tests', () => {
     foundMessages = [];
   });
 
+  afterAll(async () => {
+    await (cds as any).flush();
+  });
+
   function generateID(): string {
     return cds.utils.uuid();
   }

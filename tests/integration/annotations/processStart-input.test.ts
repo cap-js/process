@@ -22,6 +22,10 @@ describe('Integration tests for START annotation with inputs array', () => {
     foundMessages = [];
   });
 
+  afterAll(async () => {
+    await (cds as any).flush();
+  });
+
   // Helper to get the start message context
   const getStartContext = () => {
     const startMsg = foundMessages.find((msg) => msg.event === 'start');
