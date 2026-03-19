@@ -11,15 +11,7 @@ import {
   handleProcessResume,
   handleProcessStart,
   handleProcessSuspend,
-  ProcessValidationPlugin,
   registerProcessServiceHandlers,
-  PROCESS_START_ID,
-  PROCESS_START_ON,
-  PROCESS_CANCEL_ON,
-  PROCESS_SUSPEND_ON,
-  PROCESS_RESUME_ON,
-  PROCESS_PREFIX,
-  CUD_EVENTS,
   EntityRow,
   addDeletedEntityToRequestCancel,
   addDeletedEntityToRequestStart,
@@ -27,7 +19,17 @@ import {
   addDeletedEntityToRequestResume,
   addDeletedEntityToRequestSuspend,
   ProcessDeleteRequest,
-} from './index';
+} from './handlers';
+import {
+  PROCESS_START_ID,
+  PROCESS_START_ON,
+  PROCESS_CANCEL_ON,
+  PROCESS_SUSPEND_ON,
+  PROCESS_RESUME_ON,
+  PROCESS_PREFIX,
+  CUD_EVENTS,
+} from './constants';
+import { ProcessValidationPlugin } from './build';
 import { importProcess } from './processImport';
 
 // Register build plugin for annotation validation during cds build
