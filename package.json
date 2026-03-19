@@ -2,8 +2,9 @@
   "name": "@cap-js/process",
   "version": "1.0.0",
   "description": "",
-  "main": "cds-plugin.ts",
+  "main": "cds-plugin.js",
   "scripts": {
+    "pretest": "npm run compile",
     "test": "jest --silent --testPathIgnorePatterns=/tests/hybrid/programmaticApproach.test.ts",
     "test:watch": "jest --watch",
     "test:hana": "jest tests/integration --silent",
@@ -12,6 +13,7 @@
     "clean:build": "rm -rf gen tests/bookshop/gen && npm run cds-build && npm run cds-build --prefix tests/bookshop",
     "clean:all": "rm -rf node_modules tests/bookshop/node_modules gen tests/bookshop/gen @cds-models tests/bookshop/@cds-models && npm i && npm run cds-typer && npm run cds-typer --prefix tests/bookshop && npm run cds-build && npm run cds-build --prefix tests/bookshop",
     "build": "npm run cds-build && npm run cds-typer",
+    "compile": "tsc -p tsconfig.build.json",
     "cds-build": "cds-tsx build",
     "cds-typer": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models",
     "watch": "cds-tsx watch",

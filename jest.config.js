@@ -10,7 +10,7 @@ const config = {
   detectOpenHandles: true,
   extensionsToTreatAsEsm: ['.ts'],
   transform: {
-    '^.+\\.ts$': ['ts-jest', { diagnostics: { ignoreCodes: [151002] } }],
+    '^.+\\.ts$': ['ts-jest', { diagnostics: { ignoreCodes: [151002], pathRegex: '\\.test\\.ts$' } }],
   },
 };
 
