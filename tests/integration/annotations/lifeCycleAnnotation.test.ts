@@ -29,7 +29,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
   });
 
   // Helper function to create a test car entity
-  const createTestCar = ({ id, mileage = 100 }: { id?: number; mileage?: number } = {}) => ({
+  const createTestCar = ({ id, mileage = 100 }: { id?: string; mileage?: number } = {}) => ({
     ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',

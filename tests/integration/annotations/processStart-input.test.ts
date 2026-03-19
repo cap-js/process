@@ -609,7 +609,7 @@ describe('Integration tests for START annotation with inputs array', () => {
   // Test 14: $self.author - explicitly include association
   // Should expand the author association with all its fields
   // ================================================
-  describe('Test 15: $self.author - explicitly include association', () => {
+  describe('Test 14: $self.author - explicitly include association', () => {
     it('should include the author association expanded with all its fields', async () => {
       const author = {
         ID: '550e8400-e29b-41d4-a716-446655440098',

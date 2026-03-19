@@ -1450,7 +1450,7 @@ service AnnotationService {
         key ID : UUID;
     }
 
-    // Test 15: $self.author - explicitly include association
+    // Test 14: $self.author - explicitly include association
     // Should expand the author association with all its fields
     // --------------------------------------------
     @bpm.process.start: {
