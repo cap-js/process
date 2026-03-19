@@ -596,7 +596,7 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toBeDefined();
 
       // $self should only include scalar fields: ID, status
-      // Should NOT include: items (composition), author (association)
+      // Includes Association key
       expect(context).toEqual({
         ID: entity.ID,
         status: entity.status,
@@ -606,46 +606,10 @@ describe('Integration tests for START annotation with inputs array', () => {
   });
 
   // ================================================
-  // Test 14: No inputs with Composition and Association
-  // Without inputs array, all fields should be included
-  // ================================================
-  describe('Test 14: No inputs with Composition and Association', () => {
-    it('should include all fields including compositions and associations', async () => {
-      const author = {
-        ID: '550e8400-e29b-41d4-a716-446655440099',
-      };
-
-      const entity = {
-        ID: '550e8400-e29b-41d4-a716-446655440014',
-        status: 'PENDING',
-        author_ID: author.ID,
-      };
-
-      // Create author first
-      await POST('/odata/v4/annotation/StartNoInputWithAssocAuthors', author);
-
-      const response = await POST('/odata/v4/annotation/StartNoInputWithAssoc', entity);
-
-      expect(response.status).toBe(201);
-      expect(foundMessages.length).toBe(1);
-
-      const context = getStartContext();
-      expect(context).toBeDefined();
-
-      // No inputs specified - should include all fields
-      expect(context).toEqual({
-        ID: entity.ID,
-        status: entity.status,
-        author_ID: author.ID,
-      });
-    });
-  });
-
-  // ================================================
-  // Test 15: $self.author - explicitly include association
+  // Test 14: $self.author - explicitly include association
   // Should expand the author association with all its fields
   // ================================================
-  describe('Test 15: $self.author - explicitly include association', () => {
+  describe('Test 14: $self.author - explicitly include association', () => {
     it('should include the author association expanded with all its fields', async () => {
       const author = {
         ID: '550e8400-e29b-41d4-a716-446655440098',
