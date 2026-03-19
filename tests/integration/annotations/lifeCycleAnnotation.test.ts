@@ -100,7 +100,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
       expect(updateResponse.status).toBe(200);
       expect(foundMessages.length).toBe(0);
     });
-    // Check
+
     it('should handle full lifecycle: CREATE -> UPDATE -> DELETE', async () => {
       const car = createTestCar();
 
@@ -125,7 +125,6 @@ describe('Integration tests for Process Annotation Combinations', () => {
   // Start on CREATE + Cancel on UPDATE (when condition)
   // ================================================
   describe('Scenario 2: Status-based Cancellation (Start on CREATE, Cancel on UPDATE when mileage > 1000)', () => {
-    // Check
     it('should start process on CREATE', async () => {
       const car = createTestCar();
 
@@ -194,7 +193,6 @@ describe('Integration tests for Process Annotation Combinations', () => {
   // Start on CREATE + Suspend/Resume on UPDATE
   // ================================================
   describe('Scenario 3: Suspend/Resume Workflow (Start on CREATE, Suspend when mileage > 500, Resume when mileage <= 500)', () => {
-    // Check
     it('should start process on CREATE', async () => {
       const car = createTestCar();
 
@@ -276,7 +274,6 @@ describe('Integration tests for Process Annotation Combinations', () => {
   // Start, Suspend, Resume, Cancel
   // ================================================
   describe('Scenario 4: Full Lifecycle (Start on CREATE, Suspend/Resume on UPDATE, Cancel on DELETE)', () => {
-    // Check
     it('should start process on CREATE', async () => {
       const car = createTestCar();
 
