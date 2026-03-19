@@ -1,6 +1,6 @@
 import cds from '@sap/cds';
 import { ProcessValidationPlugin } from './plugin';
-import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
+import { CsnDefinition, CsnElement, CsnEntity } from '../types/csn-extensions';
 import { BUSINESS_KEY, PROCESS_START_ID, PROCESS_START_ON } from '../constants';
 import {
   createCsnEntityContext,

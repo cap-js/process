@@ -1,4 +1,4 @@
-import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
+import { CsnDefinition, CsnElement, CsnEntity } from '../types/csn-extensions';
 import { PROCESS_PREFIX, PROCESS_START_INPUTS } from '../constants';
 import {
   InputCSNEntry,

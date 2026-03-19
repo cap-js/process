@@ -5,7 +5,7 @@ export * from './api';
 export * from './auth';
 
 import cds, { Results } from '@sap/cds';
-import { EntityEventCache } from '../types/cds-plugin';
+import { EntityEventCache } from './types/cds-plugin';
 import {
   handleProcessCancel,
   handleProcessResume,

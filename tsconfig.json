@@ -16,7 +16,7 @@
     }
   },
   "include": [
-    "./types/**/*.ts",
+    "lib/types/**/*.ts",
     "cds-plugin.ts",
     "./lib/**/*.ts",
     "./srv/**/*.ts",
