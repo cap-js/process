@@ -27,7 +27,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
   });
 
   // Helper function to create a test car entity
-  const createTestCar = (id?: string, mileage: number = 100) => ({
+  const createTestCar = ({ id, mileage = 100 }: { id?: string; mileage?: number } = {}) => ({
     ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',
@@ -114,7 +114,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
   // ================================================
   describe('Process START on wildcard (*) with condition', () => {
     it('should start process on CREATE when condition is met', async () => {
-      const car = createTestCar(undefined, 600); // mileage > 500
+      const car = createTestCar({ mileage: 600 }); // mileage > 500
 
       const response = await POST('/odata/v4/annotation/StartOnWildcardWhen', car);
       expect(response.status).toBe(201);
@@ -128,7 +128,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
     });
 
     it('should NOT start process on CREATE when condition is NOT met', async () => {
-      const car = createTestCar(undefined, 400); // mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
       const response = await POST('/odata/v4/annotation/StartOnWildcardWhen', car);
       expect(response.status).toBe(201);
@@ -137,7 +137,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
     });
 
     it('should start process on UPDATE when condition is met', async () => {
-      const car = createTestCar(undefined, 400); // Start with mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // Start with mileage <= 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/StartOnWildcardWhen', car);
@@ -156,7 +156,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
     });
 
     it('should NOT start process on UPDATE when condition is NOT met', async () => {
-      const car = createTestCar(undefined, 400); // mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/StartOnWildcardWhen', car);
@@ -173,7 +173,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
     });
 
     it('should start process on bound action when condition is met', async () => {
-      const car = createTestCar(undefined, 600); // mileage > 500
+      const car = createTestCar({ mileage: 600 }); // mileage > 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/StartOnWildcardWhen', car);
@@ -192,7 +192,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
     });
 
     it('should NOT start process on bound action when condition is NOT met', async () => {
-      const car = createTestCar(undefined, 400); // mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/StartOnWildcardWhen', car);
@@ -463,7 +463,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
   // ================================================
   describe('Process CANCEL on wildcard (*) with condition', () => {
     it('should cancel process on CREATE when condition is met', async () => {
-      const car = createTestCar(undefined, 600); // mileage > 500
+      const car = createTestCar({ mileage: 600 }); // mileage > 500
 
       const response = await POST('/odata/v4/annotation/CancelOnWildcardWhen', car);
       expect(response.status).toBe(201);
@@ -477,7 +477,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
     });
 
     it('should NOT cancel process on CREATE when condition is NOT met', async () => {
-      const car = createTestCar(undefined, 400); // mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
       const response = await POST('/odata/v4/annotation/CancelOnWildcardWhen', car);
       expect(response.status).toBe(201);
@@ -486,7 +486,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
     });
 
     it('should cancel process on UPDATE when condition is met', async () => {
-      const car = createTestCar(undefined, 400); // Start with mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // Start with mileage <= 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/CancelOnWildcardWhen', car);
@@ -508,7 +508,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
     });
 
     it('should NOT cancel process on UPDATE when condition is NOT met', async () => {
-      const car = createTestCar(undefined, 400); // mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/CancelOnWildcardWhen', car);
@@ -525,7 +525,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
     });
 
     it('should cancel process on bound action when condition is met', async () => {
-      const car = createTestCar(undefined, 600); // mileage > 500
+      const car = createTestCar({ mileage: 600 }); // mileage > 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/CancelOnWildcardWhen', car);
@@ -547,7 +547,7 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
     });
 
     it('should NOT cancel process on bound action when condition is NOT met', async () => {
-      const car = createTestCar(undefined, 400); // mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/CancelOnWildcardWhen', car);

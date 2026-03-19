@@ -26,7 +26,7 @@ describe('Integration tests for multiple process events on DELETE', () => {
     await (cds as any).flush();
   });
 
-  const createTestCar = (id?: string, mileage: number = 100) => ({
+  const createTestCar = ({ id, mileage = 100 }: { id?: string; mileage?: number } = {}) => ({
     ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',
@@ -149,7 +149,7 @@ describe('Integration tests for multiple process events on DELETE', () => {
   // ================================================
   describe('Cancel + Suspend on DELETE with if condition', () => {
     it('should trigger only suspend', async () => {
-      const car = createTestCar(undefined, 50);
+      const car = createTestCar({ mileage: 50 });
 
       await POST('/odata/v4/annotation/DeleteCancelSuspendIfExpr', car);
       foundMessages = [];
