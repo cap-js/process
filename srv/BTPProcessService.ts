@@ -48,10 +48,9 @@ class ProcessService extends cds.ApplicationService {
     this.on('suspend', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
 
-      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
-        businessKey,
+      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
         WorkflowStatus.RUNNING,
-      );
+      ]);
 
       if (instances.length === 0) {
         LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
@@ -68,10 +67,9 @@ class ProcessService extends cds.ApplicationService {
     this.on('resume', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
 
-      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
-        businessKey,
+      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
         WorkflowStatus.SUSPENDED,
-      );
+      ]);
 
       if (instances.length === 0) {
         LOG.warn(`No suspended workflow instances found with businessKey: ${businessKey}`);

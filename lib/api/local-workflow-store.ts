@@ -64,13 +64,12 @@ export class LocalWorkflowStore {
 
   getInstancesByBusinessKey(
     businessKey: string,
-    status?: WorkflowStatus | WorkflowStatus[],
+    status?: WorkflowStatus[],
   ): LocalWorkflowInstance[] {
     let filtered = this.instances.filter((i) => i.businessKey === businessKey);
 
     if (status) {
-      const statuses = Array.isArray(status) ? status : [status];
-      filtered = filtered.filter((i) => statuses.includes(i.status));
+      filtered = filtered.filter((i) => status.includes(i.status));
     }
 
     return filtered;
@@ -81,7 +80,7 @@ export class LocalWorkflowStore {
   }
 
   updateStatus(instanceId: string, status: WorkflowStatus): UpdateStatusResult {
-    const instance = this.instances.find((i) => i.id === instanceId);
+    const instance = this.getInstance(instanceId);
 
     if (!instance) {
       return {
@@ -104,17 +103,13 @@ export class LocalWorkflowStore {
   }
 
   getAttributes(instanceId: string): Record<string, string>[] | undefined {
-    const instance = this.instances.find((i) => i.id === instanceId);
+    const instance = this.getInstance(instanceId);
     return instance?.attributes;
   }
 
   getOutputs(instanceId: string): Record<string, unknown> | undefined {
-    const instance = this.instances.find((i) => i.id === instanceId);
+    const instance = this.getInstance(instanceId);
     return instance?.outputs;
-  }
-
-  clear(): void {
-    this.instances = [];
   }
 }
 
