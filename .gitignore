@@ -7,5 +7,3 @@ package-lock.json
 .cdsrc-private.json
 @cds-models
 dist/
-srv/BTPProcessService.js
-srv/localProcessService.js
