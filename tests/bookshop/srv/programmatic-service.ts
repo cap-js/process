@@ -9,7 +9,7 @@ class ProgrammaticService extends cds.ApplicationService {
         Programmatic_Lifecycle_ProcessService,
       );
       const { ID } = req.data;
-      await programmaticLifecycleProcess.start({ ID });
+      programmaticLifecycleProcess.start({ ID });
     });
 
     this.on('updateProcess', async (req: cds.Request) => {
@@ -18,11 +18,11 @@ class ProgrammaticService extends cds.ApplicationService {
         Programmatic_Lifecycle_ProcessService,
       );
       if (newStatus === 'SUSPEND') {
-        await programmaticLifecycleProcess.suspend({
+        programmaticLifecycleProcess.suspend({
           businessKey: ID,
         });
       } else if (newStatus === 'RESUME') {
-        await programmaticLifecycleProcess.resume({
+        programmaticLifecycleProcess.resume({
           businessKey: ID,
         });
       }
@@ -33,7 +33,7 @@ class ProgrammaticService extends cds.ApplicationService {
       const programmaticLifecycleProcess = await cds.connect.to(
         Programmatic_Lifecycle_ProcessService,
       );
-      await programmaticLifecycleProcess.cancel({ businessKey: ID });
+      programmaticLifecycleProcess.cancel({ businessKey: ID });
     });
 
     this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
@@ -74,7 +74,7 @@ class ProgrammaticService extends cds.ApplicationService {
       const { ID, mandatory_datetime, mandatory_string, optional_datetime, optional_string } =
         req.data;
       const programmaticOutputProcess = await cds.connect.to(Programmatic_Outputs_ProcessService);
-      await programmaticOutputProcess.start({
+      programmaticOutputProcess.start({
         ID,
         mandatory_datetime,
         mandatory_string,
