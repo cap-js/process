@@ -68,10 +68,6 @@ runs:
         npm install @sap/cds@${{ matrix.cds-version }}
         npm install
 
-    - name: Compile TypeScript to dist
-      shell: bash
-      run: npm run compile
-
     # HANA Cloud Deployment and binding
     - name: Set node env for HANA
       run: echo "NODE_VERSION_HANA=$(echo ${{ inputs.NODE_VERSION }} | tr . _)" >> $GITHUB_ENV

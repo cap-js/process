@@ -4,6 +4,7 @@
   "description": "",
   "main": "cds-plugin.js",
   "scripts": {
+    "prebuild": "npm run compile",
     "pretest": "npm run compile",
     "test": "jest --silent --testPathIgnorePatterns=/tests/hybrid/programmaticApproach.test.ts",
     "test:watch": "jest --watch",
