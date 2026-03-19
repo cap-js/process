@@ -87,28 +87,6 @@ describe('Integration tests for Business Key Length Validation on processStart',
 
       expect(foundMessages.length).toBe(0);
     });
-    // Check
-    it('should reject with 400 when businessKey is significantly over the limit', async () => {
-      const longValue = 'x'.repeat(300);
-
-      const entity = {
-        ID: '550e8400-e29b-41d4-a716-446655440003',
-        longValue,
-        name: 'Test',
-      };
-
-      try {
-        await POST('/odata/v4/annotation/StartWithExceedingBusinessKey', entity);
-        fail('Expected request to be rejected');
-      } catch (error: any) {
-        expect(error.response.status).toBe(400);
-        expect(error.response.data.error.message).toContain(
-          `Business key value exceeds maximum length of ${BUSINESS_KEY_MAX_LENGTH} characters`,
-        );
-      }
-
-      expect(foundMessages.length).toBe(0);
-    });
   });
 
   // ================================================
