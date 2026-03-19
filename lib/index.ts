@@ -27,8 +27,8 @@ import {
   addDeletedEntityToRequestResume,
   addDeletedEntityToRequestSuspend,
   ProcessDeleteRequest,
-} from '../lib/index';
-import { importProcess } from '../lib/processImport';
+} from './index';
+import { importProcess } from './processImport';
 
 // Register build plugin for annotation validation during cds build
 cds.build?.register?.('process-validation', ProcessValidationPlugin);
