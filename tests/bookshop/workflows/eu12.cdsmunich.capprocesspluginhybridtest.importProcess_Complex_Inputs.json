@@ -4,13 +4,60 @@
   "description": "",
   "type": "bpi.process",
   "createdAt": "2026-03-18T10:23:06.672697Z",
-  "updatedAt": "2026-03-18T10:23:06.672697Z",
+  "updatedAt": "2026-03-19T11:43:58.132360Z",
   "header": {
     "inputs": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "inputs",
       "type": "object",
-      "properties": {}
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "complextype": {
+          "$ref": "$.11cbfe86-2e73-4198-868a-d7a2115d82c1",
+          "refName": "ImportProcess_Complex_DataType",
+          "title": "complexType",
+          "description": ""
+        },
+        "stringlist": {
+          "type": "string",
+          "title": "StringList",
+          "description": ""
+        },
+        "complexlist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "complexList",
+          "description": ""
+        }
+      },
+      "required": [
+        "complextype",
+        "stringlist",
+        "complexlist"
+      ]
     },
     "outputs": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -26,7 +73,96 @@
       "required": []
     }
   },
+  "dependencies": [
+    {
+      "artifactUid": "11cbfe86-2e73-4198-868a-d7a2115d82c1",
+      "type": "both"
+    }
+  ],
   "identifier": "importProcess_Complex_Inputs",
   "valid": true,
-  "projectId": "eu12.cdsmunich.capprocesspluginhybridtest"
+  "projectId": "eu12.cdsmunich.capprocesspluginhybridtest",
+  "dataTypes": [
+    {
+      "uid": "11cbfe86-2e73-4198-868a-d7a2115d82c1",
+      "name": "ImportProcess_Complex_DataType",
+      "description": "",
+      "type": "datatype",
+      "createdAt": "2026-03-18T10:28:54.794097Z",
+      "updatedAt": "2026-03-18T10:31:37.975015Z",
+      "header": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "title": "ImportProcess_Complex_DataType",
+        "properties": {
+          "StringList": {
+            "uid": "4ed37465-be1c-44f1-b15b-94cba0cc04f4",
+            "items": {
+              "type": "object",
+              "properties": {
+                "SubString1": {
+                  "type": "string",
+                  "uid": "567555b3-ffee-41d4-a650-e9006ca9c5f6"
+                },
+                "Substring2": {
+                  "type": "string",
+                  "uid": "794440a0-a06e-4fa6-a703-1f8fe4bc9d94"
+                }
+              },
+              "required": [
+                "SubString1",
+                "Substring2"
+              ]
+            },
+            "type": "array"
+          },
+          "StringType": {
+            "type": "object",
+            "uid": "23add1b4-d9e0-4955-8b24-2196d210a43d",
+            "properties": {
+              "SubStringType": {
+                "type": "object",
+                "uid": "3ca99589-d0b0-462a-92bf-bc872d81a0b3",
+                "properties": {
+                  "SubSubStringType": {
+                    "type": "object",
+                    "uid": "f3dd8f45-fcd2-4fe2-9d2f-868e51f52b64",
+                    "properties": {
+                      "SubSubSubDate": {
+                        "uid": "361a2e90-c32d-421d-8077-6a412436f031",
+                        "$ref": "#/definitions/date"
+                      },
+                      "SubSubSubPassword": {
+                        "uid": "9901ea3d-4e0f-4421-981e-22fbc0d35cc6",
+                        "$ref": "#/definitions/password"
+                      },
+                      "SubSubSubAny": {
+                        "uid": "99fd32c0-7ce9-4c22-bb85-890160827365"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "StringList"
+        ],
+        "definitions": {
+          "password": {
+            "type": "string",
+            "password": true
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "version": 1
+      },
+      "identifier": "importProcess_Complex_DataType",
+      "valid": true
+    }
+  ]
 }

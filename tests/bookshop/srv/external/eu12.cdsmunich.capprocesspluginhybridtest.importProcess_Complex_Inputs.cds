@@ -1,11 +1,41 @@
-/* checksum : 432eceabedbd12a3f48b0cb0e7a4a39b */
+/* checksum : c03cdf2e606ab17a35b5c033564432b3 */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
 @protocol : 'none'
 @bpm.process : 'eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Complex_Inputs'
 service ImportProcess_Complex_InputsService {
-  type ProcessInputs { };
+  type ImportProcess_Complex_DataType_StringList_Array : many {
+    SubString1 : String not null;
+    Substring2 : String not null;
+  };
+
+  type ImportProcess_Complex_DataType_StringType_SubStringType_SubSubStringType {
+    SubSubSubDate : Date;
+    SubSubSubPassword : String;
+    SubSubSubAny : String;
+  };
+
+  type ImportProcess_Complex_DataType_StringType_SubStringType {
+    SubSubStringType : ImportProcess_Complex_DataType_StringType_SubStringType_SubSubStringType;
+  };
+
+  type ImportProcess_Complex_DataType_StringType {
+    SubStringType : ImportProcess_Complex_DataType_StringType_SubStringType;
+  };
+
+  type ImportProcess_Complex_DataType {
+    StringList : ImportProcess_Complex_DataType_StringList_Array not null;
+    StringType : ImportProcess_Complex_DataType_StringType;
+  };
+
+  type ProcessInputs_complexlist_Array : many String;
+
+  type ProcessInputs {
+    complextype : ImportProcess_Complex_DataType not null;
+    stringlist : String not null;
+    complexlist : ProcessInputs_complexlist_Array not null;
+  };
 
   type ProcessOutputs { };
 
@@ -31,7 +61,9 @@ service ImportProcess_Complex_InputsService {
 
   type ProcessInstanceStatus : many String;
 
-  action start();
+  action start(
+    inputs : ProcessInputs not null
+  );
 
   function getAttributes(
     processInstanceId : String not null
