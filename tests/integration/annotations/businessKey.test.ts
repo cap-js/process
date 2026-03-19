@@ -87,7 +87,7 @@ describe('Integration tests for Business Key Length Validation on processStart',
 
       expect(foundMessages.length).toBe(0);
     });
-
+    // Check
     it('should reject with 400 when businessKey is significantly over the limit', async () => {
       const longValue = 'x'.repeat(300);
 

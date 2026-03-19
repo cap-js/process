@@ -29,7 +29,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
   });
 
   // Helper function to create a test car entity
-  const createTestCar = (id?: string, mileage: number = 100) => ({
+  const createTestCar = ({ id, mileage = 100 }: { id?: number; mileage?: number } = {}) => ({
     ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',
@@ -100,7 +100,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
       expect(updateResponse.status).toBe(200);
       expect(foundMessages.length).toBe(0);
     });
-
+    // Check
     it('should handle full lifecycle: CREATE -> UPDATE -> DELETE', async () => {
       const car = createTestCar();
 
@@ -125,8 +125,9 @@ describe('Integration tests for Process Annotation Combinations', () => {
   // Start on CREATE + Cancel on UPDATE (when condition)
   // ================================================
   describe('Scenario 2: Status-based Cancellation (Start on CREATE, Cancel on UPDATE when mileage > 1000)', () => {
+    // Check
     it('should start process on CREATE', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       const response = await POST('/odata/v4/annotation/StatusBasedCancel', car);
 
@@ -136,7 +137,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should NOT cancel process on UPDATE when condition NOT met', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       await POST('/odata/v4/annotation/StatusBasedCancel', car);
       foundMessages = [];
@@ -151,7 +152,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should cancel process on UPDATE when condition IS met', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       await POST('/odata/v4/annotation/StatusBasedCancel', car);
       foundMessages = [];
@@ -167,7 +168,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should handle workflow: CREATE -> UPDATE (no cancel) -> UPDATE (cancel)', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       // CREATE
       await POST('/odata/v4/annotation/StatusBasedCancel', car);
@@ -193,8 +194,9 @@ describe('Integration tests for Process Annotation Combinations', () => {
   // Start on CREATE + Suspend/Resume on UPDATE
   // ================================================
   describe('Scenario 3: Suspend/Resume Workflow (Start on CREATE, Suspend when mileage > 500, Resume when mileage <= 500)', () => {
+    // Check
     it('should start process on CREATE', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       const response = await POST('/odata/v4/annotation/SuspendResumeWorkflow', car);
 
@@ -204,7 +206,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should suspend process on UPDATE when mileage > 500', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       await POST('/odata/v4/annotation/SuspendResumeWorkflow', car);
       foundMessages = [];
@@ -222,7 +224,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should resume process on UPDATE when mileage <= 500', async () => {
-      const car = createTestCar(undefined, 600);
+      const car = createTestCar({ mileage: 600 });
 
       await POST('/odata/v4/annotation/SuspendResumeWorkflow', car);
       foundMessages = [];
@@ -240,7 +242,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should handle suspend/resume cycle', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       // CREATE - start
       await POST('/odata/v4/annotation/SuspendResumeWorkflow', car);
@@ -274,8 +276,9 @@ describe('Integration tests for Process Annotation Combinations', () => {
   // Start, Suspend, Resume, Cancel
   // ================================================
   describe('Scenario 4: Full Lifecycle (Start on CREATE, Suspend/Resume on UPDATE, Cancel on DELETE)', () => {
+    // Check
     it('should start process on CREATE', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       const response = await POST('/odata/v4/annotation/FullLifecycle', car);
 
@@ -285,7 +288,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should suspend on UPDATE when mileage > 800', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       await POST('/odata/v4/annotation/FullLifecycle', car);
       foundMessages = [];
@@ -297,7 +300,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should resume on UPDATE when mileage <= 800', async () => {
-      const car = createTestCar(undefined, 900);
+      const car = createTestCar({ mileage: 900 });
 
       await POST('/odata/v4/annotation/FullLifecycle', car);
       foundMessages = [];
@@ -309,7 +312,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should cancel on DELETE', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       await POST('/odata/v4/annotation/FullLifecycle', car);
       foundMessages = [];
@@ -321,7 +324,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should handle complete workflow: CREATE -> SUSPEND -> RESUME -> DELETE', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       // CREATE
       await POST('/odata/v4/annotation/FullLifecycle', car);
@@ -350,7 +353,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
   // ================================================
   describe('Scenario 5: Conditional Start and Cancel (Start when mileage > 500, Cancel when mileage > 1500)', () => {
     it('should NOT start process on CREATE', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       const response = await POST('/odata/v4/annotation/ConditionalStartCancel', car);
 
@@ -359,7 +362,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should NOT start process on UPDATE when condition NOT met', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       await POST('/odata/v4/annotation/ConditionalStartCancel', car);
       foundMessages = [];
@@ -372,7 +375,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should start process on UPDATE when start condition IS met', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       await POST('/odata/v4/annotation/ConditionalStartCancel', car);
       foundMessages = [];
@@ -386,7 +389,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should cancel process on UPDATE when cancel condition IS met', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       await POST('/odata/v4/annotation/ConditionalStartCancel', car);
       foundMessages = [];
@@ -406,7 +409,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should trigger BOTH start and cancel when both conditions met in one update', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       await POST('/odata/v4/annotation/ConditionalStartCancel', car);
       foundMessages = [];
@@ -428,7 +431,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
   // ================================================
   describe('Scenario 6: External Workflow Management (No Start, Suspend/Resume on UPDATE, Cancel on DELETE)', () => {
     it('should NOT start any process on CREATE', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       const response = await POST('/odata/v4/annotation/ExternalWorkflowManagement', car);
 
@@ -437,7 +440,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should suspend on UPDATE when mileage > 500', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       await POST('/odata/v4/annotation/ExternalWorkflowManagement', car);
       foundMessages = [];
@@ -450,7 +453,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should resume on UPDATE when mileage <= 500', async () => {
-      const car = createTestCar(undefined, 600);
+      const car = createTestCar({ mileage: 600 });
 
       await POST('/odata/v4/annotation/ExternalWorkflowManagement', car);
       foundMessages = [];
@@ -463,7 +466,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
     });
 
     it('should cancel on DELETE', async () => {
-      const car = createTestCar(undefined, 100);
+      const car = createTestCar();
 
       await POST('/odata/v4/annotation/ExternalWorkflowManagement', car);
       foundMessages = [];

@@ -1450,23 +1450,6 @@ service AnnotationService {
         key ID : UUID;
     }
 
-    // Test 14: No inputs (all fields including Composition and Association)
-    // Without inputs array, all fields should be included
-    // --------------------------------------------
-    @bpm.process.start: {
-        id: 'startNoInputWithAssocProcess',
-        on: 'CREATE'
-    }
-    entity StartNoInputWithAssoc {
-        key ID     : UUID;
-            status : String(20) default 'PENDING';
-            author : Association to one StartNoInputWithAssocAuthors;
-    }
-
-    entity StartNoInputWithAssocAuthors {
-        key ID : UUID;
-    }
-
     // Test 15: $self.author - explicitly include association
     // Should expand the author association with all its fields
     // --------------------------------------------
