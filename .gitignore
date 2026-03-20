@@ -6,3 +6,4 @@ clients/
 package-lock.json
 .cdsrc-private.json
 @cds-models
+dist/

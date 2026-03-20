@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "."
+  },
+  "include": ["./cds-plugin.ts", "./srv/**/*.ts", "./lib/**/*.ts"],
+  "exclude": ["node_modules", "dist", "tests", "gen", "@cds-models"]
+}

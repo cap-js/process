@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import cds from '@sap/cds';
-import * as csn from '../types/csn-extensions';
+import * as csn from './types/csn-extensions';
 import { getServiceCredentials, CachingTokenProvider, createXsuaaTokenProvider } from './auth';
 import {
   createProcessApiClient,

@@ -1,3 +1,3 @@
 using ProcessService as service from './BTPProcessService';
 
-annotate service with @impl: './localProcessService.ts';
+annotate service with @impl: './localProcessService';
