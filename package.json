@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "cds-plugin.js",
+  "files": [
+    "cds-plugin.js",
+    "dist",
+    "srv"
+  ],
   "scripts": {
     "prebuild": "npm run compile",
     "pretest": "npm run compile",
