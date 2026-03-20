@@ -5,8 +5,9 @@
   "main": "cds-plugin.js",
   "files": [
     "cds-plugin.js",
-    "dist",
-    "srv"
+    "dist/",
+    "srv/*.cds",
+    "srv/*.js"
   ],
   "scripts": {
     "prebuild": "npm run compile",
