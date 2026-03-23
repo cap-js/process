@@ -2,46 +2,92 @@
 
 # Setup
 
-### Execute following commands to install dependencies after cloning the project:
+## Run the sample in the Plugin
 
-Make sure to follow https://cap.cloud.sap/docs/get-started/ to install global dependencies that are required for CAP aplication development.
+Make sure to follow https://cap.cloud.sap/docs/get-started/ to install global dependencies that are required for CAP application development.
+
+Install the dependencies for the plugin and build the project:
 
 ```
-npm install
-npm i -g tsx
+npm run i
 npm run build
 ```
 
-### To run the sample application, execute:
+### Running the bookshop example
+
+Using cds-tsx:
 
 ```
-cd /tests/bookshop
-cds watch
+npm i -g tsx
+cd tests/bookshop && npm run build
+cd tests/bookshop && cds-tsx w
 ```
 
-## To use the plugin as a CAP developer:
+Using cds watch:
 
-- (in future): run `npm add @cap-js/process`
-  - before first release: `npm add git+https://github.com/cap-js/process.git`
-- Login to cf `cf login ...`
-- Bind to process service instance:
-  - `cds bind ProcessService -to <sbpa-service-instance>`
+```
+npm run compile
+cd tests/bookshop && npm run build
+cd tests/bookshop && cds watch
+```
 
-Start developing 🙂
+### Troubleshooting
 
-# Current annotation implementation:
+`npm run clean:all` cleans all generated files and rebuilds them
+`npm run clean:build` cleans the build files and rebuilds them
+`npm run clean:types` cleans the generated cds-typer files and rebuilds them
 
-Important: for process events defined on 'DELETE' operation, a before handler fetches the entity that will be deleted and stores it in `req._Process.[Start|Suspend|Resume|Cancel]` so that it can be used in our `service.after` handler.
+## To use the plugin as a CAP developer
 
-## For starting a process:
+To add the plugin to your CAP Node.js application, run:
 
-- `@bpm.process.start` -- Start a process (or classic workflow), either after entity creation, update, deletion, read, or any custom action including all entity elements unless at least one `@bpm.process.input` is given
-  - if no attribute is annotated with`@bpm.process.input`, all attributes of that entity will be fetched and are part of the context for process input. Associations will not be expanded in that case
+```
+npm run add @cap-js/process
+```
+
+### Binding against SBPA instance
+
+Binding is not necessary for trying out the plugin locally.
+The annotation and programmatic approaches against the generic ProcessService work without any bindings against SBPA.
+
+Login to Cloud Foundry:
+
+```
+cf login --sso
+```
+
+Bind to a ProcessService instance:
+
+```
+  cds bind ProcessService -2 <sbpa-service-instance>
+```
+
+This will create a `cdsrc-private.json` file containing the credentials.
+
+### Importing Processes as a Service
+
+The plugin allows you to import existing SBPA processes as CDS services. To do so, you first need to bind against an existing SBPA instance.
+Imported processes ensure type safety and enable build-time validation.
+Without importing a specific process, the programmatic approach is still possible through the generic ProcessService.
+However, build-time validation will not check whether all mandatory inputs required to start a process are provided.
+
+```
+cds bind --exec -- cds-tsx import --from process --name <Process_ID>
+```
+
+# Annotations
+
+Important: For process events defined on the `DELETE` operation, a `before` handler fetches the entity that will be deleted and stores it in `req._Process.[Start|Suspend|Resume|Cancel]` so that it can be used in the `service.after` handler.
+
+## For starting a process
+
+- `@bpm.process.start` -- Start a process (or classic workflow) after entity creation, update, deletion, read, or any custom action, including all entity elements unless at least one `@bpm.process.start.inputs` entry is given
+  - If no attribute is annotated with `@bpm.process.input`, all attributes of that entity will be fetched and included as process input context. Associations will not be expanded in that case.
   - `@bpm.process.start.id` -- definition ID for deployed process
   - `@bpm.process.start.on`
-  - `@bpm.process.start.if` -- only starting process if expression is true
-- `@bpm.process.start.inputs` -- array of input mappings that control which entity fields are passed as process context (optional)
-- if a businessKey is annotated on the entity using `@bpm.process.businessKey`, at process start this businessKey expression will be evaluated. If the length of the businessKey exceeds SBPAs character limit of 255, the request will also be rejected as process start will fail for that case
+  - `@bpm.process.start.if` -- Only start the process if the expression evaluates to true
+- `@bpm.process.start.inputs` -- Array of input mappings that control which entity fields are passed as process context (optional)
+- If a `businessKey` is annotated on the entity using `@bpm.process.businessKey`, it will be evaluated at process start. If the length of the business key exceeds SBPA's character limit of 255, the request will be rejected, as process start will fail in that case.
 
 ### Input Mapping
 
@@ -305,15 +351,15 @@ service MyService {
 }
 ```
 
-## For cancelling/resuming/suspending a process
+## For cancelling, resuming, or suspending a process
 
-- `@bpm.process.<cancel|resume|suspend>` -- Cancel/Suspend/Resume any processes bound to the entity (using entityKey as businessKey in SBPA)
+- `@bpm.process.<cancel|resume|suspend>` -- Cancel/Suspend/Resume any processes bound to the entity (using the entity key as business key in SBPA)
   - `@bpm.process.<cancel|resume|suspend>.on`
-  - `@bpm.process.<cancel|resume|suspend>.cascade` -- boolean (optional, defaults to false)
-  - `@bpm.process.<cancel|resume|suspend>.if` -- only starting process if expression is true
-    - example: `@bpm.process.suspend.if: (weight > 10)`
-- for cancelling/resuming/suspending it is required to have a businessKey expression annotated on the entity using `@bpm.process.businessKey`. If no businessKey is annotated, the request will be rejected
-  - example: `@bpm.process.businessKey: (id || '-' || name)`
+  - `@bpm.process.<cancel|resume|suspend>.cascade` -- Boolean (optional, defaults to false)
+  - `@bpm.process.<cancel|resume|suspend>.if` -- Only trigger the action if the expression evaluates to true
+    - Example: `@bpm.process.suspend.if: (weight > 10)`
+- For cancelling, resuming, or suspending, it is required to have a business key expression annotated on the entity using `@bpm.process.businessKey`. If no business key is annotated, the request will be rejected.
+  - Example: `@bpm.process.businessKey: (id || '-' || name)`
 
 Example:
 
@@ -335,7 +381,7 @@ service MyService {
 
 ```
 
-# Current build time validation
+# Build-Time Validation
 
 Validation occurs during `cds build` and produces **errors** (hard failures that stop the build) or **warnings** (soft failures that are logged but don't stop the build).
 
@@ -382,94 +428,202 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
   - A bound action defined on the entity
 - `@bpm.process.<cancel|suspend|resume>.cascade` is optional (defaults to false); if provided, must be a boolean
 - `@bpm.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
-- if any annotation with `@bpm.process.<cancel|suspend|resume>` is defined, a valid businessKey expression must be defined using `@bpm.process.businessKey`
-  - example: `@bpm.process.businessKey: (id || '-' || name)` would concatenate id and name with a '-' string as a business key
-  - the businessKey definition here must reflect the one configured in SBPA Process Builder
+- If any annotation with `@bpm.process.<cancel|suspend|resume>` is defined, a valid business key expression must be defined using `@bpm.process.businessKey`.
+  - Example: `@bpm.process.businessKey: (id || '-' || name)` would concatenate `id` and `name` with a `-` separator as a business key.
+  - The business key definition must match the one configured in the SBPA Process Builder.
 
 ### Warnings
 
 - Unknown annotations under `@bpm.process.<cancel|suspend|resume>.*` trigger a warning listing allowed annotations
 
-# Current programmatic approach
+# Programmatic Approach
 
-## Importing a Service
+The plugin provides two ways to interact with SBPA processes programmatically:
 
-To use the programmatic approach with types, you need to import an existing SBPA process. This requires credentials via `cds bind` and being logged in to Cloud Foundry.
+1. **Imported Process Services** -- Import a specific SBPA process to get a typed CDS service with full type safety and build-time validation.
+2. **Generic ProcessService** -- Use the built-in `ProcessService` directly for untyped, flexible process management without importing a specific process.
 
-### From SBPA (Remote Import)
+Both approaches work locally (in-memory), in hybrid mode (against a real SBPA instance), and in production.
+
+## Generic ProcessService
+
+The generic `ProcessService` is a built-in CDS service that ships with the plugin. It provides low-level events and functions for managing workflow instances without requiring any process imports. This is useful for quick prototyping, dynamic process management, or cases where type safety is not needed.
+
+The `ProcessService` is automatically configured based on the CDS profile:
+
+- **Development**: Uses an in-memory local workflow store (no credentials needed)
+- **Hybrid**: Connects to a real SBPA instance via `cds bind`
+- **Production**: Connects to SBPA through VCAP service bindings
+
+### Service Definition
+
+The generic `ProcessService` defines the following events and functions:
+
+| Operation | Type | Description |
+|-----------|------|-------------|
+| `start` | event | Start a workflow instance with a `definitionId` and `context` |
+| `cancel` | event | Cancel all running/suspended instances matching a `businessKey` |
+| `suspend` | event | Suspend all running instances matching a `businessKey` |
+| `resume` | event | Resume all suspended instances matching a `businessKey` |
+| `getAttributes` | function | Retrieve attributes for a specific process instance |
+| `getOutputs` | function | Retrieve outputs for a specific process instance |
+| `getInstancesByBusinessKey` | function | Find process instances by business key and optional status filter |
+
+### Usage
+
+```typescript
+const processService = await cds.connect.to('ProcessService');
+
+// Start a process
+await processService.emit('start', {
+  definitionId: 'eu12.myorg.myproject.myProcess',
+  context: { orderId: '12345', amount: 100.0 }
+});
+
+// Cancel all running instances for a business key
+await processService.emit('cancel', {
+  businessKey: 'order-12345',
+  cascade: false
+});
+
+// Suspend running instances
+await processService.emit('suspend', {
+  businessKey: 'order-12345',
+  cascade: false
+});
+
+// Resume suspended instances
+await processService.emit('resume', {
+  businessKey: 'order-12345',
+  cascade: false
+});
+
+// Query instances by business key
+const instances = await processService.send('getInstancesByBusinessKey', {
+  businessKey: 'order-12345',
+  status: ['RUNNING', 'SUSPENDED']
+});
+
+// Get attributes of a specific instance
+const attributes = await processService.send('getAttributes', {
+  processInstanceId: 'instance-uuid'
+});
+
+// Get outputs of a specific instance
+const outputs = await processService.send('getOutputs', {
+  processInstanceId: 'instance-uuid'
+});
+```
+
+> **Note:** The generic ProcessService uses `emit` for lifecycle events (start, cancel, suspend, resume) which are processed asynchronously through the CDS outbox, and `send` for query functions (getAttributes, getOutputs, getInstancesByBusinessKey) which return data synchronously.
+
+## Imported Process Services (Typed)
+
+For full type safety and build-time validation, you can import a specific SBPA process. This generates a typed CDS service with input/output types derived from the process definition.
+
+### Importing a Service
+
+To import a process, you need credentials via `cds bind` and must be logged in to Cloud Foundry.
+
+#### From SBPA (Remote Import)
 
 Import your SBPA process directly from the API:
 
 **Note:** For remote imports, you must have ProcessService credentials bound. Run with `cds bind --exec` if needed:
 
 ```bash
-cds bind --exec -- cds-tsx import --from process --name eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler --no-copy
+cds bind --exec -- cds-tsx import --from process --name eu12.myorg.myproject.myProcess --no-copy
 ```
 
-If you want to have it as a cds instead of a csn you can add --as cds at the end. If you want to reimport the process use the --force flag at the end. The flag `no-copy` is very important, as otherwise the process will be saved locally on both `./workflows`and `./srv/external` folder which would result in cds runtime issues, as the json is not a valid csn model and cannot be stored in the `.srv/external` directory.
+If you want the output as CDS instead of CSN, you can add `--as cds` at the end. To reimport the process, use the `--force` flag. The `--no-copy` flag is important, as otherwise the process definition will be saved to both `./workflows` and `./srv/external`, which would cause CDS runtime issues since the JSON is not a valid CSN model and cannot be stored in the `./srv/external` directory.
 
-### From Local JSON File
+#### From Local JSON File
 
-If you already have a process definition JSON file (e.g., exported or previously fetched), you can generate the CSN model directly from it without needing credentials:
+If you already have a process definition JSON file (e.g., exported or previously fetched), you can generate the CDS model directly from it without needing credentials:
 
 ```bash
-cds import --from process ./workflows/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler.json --no-copy
+cds import --from process ./workflows/eu12.myorg.myproject.myProcess.json
 ```
 
 ### What Gets Generated
 
-This will generate:
+The import generates:
 
-- A CDS service definition in `./workflows/`
-- Types via `cds-typer` for full TypeScript support
-- Generic handlers for the actions and functions in the imported service
+- A CDS service definition in `./srv/external/` (annotated with `@bpm.process` and `@protocol: 'none'`)
+- Typed `ProcessInputs`, `ProcessOutputs`, `ProcessAttribute`, and `ProcessInstance` types based on the process definition
+- Typed actions: `start`, `suspend`, `resume`, `cancel`
+- Typed functions: `getAttributes`, `getOutputs`, `getInstancesByBusinessKey`
+- A process definition JSON in `./workflows/`
 
-## For starting a process
+After importing, run `cds-typer` to generate TypeScript types for the imported service.
+
+### Starting a Process
 
 ```typescript
+import ShipmentHandlerService from '#cds-models/eu12/myorg/myproject/ShipmentHandlerService';
+
 const processService = await cds.connect.to(ShipmentHandlerService);
 
-const processInstance = await processService.start({
+await processService.start({
   businesskey: 'order-12345',
   startingShipment: {
     identifier: 'shipment_001',
-    items: [{ identifier: 'item_1', title: 'Laptop', quantity: 1, price: 1200.0 }],
+    items: [
+      { identifier: 'item_1', title: 'Laptop', quantity: 1, price: 1200.0 }
+    ],
   },
 });
 ```
 
-## For suspending/resuming/cancelling a process
+The `start` action accepts a typed `ProcessInputs` object that matches the process definition's input schema. The plugin validates inputs against the process definition at build time.
+
+### Suspending, Resuming, and Cancelling a Process
 
 ```typescript
-// Suspend
+// Suspend all running instances for a business key
 await processService.suspend({ businessKey: 'order-12345', cascade: false });
 
-// Resume
+// Resume all suspended instances for a business key
 await processService.resume({ businessKey: 'order-12345', cascade: false });
 
-// Cancel
+// Cancel all running/suspended instances for a business key
 await processService.cancel({ businessKey: 'order-12345', cascade: false });
 ```
 
-## For getAttributes and getOutputs
+The `cascade` parameter is optional and defaults to `false`. When set to `true`, child process instances are also affected.
 
-### Missing
+### Querying Process Instances
 
 ```typescript
-const attributes = await processService.getAttributes({ processInstanceId: 'instance-uuid' });
+// Get all instances matching a business key, optionally filtered by status
+const instances = await processService.getInstancesByBusinessKey({
+  businessKey: 'order-12345',
+  status: ['RUNNING', 'SUSPENDED'],
+});
 
-const outputs = await processService.getOutputs({ processInstanceId: 'instance-uuid' });
+// Get attributes for a specific process instance
+const attributes = await processService.getAttributes({
+  processInstanceId: 'instance-uuid'
+});
+
+// Get outputs for a specific process instance
+const outputs = await processService.getOutputs({
+  processInstanceId: 'instance-uuid'
+});
 ```
+
+Valid status values are: `RUNNING`, `SUSPENDED`, `CANCELED`, `ERRONEOUS`, `COMPLETED`.
+If no status filter is provided, all statuses except `CANCELED` are returned.
 
 # CAP - Process Plugin
 
 ## Support, Feedback, Contributing
 
-This project is open to feature requests/suggestions, bug reports etc. via [GitHub issues](https://github.com/cap-js/<your-project>/issues). Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project structure, as well as additional contribution information, see our [Contribution Guidelines](CONTRIBUTING.md).
+This project is open to feature requests/suggestions, bug reports, etc. via [GitHub issues](https://github.com/cap-js/<your-project>/issues). Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project structure, as well as additional contribution information, see our [Contribution Guidelines](CONTRIBUTING.md).
 
 ## Security / Disclosure
 
-If you find any bug that may be a security problem, please follow our instructions at [in our security policy](https://github.com/cap-js/<your-project>/security/policy) on how to report it. Please do not create GitHub issues for security-related doubts or problems.
+If you find any bug that may be a security problem, please follow the instructions in our [security policy](https://github.com/cap-js/<your-project>/security/policy) on how to report it. Please do not create GitHub issues for security-related doubts or problems.
 
 ## Code of Conduct
 
