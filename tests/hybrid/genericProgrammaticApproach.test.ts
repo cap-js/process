@@ -13,11 +13,12 @@ describe('Generic ProcessService Hybrid Tests', () => {
     return cds.utils.uuid();
   }
 
-  async function genericStart(businessKey: string, context: Record<string, unknown> = {}) {
+  async function genericStart(businessKey: string, context?: Record<string, unknown>) {
+    const startContext = context ?? { ID: businessKey };
     return POST('/odata/v4/programmatic/genericStart', {
       definitionId: DEFINITION_ID,
       businessKey,
-      context: JSON.stringify(context),
+      context: JSON.stringify(startContext),
     });
   }
 
@@ -42,10 +43,7 @@ describe('Generic ProcessService Hybrid Tests', () => {
     });
   }
 
-  async function genericGetInstances(
-    businessKey: string,
-    status?: string[],
-  ): Promise<any[]> {
+  async function genericGetInstances(businessKey: string, status?: string[]): Promise<any[]> {
     const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
       businessKey,
       status,
