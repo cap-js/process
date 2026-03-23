@@ -110,6 +110,53 @@ class ProgrammaticService extends cds.ApplicationService {
       return outputs;
     });
 
+    // Generic ProcessService handlers (using cds.connect.to('ProcessService'))
+    this.on('genericStart', async (req: cds.Request) => {
+      const { definitionId, businessKey, context } = req.data;
+      const processService = await cds.connect.to('ProcessService');
+      const parsedContext = context ? JSON.parse(context) : {};
+      await processService.emit('start', { definitionId, context: parsedContext }, { businessKey });
+    });
+
+    this.on('genericCancel', async (req: cds.Request) => {
+      const { businessKey, cascade } = req.data;
+      const processService = await cds.connect.to('ProcessService');
+      await processService.emit('cancel', { businessKey, cascade: cascade ?? false });
+    });
+
+    this.on('genericSuspend', async (req: cds.Request) => {
+      const { businessKey, cascade } = req.data;
+      const processService = await cds.connect.to('ProcessService');
+      await processService.emit('suspend', { businessKey, cascade: cascade ?? false });
+    });
+
+    this.on('genericResume', async (req: cds.Request) => {
+      const { businessKey, cascade } = req.data;
+      const processService = await cds.connect.to('ProcessService');
+      await processService.emit('resume', { businessKey, cascade: cascade ?? false });
+    });
+
+    this.on('genericGetInstancesByBusinessKey', async (req: cds.Request) => {
+      const { businessKey, status } = req.data;
+      const processService = await cds.connect.to('ProcessService');
+      const result = await processService.send('getInstancesByBusinessKey', { businessKey, status });
+      return result;
+    });
+
+    this.on('genericGetAttributes', async (req: cds.Request) => {
+      const { processInstanceId } = req.data;
+      const processService = await cds.connect.to('ProcessService');
+      const result = await processService.send('getAttributes', { processInstanceId });
+      return result;
+    });
+
+    this.on('genericGetOutputs', async (req: cds.Request) => {
+      const { processInstanceId } = req.data;
+      const processService = await cds.connect.to('ProcessService');
+      const result = await processService.send('getOutputs', { processInstanceId });
+      return result;
+    });
+
     await super.init();
   }
 }

@@ -40,4 +40,14 @@ service ProgrammaticService {
 
   action getInstanceIDForGetOutputs(ID: UUID,
                                     status: many String) returns many AttributeEntry;
+
+  // Generic ProcessService actions (using cds.connect.to('ProcessService'))
+  action genericStart(definitionId: String, businessKey: String, context: LargeString);
+  action genericCancel(businessKey: String, cascade: Boolean);
+  action genericSuspend(businessKey: String, cascade: Boolean);
+  action genericResume(businessKey: String, cascade: Boolean);
+  action genericGetInstancesByBusinessKey(businessKey: String,
+                                          status: many String) returns many ProcessInstance;
+  action genericGetAttributes(processInstanceId: String) returns many ProcessAttribute;
+  action genericGetOutputs(processInstanceId: String) returns ProcessOutputs;
 }
