@@ -246,36 +246,32 @@ describe('Generic ProcessService Integration Tests', () => {
     });
   });
 
-  describe('getAttributes', () => {
-    it('should return attributes for a running process instance', async () => {
-      const businessKey = generateID();
-      await genericStart(businessKey);
+  it('should return attributes for a running process instance', async () => {
+    const businessKey = generateID();
+    await genericStart(businessKey);
 
-      const instances = await genericGetInstances(businessKey, ['RUNNING']);
-      expect(instances.length).toBe(1);
+    const instances = await genericGetInstances(businessKey, ['RUNNING']);
+    expect(instances.length).toBe(1);
 
-      const attributes = await genericGetAttributes(instances[0].id);
+    const attributes = await genericGetAttributes(instances[0].id);
 
-      expect(Array.isArray(attributes)).toBe(true);
-      expect(attributes.length).toBeGreaterThan(0);
-      expect(attributes[0]).toHaveProperty('id');
-      expect(attributes[0]).toHaveProperty('value');
-    });
+    expect(Array.isArray(attributes)).toBe(true);
+    expect(attributes.length).toBeGreaterThan(0);
+    expect(attributes[0]).toHaveProperty('id');
+    expect(attributes[0]).toHaveProperty('value');
   });
 
-  describe('getOutputs', () => {
-    it('should return outputs for a process instance', async () => {
-      const businessKey = generateID();
-      await genericStart(businessKey);
+  it('should return outputs for a process instance', async () => {
+    const businessKey = generateID();
+    await genericStart(businessKey);
 
-      const instances = await genericGetInstances(businessKey, ['RUNNING']);
-      expect(instances.length).toBe(1);
+    const instances = await genericGetInstances(businessKey, ['RUNNING']);
+    expect(instances.length).toBe(1);
 
-      const outputs = await genericGetOutputs(instances[0].id);
+    const outputs = await genericGetOutputs(instances[0].id);
 
-      expect(outputs).toBeDefined();
-      expect(outputs).toHaveProperty('processedBy');
-      expect(outputs).toHaveProperty('completionStatus');
-    });
+    expect(outputs).toBeDefined();
+    expect(outputs).toHaveProperty('processedBy');
+    expect(outputs).toHaveProperty('completionStatus');
   });
 });
