@@ -440,33 +440,28 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
 
 The plugin provides two ways to interact with SBPA processes programmatically:
 
-1. **Imported Process Services** -- Import a specific SBPA process to get a typed CDS service with full type safety and build-time validation.
-2. **Generic ProcessService** -- Use the built-in `ProcessService` directly for untyped, flexible process management without importing a specific process.
+1. **Generic ProcessService** -- Use the built-in `ProcessService` directly for untyped, flexible process management without importing a specific process.
+2. **Specific / Imported ProcessService** -- Provides the types and sits on top of the generic ProcessService.
 
 Both approaches work locally (in-memory), in hybrid mode (against a real SBPA instance), and in production.
 
 ## Generic ProcessService
 
 The generic `ProcessService` is a built-in CDS service that ships with the plugin. It provides low-level events and functions for managing workflow instances without requiring any process imports. This is useful for quick prototyping, dynamic process management, or cases where type safety is not needed.
-
-The `ProcessService` is automatically configured based on the CDS profile:
-
-- **Development**: Uses an in-memory local workflow store (no credentials needed)
-- **Hybrid**: Connects to a real SBPA instance via `cds bind`
-- **Production**: Connects to SBPA through VCAP service bindings
+The generic `ProcessService` allows setting the business key to mimic the behavior of the real SBPA workflow. The business key in the header is only used when the application runs locally, so to avoid issues, the business key should be built the same way as in the actual process.
 
 ### Service Definition
 
 The generic `ProcessService` defines the following events and functions:
 
-| Operation | Type | Description |
-|-----------|------|-------------|
-| `start` | event | Start a workflow instance with a `definitionId` and `context` |
-| `cancel` | event | Cancel all running/suspended instances matching a `businessKey` |
-| `suspend` | event | Suspend all running instances matching a `businessKey` |
-| `resume` | event | Resume all suspended instances matching a `businessKey` |
-| `getAttributes` | function | Retrieve attributes for a specific process instance |
-| `getOutputs` | function | Retrieve outputs for a specific process instance |
+| Operation                   | Type     | Description                                                       |
+| --------------------------- | -------- | ----------------------------------------------------------------- |
+| `start`                     | event    | Start a workflow instance with a `definitionId` and `context`     |
+| `cancel`                    | event    | Cancel all running/suspended instances matching a `businessKey`   |
+| `suspend`                   | event    | Suspend all running instances matching a `businessKey`            |
+| `resume`                    | event    | Resume all suspended instances matching a `businessKey`           |
+| `getAttributes`             | function | Retrieve attributes for a specific process instance               |
+| `getOutputs`                | function | Retrieve outputs for a specific process instance                  |
 | `getInstancesByBusinessKey` | function | Find process instances by business key and optional status filter |
 
 ### Usage
@@ -477,41 +472,42 @@ const processService = await cds.connect.to('ProcessService');
 // Start a process
 await processService.emit('start', {
   definitionId: 'eu12.myorg.myproject.myProcess',
-  context: { orderId: '12345', amount: 100.0 }
+  context: { orderId: '12345', amount: 100.0 },
+    {businessKey : orderId}
 });
 
 // Cancel all running instances for a business key
 await processService.emit('cancel', {
   businessKey: 'order-12345',
-  cascade: false
+  cascade: false,
 });
 
 // Suspend running instances
 await processService.emit('suspend', {
   businessKey: 'order-12345',
-  cascade: false
+  cascade: false,
 });
 
 // Resume suspended instances
 await processService.emit('resume', {
   businessKey: 'order-12345',
-  cascade: false
+  cascade: false,
 });
 
 // Query instances by business key
 const instances = await processService.send('getInstancesByBusinessKey', {
   businessKey: 'order-12345',
-  status: ['RUNNING', 'SUSPENDED']
+  status: ['RUNNING', 'SUSPENDED'],
 });
 
 // Get attributes of a specific instance
 const attributes = await processService.send('getAttributes', {
-  processInstanceId: 'instance-uuid'
+  processInstanceId: 'instance-uuid',
 });
 
 // Get outputs of a specific instance
 const outputs = await processService.send('getOutputs', {
-  processInstanceId: 'instance-uuid'
+  processInstanceId: 'instance-uuid',
 });
 ```
 
@@ -532,7 +528,7 @@ Import your SBPA process directly from the API:
 **Note:** For remote imports, you must have ProcessService credentials bound. Run with `cds bind --exec` if needed:
 
 ```bash
-cds bind --exec -- cds-tsx import --from process --name eu12.myorg.myproject.myProcess --no-copy
+cds bind --exec -- cds-tsx import --from process --name eu12.myorg.myproject.myProcess
 ```
 
 If you want the output as CDS instead of CSN, you can add `--as cds` at the end. To reimport the process, use the `--force` flag. The `--no-copy` flag is important, as otherwise the process definition will be saved to both `./workflows` and `./srv/external`, which would cause CDS runtime issues since the JSON is not a valid CSN model and cannot be stored in the `./srv/external` directory.
@@ -549,7 +545,7 @@ cds import --from process ./workflows/eu12.myorg.myproject.myProcess.json
 
 The import generates:
 
-- A CDS service definition in `./srv/external/` (annotated with `@bpm.process` and `@protocol: 'none'`)
+- A CDS service definition in `./srv/external/` (annotated with `@bpm.process`)
 - Typed `ProcessInputs`, `ProcessOutputs`, `ProcessAttribute`, and `ProcessInstance` types based on the process definition
 - Typed actions: `start`, `suspend`, `resume`, `cancel`
 - Typed functions: `getAttributes`, `getOutputs`, `getInstancesByBusinessKey`
@@ -568,9 +564,7 @@ await processService.start({
   businesskey: 'order-12345',
   startingShipment: {
     identifier: 'shipment_001',
-    items: [
-      { identifier: 'item_1', title: 'Laptop', quantity: 1, price: 1200.0 }
-    ],
+    items: [{ identifier: 'item_1', title: 'Laptop', quantity: 1, price: 1200.0 }],
   },
 });
 ```
@@ -603,17 +597,22 @@ const instances = await processService.getInstancesByBusinessKey({
 
 // Get attributes for a specific process instance
 const attributes = await processService.getAttributes({
-  processInstanceId: 'instance-uuid'
+  processInstanceId: 'instance-uuid',
 });
 
 // Get outputs for a specific process instance
 const outputs = await processService.getOutputs({
-  processInstanceId: 'instance-uuid'
+  processInstanceId: 'instance-uuid',
 });
 ```
 
 Valid status values are: `RUNNING`, `SUSPENDED`, `CANCELED`, `ERRONEOUS`, `COMPLETED`.
 If no status filter is provided, all statuses except `CANCELED` are returned.
+
+### Important
+
+- The typed process service does not currently support local development.
+- The process import is currently only possible via the command line.
 
 # CAP - Process Plugin
 
