@@ -94,7 +94,7 @@ describe('Integration tests for Process Annotations on Draft-Enabled Entities', 
 
       const { activateResponse } = await createViaDraft('DraftStartOnCreate', car);
 
-      expect(activateResponse.status).toBe(200);
+      expect(activateResponse.status).toBe(201);
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].data.definitionId).toBe('draftStartOnCreateProcess');
       expect(foundMessages[0].data.context).toBeDefined();
@@ -123,7 +123,7 @@ describe('Integration tests for Process Annotations on Draft-Enabled Entities', 
 
       const { activateResponse, draftId } = await createViaDraft('DraftCancelOnCreateWhen', car);
 
-      expect(activateResponse.status).toBe(200);
+      expect(activateResponse.status).toBe(201);
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].data).toEqual({
         businessKey: draftId,
@@ -175,7 +175,7 @@ describe('Integration tests for Process Annotations on Draft-Enabled Entities', 
 
       const { activateResponse, draftId } = await createViaDraft('DraftSuspendOnCreate', car);
 
-      expect(activateResponse.status).toBe(200);
+      expect(activateResponse.status).toBe(201);
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].data).toEqual({
         businessKey: draftId,
@@ -193,7 +193,7 @@ describe('Integration tests for Process Annotations on Draft-Enabled Entities', 
 
       const { activateResponse, draftId } = await createViaDraft('DraftResumeOnCreate', car);
 
-      expect(activateResponse.status).toBe(200);
+      expect(activateResponse.status).toBe(201);
       expect(foundMessages.length).toBe(1);
       expect(foundMessages[0].data).toEqual({
         businessKey: draftId,
