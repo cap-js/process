@@ -48,14 +48,24 @@ class ProgrammaticService extends cds.ApplicationService {
       return instances;
     });
 
+    this.on('getAllInstancesByBusinessKey', async (req: cds.Request) => {
+      const { ID } = req.data;
+      const programmaticLifecycleProcess = await cds.connect.to(
+        Programmatic_Lifecycle_ProcessService,
+      );
+      const instances = await programmaticLifecycleProcess.getInstancesByBusinessKey({
+        businessKey: ID,
+      });
+      return instances;
+    });
+
     this.on('getAttributes', async (req: cds.Request) => {
-      const { ID, status } = req.data;
+      const { ID } = req.data;
       const programmaticLifecycleProcess = await cds.connect.to(
         Programmatic_Lifecycle_ProcessService,
       );
       const processInstances = await programmaticLifecycleProcess.getInstancesByBusinessKey({
         businessKey: ID,
-        status: status,
       });
       const allAttributes = [];
       for (const instance of processInstances) {

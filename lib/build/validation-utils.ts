@@ -342,7 +342,7 @@ function convertTreeToElementTypes(
       if (node.associatedInputElements.length > 0) {
         // Has specific nested fields
         result[keyName] = {
-          type: element.type,
+          type: element.type!,
           isMandatory,
           isArray: element.cardinality?.max === '*',
           properties: convertTreeToElementTypes(
@@ -354,7 +354,7 @@ function convertTreeToElementTypes(
       } else {
         // Expand all (*) - get all child element types
         result[keyName] = {
-          type: element.type,
+          type: element.type!,
           isMandatory,
           isArray: element.cardinality?.max === '*',
           properties: getAllElementTypes(childElements, allDefinitions),
@@ -362,7 +362,7 @@ function convertTreeToElementTypes(
       }
     } else {
       // Simple field
-      result[keyName] = { type: element.type, isMandatory };
+      result[keyName] = { type: element.type!, isMandatory };
     }
   }
 
@@ -400,7 +400,7 @@ function getAllElementTypes(
       // Skip if we've already visited this target (cyclic reference)
       if (element.target && visitedTargets.has(element.target)) {
         result[name] = {
-          type: element.type,
+          type: element.type!,
           isMandatory,
           isArray: element.cardinality?.max === '*',
           properties: {}, // Don't expand cyclic references
@@ -420,13 +420,13 @@ function getAllElementTypes(
       }
 
       result[name] = {
-        type: element.type,
+        type: element.type!,
         isMandatory,
         isArray: element.cardinality?.max === '*',
         properties: getAllElementTypes(childElements, allDefinitions, newVisited),
       };
     } else {
-      result[name] = { type: element.type, isMandatory };
+      result[name] = { type: element.type!, isMandatory };
     }
   }
 

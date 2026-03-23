@@ -1,4 +1,4 @@
-/* checksum : 06cf8c9d9e2f98deda3afc8c9105860c */
+/* checksum : b2be28c9da2617d511526b2f68e5e6b0 */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
@@ -67,8 +67,6 @@ service ImportProcess_Attributes_And_OutputsService {
 
   type ProcessInstances : many ProcessInstance;
 
-  type ProcessInstanceStatus : many String;
-
   action start(
     inputs : ProcessInputs not null
   );
@@ -83,7 +81,7 @@ service ImportProcess_Attributes_And_OutputsService {
 
   function getInstancesByBusinessKey(
     businessKey : String not null,
-    status : ProcessInstanceStatus
+    status : many String
   ) returns ProcessInstances;
 
   action suspend(
