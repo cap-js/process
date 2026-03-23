@@ -1,3 +1,5 @@
+# CAP - Process Plugin
+
 [![REUSE status](https://api.reuse.software/badge/github.com/cap-js/process)](https://api.reuse.software/info/github.com/cap-js/process)
 
 # Setup
@@ -371,6 +373,7 @@ service MyService {
         cascade: true | false,  // optional, defaults to false
         when: (<expression>)
     }
+    @bpm.process.businessKey(myElement || '-' || myElement2)
     entity MyProjection as projection on MyEntity {
       myElement,
       myElement2,
@@ -407,7 +410,6 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
 
 **Errors:**
 
-- The process definition must have a `businesskey` input
 - Entity attributes specified in `@bpm.process.start.inputs` (or all direct attributes if `inputs` is omitted) must exist in the process definition inputs
 - Mandatory inputs from the process definition must be present in the entity
 
@@ -606,8 +608,8 @@ const outputs = await processService.getOutputs({
 });
 ```
 
-Valid status values are: `RUNNING`, `SUSPENDED`, `CANCELED`, `ERRONEOUS`, `COMPLETED`.
-If no status filter is provided, all statuses except `CANCELED` are returned.
+Valid status values are: `RUNNING`, `SUSPENDED`, `CANCELLED`, `ERRONEOUS`, `COMPLETED`.
+If no status filter is provided, all statuses except `CANCELLED` are returned.
 
 ### Important
 
