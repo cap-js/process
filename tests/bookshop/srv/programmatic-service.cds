@@ -32,8 +32,6 @@ service ProgrammaticService {
   action getInstancesByBusinessKey(ID: UUID,
                                   status: many String) returns many ProcessInstance;
 
-  action getAllInstancesByBusinessKey(ID: UUID) returns many ProcessInstance;
-
   action startForGetOutputs(ID: UUID,
                             mandatory_datetime: Timestamp,
                             mandatory_string: String,

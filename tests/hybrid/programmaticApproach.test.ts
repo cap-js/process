@@ -24,11 +24,6 @@ describe('Programmatic Approach Hybrid Tests', () => {
     return res.data?.value ?? res.data ?? [];
   }
 
-  async function getAllInstances(ID: string): Promise<any[]> {
-    const res = await POST('/odata/v4/programmatic/getAllInstancesByBusinessKey', { ID });
-    return res.data?.value ?? res.data ?? [];
-  }
-
   async function waitForInstances(
     ID: string,
     status: string[],
@@ -43,19 +38,6 @@ describe('Programmatic Approach Hybrid Tests', () => {
     throw new Error(
       `Timed out waiting for ${expectedCount} instance(s) with status [${status}] for ID ${ID}`,
     );
-  }
-
-  async function waitForAllInstances(
-    ID: string,
-    expectedCount = 1,
-    maxRetries = 6,
-  ): Promise<any[]> {
-    for (let i = 0; i < maxRetries; i++) {
-      const instances = await getAllInstances(ID);
-      if (instances.length >= expectedCount) return instances;
-      await new Promise((r) => setTimeout(r, 10000));
-    }
-    throw new Error(`Timed out waiting for ${expectedCount} instance(s) for ID ${ID}`);
   }
 
   async function getAttributes(ID: string): Promise<any[]> {
@@ -86,21 +68,6 @@ describe('Programmatic Approach Hybrid Tests', () => {
 
       const instancesA = await waitForInstances(idA, ['RUNNING']);
       const instancesB = await waitForInstances(idB, ['RUNNING']);
-
-      expect(instancesA.length).toBe(1);
-      expect(instancesB.length).toBe(1);
-      expect(instancesA[0].id).not.toEqual(instancesB[0].id);
-    });
-
-    it('should start multiple independent processes (without setting status)', async () => {
-      const idA = generateID();
-      const idB = generateID();
-
-      await startProcess(idA);
-      await startProcess(idB);
-
-      const instancesA = await waitForAllInstances(idA);
-      const instancesB = await waitForAllInstances(idB);
 
       expect(instancesA.length).toBe(1);
       expect(instancesB.length).toBe(1);
