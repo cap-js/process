@@ -5,10 +5,7 @@ export * from './api';
 export * from './auth';
 
 import cds from '@sap/cds';
-import {
-  registerProcessServiceHandlers,
-  registerAnnotationHandlers,
-} from './handlers';
+import { registerProcessServiceHandlers, registerAnnotationHandlers } from './handlers';
 import { PROCESS_PREFIX } from './constants';
 import { ProcessValidationPlugin } from './build';
 import { registerProcessImport } from './processImportRegistration';
