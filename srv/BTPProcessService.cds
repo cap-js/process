@@ -3,6 +3,7 @@ type AnyType {}
 type AttributesReturn : many AnyType;
 type InstancesReturn : many AnyType;
 
+@protocol: 'none'
 @impl: './BTPProcessService'
 service ProcessService {
 
