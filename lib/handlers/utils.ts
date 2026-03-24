@@ -96,6 +96,7 @@ function getKeyFieldsForEntity(entity: cds.entity): string[] {
   const keys = entity.keys;
   const result: string[] = [];
   for (const key in keys) {
+    if ((keys[key] as { virtual?: boolean }).virtual) continue;
     result.push(key);
   }
   return result;
