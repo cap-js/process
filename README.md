@@ -514,6 +514,7 @@ const outputs = await processService.send('getOutputs', {
 ```
 
 > **Note:** The generic ProcessService uses `emit` for lifecycle events (start, cancel, suspend, resume) which are processed asynchronously through the CDS outbox, and `send` for query functions (getAttributes, getOutputs, getInstancesByBusinessKey) which return data synchronously.
+> Make sure to check whether the outbox is correctly used. If not, refer to cds.queued to make sure it is used.
 
 ## Imported Process Services (Typed)
 
@@ -615,8 +616,6 @@ If no status filter is provided, all statuses except `CANCELLED` are returned.
 
 - The typed process service does not currently support local development.
 - The process import is currently only possible via the command line.
-
-# CAP - Process Plugin
 
 ## Support, Feedback, Contributing
 
