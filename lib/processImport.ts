@@ -83,9 +83,28 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
 }
 
 async function createApiClient(): Promise<IProcessApiClient> {
-  const credentials = getServiceCredentials(PROCESS_SERVICE);
+  let credentials = getServiceCredentials(PROCESS_SERVICE);
+
   if (!credentials) {
-    throw new Error('No ProcessService credentials found. Run with: cds bind --exec -- ...');
+    // Try to resolve cloud bindings automatically (same as cds bind --exec does)
+    // REVISIT: once merged in core
+    try {
+      const { env: bindingEnv } = require('@sap/cds-dk/lib/bind/shared');
+      process.env.CDS_ENV ??= 'hybrid';
+      (cds as any).env = cds.env.for('cds');
+      Object.assign(process.env, await bindingEnv());
+      (cds as any).env = cds.env.for('cds');
+      (cds as any).requires = cds.env.requires;
+      credentials = getServiceCredentials(PROCESS_SERVICE);
+    } catch {
+      // cds-dk not available or binding resolution failed
+    }
+  }
+
+  if (!credentials) {
+    throw new Error(
+      'No ProcessService credentials found. Ensure you have bound a process service instance (e.g., via cds bind process -2 <instance>).',
+    );
   }
 
   const apiUrl = credentials.endpoints?.api;

@@ -28,12 +28,12 @@
     "prettier": "npx -y prettier@3 --write .",
     "prettier:check": "npx -y prettier@3 --check .",
     "import:process": "npm run import:process:annotationLifeCycle && npm run import:process:programmaticLifecycle && npm run import:process:programmaticOutput && npm run import:process:importAttributesOutputs && npm run import:process:importComplex && npm run import:process:importSimple",
-    "import:process:annotationLifeCycle": "cd tests/bookshop && cds bind --exec -- cds-tsx import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process --force --no-copy --as cds --config kind=process-service",
-    "import:process:programmaticLifecycle": "cd tests/bookshop && cds bind --exec -- cds-tsx import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process --force --no-copy --as cds --config kind=process-service",
-    "import:process:programmaticOutput": "cd tests/bookshop && cds bind --exec -- cds-tsx import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Output_Process --force --no-copy --as cds --config kind=process-service",
-    "import:process:importAttributesOutputs": "cd tests/bookshop && cds bind --exec -- cds-tsx import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Attributes_And_Outputs --force --no-copy --as cds --config kind=process-service",
-    "import:process:importComplex": "cd tests/bookshop && cds bind --exec -- cds-tsx import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Complex_Inputs --force --no-copy --as cds --config kind=process-service",
-    "import:process:importSimple": "cd tests/bookshop && cds bind --exec -- cds-tsx import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Simple_Inputs --force --no-copy --as cds --config kind=process-service"
+    "import:process:annotationLifeCycle": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process --force",
+    "import:process:programmaticLifecycle": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process --force",
+    "import:process:programmaticOutput": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Output_Process --force",
+    "import:process:importAttributesOutputs": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Attributes_And_Outputs --force",
+    "import:process:importComplex": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Complex_Inputs --force",
+    "import:process:importSimple": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Simple_Inputs --force"
   },
   "keywords": [],
   "author": "",

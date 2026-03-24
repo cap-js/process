@@ -8,7 +8,6 @@
     "strict": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "allowJs": true,
     "types": ["jest", "node"],
     "paths": {
       "@sap/cds": ["./node_modules/@cap-js/cds-types"],
@@ -22,5 +21,6 @@
     "./srv/**/*.ts",
     "./utils/**/*.ts",
     "./tests/**/*.ts"
-  ]
+  ],
+  "exclude": ["**/node_modules"]
 }

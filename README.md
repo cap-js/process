@@ -400,10 +400,10 @@ To use the programmatic approach with types, you need to import an existing SBPA
 
 Import your SBPA process directly from the API:
 
-**Note:** For remote imports, you must have ProcessService credentials bound. Run with `cds bind --exec` if needed:
+**Note:** For remote imports, you must have ProcessService credentials bound (e.g., via `cds bind process -2 <instance>`). The plugin will automatically resolve the bindings at import time.
 
 ```bash
-cds bind --exec -- cds-tsx import --from process --name eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler --no-copy
+cds import --from process --name eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler --no-copy
 ```
 
 If you want to have it as a cds instead of a csn you can add --as cds at the end. If you want to reimport the process use the --force flag at the end. The flag `no-copy` is very important, as otherwise the process will be saved locally on both `./srv/workflows`and `./srv/external` folder which would result in cds runtime issues, as the json is not a valid csn model and cannot be stored in the `.srv/external` directory.
