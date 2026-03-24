@@ -1,5 +1,7 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import { execSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import cds from '@sap/cds';
 import * as csn from './types/csn-extensions';
 import { getServiceCredentials, CachingTokenProvider, createXsuaaTokenProvider } from './auth';
@@ -13,6 +15,27 @@ import {
 import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from './constants';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
+
+// ============================================================================
+//  HELPERS
+// ============================================================================
+
+/**
+ * Requires a module from @sap/cds-dk, trying local node_modules first,
+ * then falling back to the global npm installation.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function requireCdsDk(moduleId: string): any {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require(moduleId);
+  } catch {
+    // Not found locally -- try global npm root
+    const globalRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
+    const globalRequire = createRequire(globalRoot + '/');
+    return globalRequire(moduleId);
+  }
+}
 
 // ============================================================================
 //  TYPES
@@ -89,8 +112,8 @@ async function createApiClient(): Promise<IProcessApiClient> {
     // Try to resolve cloud bindings automatically (same as cds bind --exec does)
     // REVISIT: once merged in core
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { env: bindingEnv } = require('@sap/cds-dk/lib/bind/shared');
+      const bindShared = requireCdsDk('@sap/cds-dk/lib/bind/shared');
+      const { env: bindingEnv } = bindShared;
       process.env.CDS_ENV ??= 'hybrid';
       /* eslint-disable @typescript-eslint/no-explicit-any */
       (cds as any).env = cds.env.for('cds');
@@ -99,8 +122,8 @@ async function createApiClient(): Promise<IProcessApiClient> {
       (cds as any).requires = cds.env.requires;
       /* eslint-enable @typescript-eslint/no-explicit-any */
       credentials = getServiceCredentials(PROCESS_SERVICE);
-    } catch {
-      // cds-dk not available or binding resolution failed
+    } catch (e) {
+      LOG.debug('Auto-resolve bindings failed:', e);
     }
   }
 
