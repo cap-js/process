@@ -4,19 +4,19 @@ import Programmatic_Outputs_ProcessService from '#cds-models/eu12/cdsmunich/capp
 
 class ProgrammaticService extends cds.ApplicationService {
   async init() {
+    const programmaticLifecycleProcess = await cds.connect.to(
+      Programmatic_Lifecycle_ProcessService,
+    );
+    const programmaticOutputProcess = await cds.connect.to(Programmatic_Outputs_ProcessService);
+    const processService = await cds.connect.to('ProcessService');
+
     this.on('startLifeCycleProcess', async (req: cds.Request) => {
-      const programmaticLifecycleProcess = await cds.connect.to(
-        Programmatic_Lifecycle_ProcessService,
-      );
       const { ID } = req.data;
       await programmaticLifecycleProcess.start({ ID });
     });
 
     this.on('updateProcess', async (req: cds.Request) => {
       const { ID, newStatus } = req.data;
-      const programmaticLifecycleProcess = await cds.connect.to(
-        Programmatic_Lifecycle_ProcessService,
-      );
       if (newStatus === 'SUSPEND') {
         await programmaticLifecycleProcess.suspend({
           businessKey: ID,
@@ -30,17 +30,11 @@ class ProgrammaticService extends cds.ApplicationService {
 
     this.on('cancelProcess', async (req: cds.Request) => {
       const { ID } = req.data;
-      const programmaticLifecycleProcess = await cds.connect.to(
-        Programmatic_Lifecycle_ProcessService,
-      );
       await programmaticLifecycleProcess.cancel({ businessKey: ID });
     });
 
     this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const programmaticLifecycleProcess = await cds.connect.to(
-        Programmatic_Lifecycle_ProcessService,
-      );
       const instances = await programmaticLifecycleProcess.getInstancesByBusinessKey({
         businessKey: ID,
         status: status,
@@ -50,9 +44,6 @@ class ProgrammaticService extends cds.ApplicationService {
 
     this.on('getAttributes', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const programmaticLifecycleProcess = await cds.connect.to(
-        Programmatic_Lifecycle_ProcessService,
-      );
       const processInstances = await programmaticLifecycleProcess.getInstancesByBusinessKey({
         businessKey: ID,
         status: status,
@@ -73,7 +64,6 @@ class ProgrammaticService extends cds.ApplicationService {
     this.on('startForGetOutputs', async (req: cds.Request) => {
       const { ID, mandatory_datetime, mandatory_string, optional_datetime, optional_string } =
         req.data;
-      const programmaticOutputProcess = await cds.connect.to(Programmatic_Outputs_ProcessService);
       await programmaticOutputProcess.start({
         ID,
         mandatory_datetime,
@@ -85,7 +75,6 @@ class ProgrammaticService extends cds.ApplicationService {
 
     this.on('getInstanceIDForGetOutputs', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const programmaticOutputProcess = await cds.connect.to(Programmatic_Outputs_ProcessService);
       const processInstances = await programmaticOutputProcess.getInstancesByBusinessKey({
         businessKey: ID,
         status: status,
@@ -105,7 +94,6 @@ class ProgrammaticService extends cds.ApplicationService {
 
     this.on('getOutputs', async (req: cds.Request) => {
       const { instanceId } = req.data;
-      const programmaticOutputProcess = await cds.connect.to(Programmatic_Outputs_ProcessService);
       const outputs = await programmaticOutputProcess.getOutputs(instanceId);
       return outputs;
     });
@@ -113,7 +101,6 @@ class ProgrammaticService extends cds.ApplicationService {
     // Generic ProcessService handlers (using cds.connect.to('ProcessService'))
     this.on('genericStart', async (req: cds.Request) => {
       const { definitionId, businessKey, context } = req.data;
-      const processService = await cds.connect.to('ProcessService');
       const queuedProcessService = cds.queued(processService);
       const parsedContext = context ? JSON.parse(context) : {};
       await queuedProcessService.emit(
@@ -125,28 +112,24 @@ class ProgrammaticService extends cds.ApplicationService {
 
     this.on('genericCancel', async (req: cds.Request) => {
       const { businessKey, cascade } = req.data;
-      const processService = await cds.connect.to('ProcessService');
       const queuedProcessService = cds.queued(processService);
       await queuedProcessService.emit('cancel', { businessKey, cascade: cascade ?? false });
     });
 
     this.on('genericSuspend', async (req: cds.Request) => {
       const { businessKey, cascade } = req.data;
-      const processService = await cds.connect.to('ProcessService');
       const queuedProcessService = cds.queued(processService);
       await queuedProcessService.emit('suspend', { businessKey, cascade: cascade ?? false });
     });
 
     this.on('genericResume', async (req: cds.Request) => {
       const { businessKey, cascade } = req.data;
-      const processService = await cds.connect.to('ProcessService');
       const queuedProcessService = cds.queued(processService);
       await queuedProcessService.emit('resume', { businessKey, cascade: cascade ?? false });
     });
 
     this.on('genericGetInstancesByBusinessKey', async (req: cds.Request) => {
       const { businessKey, status } = req.data;
-      const processService = await cds.connect.to('ProcessService');
       const result = await processService.send('getInstancesByBusinessKey', {
         businessKey,
         status,
@@ -156,14 +139,12 @@ class ProgrammaticService extends cds.ApplicationService {
 
     this.on('genericGetAttributes', async (req: cds.Request) => {
       const { processInstanceId } = req.data;
-      const processService = await cds.connect.to('ProcessService');
       const result = await processService.send('getAttributes', { processInstanceId });
       return result;
     });
 
     this.on('genericGetOutputs', async (req: cds.Request) => {
       const { processInstanceId } = req.data;
-      const processService = await cds.connect.to('ProcessService');
       const result = await processService.send('getOutputs', { processInstanceId });
       return result;
     });
