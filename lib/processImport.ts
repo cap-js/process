@@ -75,7 +75,7 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
     processHeader.dataTypes.forEach((dt) => dataTypeCache.set(dt.uid, dt));
   }
 
-  const outputPath = path.join(cds.root, 'workflows', `${processName}.json`);
+  const outputPath = path.join(cds.root, 'srv', 'workflows', `${processName}.json`);
   await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
   await fs.promises.writeFile(outputPath, JSON.stringify(processHeader, null, 2), 'utf8');
 
