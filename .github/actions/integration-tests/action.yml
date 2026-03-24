@@ -95,7 +95,7 @@ runs:
     # Bind against BTP services
     - name: Bind -2 process
       if: ${{ inputs.PROFILE == 'hana-process' }}
-      run: cds bind process -2 sbpa-service-instance -o package.json && cd tests/bookshop && cds bind process -2 sbpa-service-instance
+      run: cds bind ProcessService -2 sbpa-service-instance -o package.json && cd tests/bookshop && cds bind ProcessService -2 sbpa-service-instance
       shell: bash
     - name: Import process
       if: ${{ inputs.PROFILE == 'hana-process' }}
