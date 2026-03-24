@@ -114,26 +114,34 @@ class ProgrammaticService extends cds.ApplicationService {
     this.on('genericStart', async (req: cds.Request) => {
       const { definitionId, businessKey, context } = req.data;
       const processService = await cds.connect.to('ProcessService');
+      const queuedProcessService = cds.queued(processService);
       const parsedContext = context ? JSON.parse(context) : {};
-      await processService.emit('start', { definitionId, context: parsedContext }, { businessKey });
+      await queuedProcessService.emit(
+        'start',
+        { definitionId, context: parsedContext },
+        { businessKey },
+      );
     });
 
     this.on('genericCancel', async (req: cds.Request) => {
       const { businessKey, cascade } = req.data;
       const processService = await cds.connect.to('ProcessService');
-      await processService.emit('cancel', { businessKey, cascade: cascade ?? false });
+      const queuedProcessService = cds.queued(processService);
+      await queuedProcessService.emit('cancel', { businessKey, cascade: cascade ?? false });
     });
 
     this.on('genericSuspend', async (req: cds.Request) => {
       const { businessKey, cascade } = req.data;
       const processService = await cds.connect.to('ProcessService');
-      await processService.emit('suspend', { businessKey, cascade: cascade ?? false });
+      const queuedProcessService = cds.queued(processService);
+      await queuedProcessService.emit('suspend', { businessKey, cascade: cascade ?? false });
     });
 
     this.on('genericResume', async (req: cds.Request) => {
       const { businessKey, cascade } = req.data;
       const processService = await cds.connect.to('ProcessService');
-      await processService.emit('resume', { businessKey, cascade: cascade ?? false });
+      const queuedProcessService = cds.queued(processService);
+      await queuedProcessService.emit('resume', { businessKey, cascade: cascade ?? false });
     });
 
     this.on('genericGetInstancesByBusinessKey', async (req: cds.Request) => {

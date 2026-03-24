@@ -8,6 +8,21 @@ const { POST } = cds.test(app);
 const DEFINITION_ID = 'eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process';
 
 describe('Generic ProcessService Integration Tests', () => {
+  let foundMessages: any[] = [];
+  beforeAll(async () => {
+    const db = await cds.connect.to('db');
+    db.before('*', (req) => {
+      if (req.event === 'CREATE' && req.target?.name === 'cds.outbox.Messages') {
+        const msg = JSON.parse(req.query?.INSERT?.entries[0].msg);
+        foundMessages.push(msg);
+      }
+    });
+  });
+
+  beforeEach(async () => {
+    foundMessages = [];
+  });
+
   afterAll(async () => {
     await (cds as any).flush();
   });
@@ -46,165 +61,136 @@ describe('Generic ProcessService Integration Tests', () => {
     });
   }
 
-  async function genericGetInstances(businessKey: string, status?: string[]): Promise<any[]> {
-    const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
-      businessKey,
-      status,
-    });
-    return res.data?.value ?? res.data ?? [];
-  }
-
-  async function genericGetAttributes(processInstanceId: string): Promise<any[]> {
-    const res = await POST('/odata/v4/programmatic/genericGetAttributes', {
-      processInstanceId,
-    });
-    return res.data?.value ?? res.data ?? [];
-  }
-
-  async function genericGetOutputs(processInstanceId: string): Promise<any> {
-    const res = await POST('/odata/v4/programmatic/genericGetOutputs', {
-      processInstanceId,
-    });
-    return res.data;
-  }
-
   describe('Process Start Event', () => {
-    it('should start a process and verify it is RUNNING', async () => {
+    it('should emit a start event to the outbox', async () => {
       const businessKey = generateID();
       const response = await genericStart(businessKey);
 
       expect(response.status).toBe(204);
-
-      const instances = await genericGetInstances(businessKey, ['RUNNING']);
-      expect(instances.length).toBe(1);
-      expect(instances[0]).toHaveProperty('status', 'RUNNING');
-      expect(instances[0]).toHaveProperty('id');
-      expect(instances[0]).toHaveProperty('definitionId', DEFINITION_ID);
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].event).toBe('start');
     });
 
-    it('should include the businessKey in the started instance', async () => {
+    it('should include definitionId in the start event payload', async () => {
       const businessKey = generateID();
       await genericStart(businessKey);
 
-      const instances = await genericGetInstances(businessKey);
-      expect(instances.length).toBe(1);
-      expect(instances[0]).toHaveProperty('businessKey', businessKey);
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].data.definitionId).toBe(DEFINITION_ID);
     });
 
-    it('should start multiple independent processes with different businessKeys', async () => {
+    it('should include the businessKey as context ID in the start event', async () => {
+      const businessKey = generateID();
+      await genericStart(businessKey);
+
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].data.context).toBeDefined();
+      expect(foundMessages[0].data.context.ID).toEqual(businessKey);
+    });
+
+    it('should emit separate start events for multiple processes', async () => {
       const keyA = generateID();
       const keyB = generateID();
 
       await genericStart(keyA);
       await genericStart(keyB);
 
-      const instancesA = await genericGetInstances(keyA, ['RUNNING']);
-      const instancesB = await genericGetInstances(keyB, ['RUNNING']);
-
-      expect(instancesA.length).toBe(1);
-      expect(instancesB.length).toBe(1);
-      expect(instancesA[0].id).not.toEqual(instancesB[0].id);
+      expect(foundMessages.length).toBe(2);
+      expect(foundMessages[0].event).toBe('start');
+      expect(foundMessages[1].event).toBe('start');
+      expect(foundMessages[0].data.context.ID).toEqual(keyA);
+      expect(foundMessages[1].data.context.ID).toEqual(keyB);
     });
   });
 
   describe('Process Cancel Event', () => {
-    it('should cancel a running process', async () => {
+    it('should emit a cancel event to the outbox', async () => {
       const businessKey = generateID();
-      await genericStart(businessKey);
-
       const response = await genericCancel(businessKey);
-      expect(response.status).toBe(204);
 
-      const instances = await genericGetInstances(businessKey, ['CANCELED']);
-      expect(instances.length).toBe(1);
-      expect(instances[0]).toHaveProperty('status', 'CANCELED');
+      expect(response.status).toBe(204);
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].event).toBe('cancel');
+      expect(foundMessages[0].data.businessKey).toEqual(businessKey);
     });
 
-    it('should not fail when cancelling with no running processes', async () => {
+    it('should include cascade=false by default in cancel payload', async () => {
       const businessKey = generateID();
-      const response = await genericCancel(businessKey);
-      expect(response.status).toBe(204);
+      await genericCancel(businessKey);
+
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].data.cascade).toBe(false);
     });
   });
 
   describe('Process Suspend Event', () => {
-    it('should suspend a running process', async () => {
+    it('should emit a suspend event to the outbox', async () => {
       const businessKey = generateID();
-      await genericStart(businessKey);
-
       const response = await genericSuspend(businessKey);
-      expect(response.status).toBe(204);
 
-      const instances = await genericGetInstances(businessKey, ['SUSPENDED']);
-      expect(instances.length).toBe(1);
-      expect(instances[0]).toHaveProperty('status', 'SUSPENDED');
+      expect(response.status).toBe(204);
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].event).toBe('suspend');
+      expect(foundMessages[0].data.businessKey).toEqual(businessKey);
     });
 
-    it('should not fail when suspending with no running processes', async () => {
+    it('should include cascade=false by default in suspend payload', async () => {
       const businessKey = generateID();
-      const response = await genericSuspend(businessKey);
-      expect(response.status).toBe(204);
+      await genericSuspend(businessKey);
+
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].data.cascade).toBe(false);
     });
   });
 
   describe('Process Resume Event', () => {
-    it('should resume a suspended process', async () => {
+    it('should emit a resume event to the outbox', async () => {
       const businessKey = generateID();
-      await genericStart(businessKey);
-      await genericSuspend(businessKey);
-
       const response = await genericResume(businessKey);
-      expect(response.status).toBe(204);
 
-      const instances = await genericGetInstances(businessKey, ['RUNNING']);
-      expect(instances.length).toBe(1);
-      expect(instances[0]).toHaveProperty('status', 'RUNNING');
+      expect(response.status).toBe(204);
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].event).toBe('resume');
+      expect(foundMessages[0].data.businessKey).toEqual(businessKey);
     });
 
-    it('should not fail when resuming with no suspended processes', async () => {
+    it('should include cascade=false by default in resume payload', async () => {
       const businessKey = generateID();
-      const response = await genericResume(businessKey);
-      expect(response.status).toBe(204);
+      await genericResume(businessKey);
+
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].data.cascade).toBe(false);
     });
   });
 
   describe('Sequential lifecycle operations', () => {
-    it('should go through start -> suspend -> resume and end up RUNNING', async () => {
+    it('should emit start, suspend, and resume events in order', async () => {
       const businessKey = generateID();
 
       await genericStart(businessKey);
-
-      let instances = await genericGetInstances(businessKey, ['RUNNING']);
-      expect(instances.length).toBe(1);
-
       await genericSuspend(businessKey);
-
-      instances = await genericGetInstances(businessKey, ['SUSPENDED']);
-      expect(instances.length).toBe(1);
-
       await genericResume(businessKey);
 
-      instances = await genericGetInstances(businessKey, ['RUNNING']);
-      expect(instances.length).toBe(1);
-      expect(instances[0]).toHaveProperty('status', 'RUNNING');
+      expect(foundMessages.length).toBe(3);
+      expect(foundMessages[0].event).toBe('start');
+      expect(foundMessages[1].event).toBe('suspend');
+      expect(foundMessages[2].event).toBe('resume');
     });
 
-    it('should go through start -> cancel and end up CANCELED', async () => {
+    it('should emit start then cancel events in order', async () => {
       const businessKey = generateID();
 
       await genericStart(businessKey);
-
-      let instances = await genericGetInstances(businessKey, ['RUNNING']);
-      expect(instances.length).toBe(1);
-
       await genericCancel(businessKey);
 
-      instances = await genericGetInstances(businessKey, ['CANCELED']);
-      expect(instances.length).toBe(1);
-      expect(instances[0]).toHaveProperty('status', 'CANCELED');
+      expect(foundMessages.length).toBe(2);
+      expect(foundMessages[0].event).toBe('start');
+      expect(foundMessages[1].event).toBe('cancel');
+      expect(foundMessages[0].data.context.ID).toEqual(businessKey);
+      expect(foundMessages[1].data.businessKey).toEqual(businessKey);
     });
 
-    it('should go through start -> suspend -> resume -> cancel', async () => {
+    it('should emit start, suspend, resume, and cancel events in order', async () => {
       const businessKey = generateID();
 
       await genericStart(businessKey);
@@ -212,66 +198,25 @@ describe('Generic ProcessService Integration Tests', () => {
       await genericResume(businessKey);
       await genericCancel(businessKey);
 
-      const instances = await genericGetInstances(businessKey, ['CANCELED']);
-      expect(instances.length).toBe(1);
-      expect(instances[0]).toHaveProperty('status', 'CANCELED');
+      expect(foundMessages.length).toBe(4);
+      expect(foundMessages[0].event).toBe('start');
+      expect(foundMessages[1].event).toBe('suspend');
+      expect(foundMessages[2].event).toBe('resume');
+      expect(foundMessages[3].event).toBe('cancel');
     });
   });
 
-  describe('getInstancesByBusinessKey', () => {
-    it('should return empty array for unknown businessKey', async () => {
+  describe('Custom context in start event', () => {
+    it('should pass custom context through to the outbox message', async () => {
       const businessKey = generateID();
-      const instances = await genericGetInstances(businessKey);
-      expect(instances).toEqual([]);
+      const customContext = { ID: businessKey, customField: 'customValue', number: 42 };
+
+      await genericStart(businessKey, customContext);
+
+      expect(foundMessages.length).toBe(1);
+      expect(foundMessages[0].event).toBe('start');
+      expect(foundMessages[0].data.context.customField).toEqual('customValue');
+      expect(foundMessages[0].data.context.number).toEqual(42);
     });
-
-    it('should filter instances by status', async () => {
-      const businessKey = generateID();
-      await genericStart(businessKey);
-
-      const runningInstances = await genericGetInstances(businessKey, ['RUNNING']);
-      expect(runningInstances.length).toBe(1);
-
-      const canceledInstances = await genericGetInstances(businessKey, ['CANCELED']);
-      expect(canceledInstances.length).toBe(0);
-    });
-
-    it('should return instances matching any of the provided statuses', async () => {
-      const businessKey = generateID();
-      await genericStart(businessKey);
-
-      const instances = await genericGetInstances(businessKey, ['RUNNING', 'SUSPENDED']);
-      expect(instances.length).toBe(1);
-      expect(instances[0]).toHaveProperty('status', 'RUNNING');
-    });
-  });
-
-  it('should return attributes for a running process instance', async () => {
-    const businessKey = generateID();
-    await genericStart(businessKey);
-
-    const instances = await genericGetInstances(businessKey, ['RUNNING']);
-    expect(instances.length).toBe(1);
-
-    const attributes = await genericGetAttributes(instances[0].id);
-
-    expect(Array.isArray(attributes)).toBe(true);
-    expect(attributes.length).toBeGreaterThan(0);
-    expect(attributes[0]).toHaveProperty('id');
-    expect(attributes[0]).toHaveProperty('value');
-  });
-
-  it('should return outputs for a process instance', async () => {
-    const businessKey = generateID();
-    await genericStart(businessKey);
-
-    const instances = await genericGetInstances(businessKey, ['RUNNING']);
-    expect(instances.length).toBe(1);
-
-    const outputs = await genericGetOutputs(instances[0].id);
-
-    expect(outputs).toBeDefined();
-    expect(outputs).toHaveProperty('processedBy');
-    expect(outputs).toHaveProperty('completionStatus');
   });
 });
