@@ -46,7 +46,6 @@ class ProgrammaticService extends cds.ApplicationService {
       const { ID, status } = req.data;
       const processInstances = await programmaticLifecycleProcess.getInstancesByBusinessKey({
         businessKey: ID,
-        status: status,
       });
       const allAttributes = [];
       for (const instance of processInstances) {
