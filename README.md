@@ -11,7 +11,7 @@ Make sure to follow https://cap.cloud.sap/docs/get-started/ to install global de
 Install the dependencies for the plugin and build the project:
 
 ```
-npm run i
+npm i
 npm run build
 ```
 
@@ -21,23 +21,25 @@ Using cds-tsx:
 
 ```
 npm i -g tsx
-cd tests/bookshop && npm run build
-cd tests/bookshop && cds-tsx w
+cd tests/bookshop
+npm run build
+cds-tsx w
 ```
 
 Using cds watch:
 
 ```
 npm run compile
-cd tests/bookshop && npm run build
-cd tests/bookshop && cds watch
+cd tests/bookshop
+npm run build
+cds watch
 ```
 
 ### Troubleshooting
 
-`npm run clean:all` cleans all generated files and rebuilds them
-`npm run clean:build` cleans the build files and rebuilds them
-`npm run clean:types` cleans the generated cds-typer files and rebuilds them
+- `npm run clean:all` cleans all generated files and rebuilds them
+- `npm run clean:build` cleans the build files and rebuilds them
+- `npm run clean:types` cleans the generated cds-typer files and rebuilds them
 
 ## To use the plugin as a CAP developer
 
