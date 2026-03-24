@@ -535,8 +535,6 @@ Import your SBPA process directly from the API:
 cds bind --exec -- cds-tsx import --from process --name eu12.myorg.myproject.myProcess --no-copy
 ```
 
-If you want to have it as a cds instead of a csn you can add --as cds at the end. If you want to reimport the process use the --force flag at the end. The flag `no-copy` is very important, as otherwise the process will be saved locally on both `./workflows`and `./srv/external` folder which would result in cds runtime issues, as the json is not a valid csn model and cannot be stored in the `.srv/external` directory.
-
 #### From Local JSON File
 
 If you already have a process definition JSON file (e.g., exported or previously fetched), you can generate the CDS model directly from it without needing credentials:
