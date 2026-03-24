@@ -89,12 +89,15 @@ async function createApiClient(): Promise<IProcessApiClient> {
     // Try to resolve cloud bindings automatically (same as cds bind --exec does)
     // REVISIT: once merged in core
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { env: bindingEnv } = require('@sap/cds-dk/lib/bind/shared');
       process.env.CDS_ENV ??= 'hybrid';
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       (cds as any).env = cds.env.for('cds');
       Object.assign(process.env, await bindingEnv());
       (cds as any).env = cds.env.for('cds');
       (cds as any).requires = cds.env.requires;
+      /* eslint-enable @typescript-eslint/no-explicit-any */
       credentials = getServiceCredentials(PROCESS_SERVICE);
     } catch {
       // cds-dk not available or binding resolution failed
