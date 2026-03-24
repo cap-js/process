@@ -11,7 +11,7 @@ import {
 } from '../shared/input-parser';
 
 export type ElementType = {
-  type: string;
+  type?: string;
   isMandatory?: boolean;
   isArray?: boolean;
   properties?: Record<string, ElementType>;

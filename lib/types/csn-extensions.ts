@@ -148,7 +148,7 @@ export interface CsnAnnotation extends CsnBaseDefinition {
 // ──────────────────────────────────────────────────────────────
 //
 export interface CsnElement extends CsnAnnotations {
-  type: CdsTypeRef;
+  type?: CdsTypeRef;
   notNull?: boolean;
   key?: boolean;
   virtual?: boolean;
