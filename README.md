@@ -2,6 +2,31 @@
 
 [![REUSE status](https://api.reuse.software/badge/github.com/cap-js/process)](https://api.reuse.software/info/github.com/cap-js/process)
 
+## Table of Contents
+
+- [Setup](#setup)
+  - [Quickstart](#quickstart)
+  - [Binding against SBPA Instance](#binding-against-sbpa-instance)
+  - [Importing Processes as a Service](#importing-processes-as-a-service)
+- [Annotations](#annotations)
+  - [Starting a Process](#starting-a-process)
+  - [Cancelling, Resuming, or Suspending a Process](#cancelling-resuming-or-suspending-a-process)
+  - [Conditional Execution](#conditional-execution)
+  - [Input Mapping](#input-mapping)
+- [Build-Time Validation](#build-time-validation)
+  - [Process Start](#process-start)
+  - [Process Cancel/Suspend/Resume](#process-cancelsuspendresume)
+- [Programmatic Approach](#programmatic-approach)
+  - [Generic ProcessService](#generic-processservice)
+  - [Imported Process Services (Typed)](#imported-process-services-typed)
+- [Running the Sample](#running-the-sample)
+  - [Running the Bookshop Example](#running-the-bookshop-example)
+  - [Troubleshooting](#troubleshooting)
+- [Support, Feedback, Contributing](#support-feedback-contributing)
+- [Security / Disclosure](#security--disclosure)
+- [Code of Conduct](#code-of-conduct)
+- [Licensing](#licensing)
+
 ## Setup
 
 ### Quickstart
