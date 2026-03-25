@@ -41,14 +41,10 @@ cds bind --exec -- cds-tsx import --from process --name <Process_ID>
 
 ## Annotations
 
-Important: For process events defined on the `DELETE` operation, a `before` handler fetches the entity that will be deleted and stores it in `req._Process.[Start|Suspend|Resume|Cancel]` so that it can be used in the `service.after` handler.
-
 ### Starting a Process
 
-- `@bpm.process.start` -- Start a process (or classic workflow) after entity creation, update, deletion, read, or any custom action, including all entity elements unless at least one `@bpm.process.start.inputs` entry is given
-  - If no attribute is annotated with `@bpm.process.input`, all attributes of that entity will be fetched and included as process input context. Associations will not be expanded in that case.
-  - `@bpm.process.start.id` -- definition ID for deployed process
-  - `@bpm.process.start.on`
+- `@bpm.process.start.id` -- definition ID for deployed process
+- `@bpm.process.start.on` -- event on which the process should be started (CRUD operation or custom bound action)
 - `@bpm.process.start.inputs` -- Array of input mappings that control which entity fields are passed as process context (optional)
 - If a `businessKey` is annotated on the entity using `@bpm.process.businessKey`, it will be evaluated at process start. If the length of the business key exceeds SBPA's character limit of 255, the request will be rejected, as process start will fail in that case.
 
@@ -79,7 +75,7 @@ service MyService {
 
 ### Cancelling, Resuming, or Suspending a Process
 
-- `@bpm.process.<cancel|resume|suspend>` -- Cancel/Suspend/Resume any processes bound to the entity (using the entity key as business key in SBPA)
+- `@bpm.process.<cancel|resume|suspend>` -- Cancel/Suspend/Resume any processes with the given businessKey
   - `@bpm.process.<cancel|resume|suspend>.on`
   - `@bpm.process.<cancel|resume|suspend>.cascade` -- Boolean (optional, defaults to false)
 - For cancelling, resuming, or suspending, it is required to have a business key expression annotated on the entity using `@bpm.process.businessKey`. If no business key is annotated, the request will be rejected.
