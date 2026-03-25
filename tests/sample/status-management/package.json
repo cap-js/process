@@ -1,0 +1,33 @@
+{
+  "name": "@capire/bookshop",
+  "version": "2.1.9",
+  "description": "Our primer sample for getting started in a nutshell.",
+  "repository": "https://github.com/capire/bookshop",
+  "files": [
+    "app",
+    "srv",
+    "db",
+    "index.cds"
+  ],
+  "devDependencies": {
+    "@cap-js/sqlite": "^2.1.1",
+    "cds-plugin-ui5": "^0.13.0"
+  },
+  "dependencies": {
+    "@sap/cds": "^9.6.2"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "watch-books": "cds watch --open books/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-authors": "cds watch --open authors/index.html?sap-ui-xx-viewCache=false --livereload false"
+  },
+  "license": "Apache-2.0",
+  "workspaces": [
+    "app/*"
+  ],
+  "sapux": [
+    "app/books",
+    "app/authors"
+  ]
+}
