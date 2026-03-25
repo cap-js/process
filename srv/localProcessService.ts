@@ -29,7 +29,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('cancel', async (req: cds.Request) => {
       const { businessKey } = req.data;
-      LOG.info('Cancelling process', businessKey);
+      LOG.info('Cancelling process(es)', businessKey);
 
       LOG.debug(
         `==============================================================\n` +
@@ -63,7 +63,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('suspend', async (req: cds.Request) => {
       const { businessKey } = req.data;
-      LOG.info('Suspending process', businessKey);
+      LOG.info('Suspending process(es)', businessKey);
 
       LOG.debug(
         `==============================================================\n` +
@@ -96,7 +96,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('resume', async (req: cds.Request) => {
       const { businessKey } = req.data;
-      LOG.info('Resuming process', businessKey);
+      LOG.info('Resuming process(es)', businessKey);
 
       LOG.debug(
         `==============================================================\n` +

@@ -28,7 +28,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('cancel', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
-      LOG.info('Cancelling process', businessKey);
+      LOG.info('Cancelling process(es)', businessKey);
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
         WorkflowStatus.RUNNING,
@@ -49,7 +49,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('suspend', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
-      LOG.info('Suspending process', businessKey);
+      LOG.info('Suspending process(es)', businessKey);
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
         WorkflowStatus.RUNNING,
@@ -69,7 +69,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('resume', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
-      LOG.info('Resuming process', businessKey);
+      LOG.info('Resuming process(es)', businessKey);
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
         WorkflowStatus.SUSPENDED,
