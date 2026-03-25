@@ -38,6 +38,21 @@ annotate service.Books with @(
                 Label : 'currency_code',
                 Value : currency_code,
             },
+            {
+                $Type : 'UI.DataField',
+                Label : 'genre_ID',
+                Value : genre_ID,
+            },
+            {
+                $Type : 'UI.DataField',
+                Label : 'processStatus',
+                Value : processStatus,
+            },
+            {
+                $Type : 'UI.DataField',
+                Label : 'isApproved',
+                Value : isApproved,
+            },
         ],
     },
     UI.Facets : [
@@ -71,8 +86,18 @@ annotate service.Books with @(
         },
         {
             $Type : 'UI.DataField',
-            Label : 'stock',
-            Value : stock,
+            Label : 'price',
+            Value : price,
+        },
+        {
+            $Type : 'UI.DataField',
+            Label : 'processStatus',
+            Value : processStatus,
+        },
+        {
+            $Type : 'UI.DataField',
+            Label : 'isApproved',
+            Value : isApproved,
         },
     ],
 );

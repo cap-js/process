@@ -13,7 +13,6 @@ annotate AdminService.Books with {
     when not exists genre then 'Specified Genre does not exist'
   end);
 
-  price @assert.range: [1,111]; // 1 ... 111 inclusive
   stock @assert.range: [(0),_]; // positive numbers only
 }
 

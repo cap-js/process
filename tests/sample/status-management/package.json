@@ -14,7 +14,11 @@
     "cds-plugin-ui5": "^0.13.0"
   },
   "dependencies": {
-    "@sap/cds": "^9.6.2"
+    "@sap/cds": "^9.6.2",
+    "@cap-js/process": "file:../../../cap-js-process-1.0.0.tgz",
+    "@sap-cloud-sdk/connectivity": "^4",
+    "@sap-cloud-sdk/http-client": "^4",
+    "@sap-cloud-sdk/resilience": "^4"
   },
   "scripts": {
     "start": "cds-serve",
@@ -29,5 +33,13 @@
   "sapux": [
     "app/books",
     "app/authors"
-  ]
+  ],
+  "cds": {
+    "requires": {
+      "eu12.cdsmunich.sampleapplicationproject.BookApprovalProcessService": {
+        "kind": "process-service",
+        "model": "srv/external/eu12.cdsmunich.sampleapplicationproject.bookApprovalProcess"
+      }
+    }
+  }
 }
