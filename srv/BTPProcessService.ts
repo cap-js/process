@@ -22,11 +22,13 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('start', async (request: cds.Request) => {
       const { definitionId, context } = request.data;
+      LOG.info('Starting process', definitionId);
       await this.workflowInstanceClient.startWorkflow(definitionId, context);
     });
 
     this.on('cancel', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
+      LOG.info('Cancelling process', businessKey);
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
         WorkflowStatus.RUNNING,
@@ -47,6 +49,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('suspend', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
+      LOG.info('Suspending process', businessKey);
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
         WorkflowStatus.RUNNING,
@@ -66,6 +69,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('resume', async (request: cds.Request) => {
       const { businessKey, cascade } = request.data;
+      LOG.info('Resuming process', businessKey);
 
       const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(businessKey, [
         WorkflowStatus.SUSPENDED,
@@ -86,6 +90,7 @@ class ProcessService extends cds.ApplicationService {
     this.on('getInstancesByBusinessKey', async (request: cds.Request) => {
       const { businessKey } = request.data;
       let { status } = request.data;
+      LOG.info('Getting instances for', businessKey);
 
       if (!businessKey) {
         return request.reject({ status: 400, message: 'Missing required parameter: businessKey' });
@@ -109,6 +114,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('getAttributes', async (request: cds.Request) => {
       const { processInstanceId } = request.data;
+      LOG.info('Getting attributes for', processInstanceId);
 
       if (!processInstanceId) {
         return request.reject({
@@ -123,6 +129,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('getOutputs', async (request: cds.Request) => {
       const { processInstanceId } = request.data;
+      LOG.info('Getting outputs for', processInstanceId);
 
       if (!processInstanceId) {
         return request.reject({
