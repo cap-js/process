@@ -15,6 +15,7 @@ module.exports = class AuthorsService extends cds.ApplicationService {
     // Start verification process when a new author is created
     this.after('CREATE', Authors, async (author, req) => {
       await authorProcess.start({
+        entityid: author.ID,
         authorname: author.name,
         dateofbirth: author.dateOfBirth ?? '',
         placeofbirth: author.placeOfBirth ?? '',
@@ -25,9 +26,9 @@ module.exports = class AuthorsService extends cds.ApplicationService {
     this.after('DELETE', Authors, async (author, req) => {
       if (!author.name) return;
 
-      const instances = await authorProcess.getInstancesByBusinessKey(author.name, ['RUNNING']);
+      const instances = await authorProcess.getInstancesByBusinessKey(author.ID, ['RUNNING']);
       if (instances.length > 0) {
-        await authorProcess.cancel({ businessKey: author.name, cascade: true });
+        await authorProcess.cancel({ businessKey: author.ID, cascade: true });
       }
     });
 
@@ -42,7 +43,7 @@ module.exports = class AuthorsService extends cds.ApplicationService {
             return;
           }
 
-          const instances = await authorProcess.getInstancesByBusinessKey(author.name, [
+          const instances = await authorProcess.getInstancesByBusinessKey(author.ID, [
             'RUNNING',
             'COMPLETED',
             'CANCELED',

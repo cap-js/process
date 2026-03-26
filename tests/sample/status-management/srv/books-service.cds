@@ -3,6 +3,7 @@ using { sap.capire.bookshop as my } from '../db/schema';
 service BooksService @(path:'/api/books', protocol: 'odata-v4') {
   @odata.draft.enabled
   entity Books as projection on my.Books {
+    descr @mandatory,
     *,
     virtual processStatus: String,
     virtual isApproved: Boolean default false,

@@ -4,7 +4,7 @@
   "description": "",
   "type": "bpi.process",
   "createdAt": "2026-03-25T11:46:56.091829Z",
-  "updatedAt": "2026-03-25T13:23:41.616274Z",
+  "updatedAt": "2026-03-26T12:00:00.525166Z",
   "header": {
     "inputs": {
       "title": "inputs",
@@ -52,6 +52,11 @@
         "price": {
           "type": "number",
           "title": "price",
+          "description": ""
+        },
+        "entityid": {
+          "type": "string",
+          "title": "entityID",
           "description": ""
         }
       },
@@ -111,11 +116,11 @@
   },
   "dependencies": [
     {
-      "artifactUid": "5227d63c-f620-476c-893a-517bd14c302e",
+      "artifactUid": "3e51af12-9a42-4a95-9a3a-d12ef176ea42",
       "type": "content"
     },
     {
-      "artifactUid": "3e51af12-9a42-4a95-9a3a-d12ef176ea42",
+      "artifactUid": "5227d63c-f620-476c-893a-517bd14c302e",
       "type": "content"
     },
     {

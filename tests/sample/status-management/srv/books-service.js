@@ -16,8 +16,8 @@ module.exports = class BooksService extends cds.ApplicationService {
     this.after('READ', Books, async (results, _req) => {
       await Promise.all(
         results.map(async (book) => {
-          const bookTitle = book.title;
-          if (!bookTitle) {
+          const bookID = book.ID;
+          if (!bookID) {
             // Draft entries without a title yet
             book.processStatus = NO_APPROVAL_REQUIRED;
             book.isApproved = true;
@@ -25,7 +25,7 @@ module.exports = class BooksService extends cds.ApplicationService {
             return;
           }
 
-          const instances = await bookProcess.getInstancesByBusinessKey(bookTitle, [
+          const instances = await bookProcess.getInstancesByBusinessKey(bookID, [
             'RUNNING',
             'COMPLETED',
             'CANCELED',

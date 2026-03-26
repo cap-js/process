@@ -1,4 +1,4 @@
-/* checksum : c0ca6e98ae2cb22ff127e1e4dbf34192 */
+/* checksum : e4e85b6560cc4b66e72dcd48b9b3ee30 */
 namespace eu12.cdsmunich.sampleapplicationproject;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
@@ -9,6 +9,7 @@ service AuthorVerificationProcessService {
     authorname : String not null;
     dateofbirth : String;
     placeofbirth : String;
+    entityid : String;
   };
 
   type ProcessOutputs {

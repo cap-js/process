@@ -1,8 +1,7 @@
 using { Currency, cuid, managed, sap } from '@sap/cds/common';
 namespace sap.capire.bookshop;
 
-entity Books : managed {
-  key ID   : Integer;
+entity Books : cuid, managed {
   author   : Association to Authors @mandatory;
   title    : localized String @mandatory;
   descr    : localized String(2000);
@@ -12,8 +11,7 @@ entity Books : managed {
   currency : Currency;
 }
 
-entity Authors : managed {
-  key ID       : Integer;
+entity Authors : cuid, managed {
   name         : String @mandatory;
   dateOfBirth  : Date;
   dateOfDeath  : Date;
@@ -30,9 +28,3 @@ entity Genres : cuid, sap.common.CodeList {
 
 type Price : Decimal(9,2);
 
-
-// --------------------------------------------------------------------------------
-// Temporary workaround for this situation:
-// - Fiori apps in bookstore annotate Books with @fiori.draft.enabled.
-// - Because of that .csv data has to eagerly fill in ID_texts column.
-annotate Books with @fiori.draft.enabled;

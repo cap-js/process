@@ -5,11 +5,6 @@ annotate service.Books with @(
         Data : [
             {
                 $Type : 'UI.DataField',
-                Label : 'ID',
-                Value : ID,
-            },
-            {
-                $Type : 'UI.DataField',
                 Label : 'Author',
                 Value : author_ID,
             },
@@ -65,11 +60,6 @@ annotate service.Books with @(
         },
     ],
     UI.LineItem : [
-        {
-            $Type : 'UI.DataField',
-            Label : 'ID',
-            Value : ID,
-        },
         {
             $Type : 'UI.DataField',
             Label : 'Author',

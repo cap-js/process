@@ -1,4 +1,4 @@
-/* checksum : d228165baeb7c907ccb0fea23d8b708d */
+/* checksum : 814a8d2cd20e74f6fa5a984733c3fe07 */
 namespace eu12.cdsmunich.sampleapplicationproject;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
@@ -15,6 +15,7 @@ service BookApprovalProcessService {
     author : Author;
     description : String;
     price : DecimalFloat;
+    entityid : String;
   };
 
   type ProcessOutputs {
