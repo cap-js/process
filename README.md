@@ -13,12 +13,12 @@
   - [Cancelling, Resuming, or Suspending a Process](#cancelling-resuming-or-suspending-a-process)
   - [Conditional Execution](#conditional-execution)
   - [Input Mapping](#input-mapping)
+- [Programmatic Approach](#programmatic-approach)
+  - [Specific Process Services](#specific-process-services)
+  - [Generic ProcessService](#generic-processservice)
 - [Build-Time Validation](#build-time-validation)
   - [Process Start](#process-start)
   - [Process Cancel/Suspend/Resume](#process-cancelsuspendresume)
-- [Programmatic Approach](#programmatic-approach)
-  - [Generic ProcessService](#generic-processservice)
-  - [Imported Process Services (Typed)](#imported-process-services-typed)
 - [Running the Sample](#running-the-sample)
   - [Running the Bookshop Example](#running-the-bookshop-example)
   - [Troubleshooting](#troubleshooting)
@@ -39,6 +39,8 @@ npm add @cap-js/process
 
 That's it — the annotation and programmatic approaches against the generic ProcessService work without any bindings against SBPA. No process import is required to get started.
 
+You can have a look at the sample in [Status management](./tests/sample/status-management/README.md), or you can jump directly to the documentation of either [Annotations](#annotations) or the [Programmatic Approach](#programmatic-approach).
+
 ### Binding against SBPA Instance
 
 To connect to a real SBPA instance, login to Cloud Foundry:
@@ -50,10 +52,8 @@ cf login --sso
 Bind to a ProcessService instance:
 
 ```
-  cds bind ProcessService -2 <sbpa-service-instance>
+cds bind ProcessService -2 <sbpa-service-instance>
 ```
-
-This will create a `cdsrc-private.json` file containing the credentials.
 
 ### Importing Processes as a Service
 
@@ -386,138 +386,16 @@ entity ShipmentItems {
 };
 ```
 
-## Build-Time Validation
-
-Validation occurs during `cds build` and produces **errors** (hard failures that stop the build) or **warnings** (soft failures that are logged but don't stop the build).
-
-### Process Start
-
-#### Required Annotations (Errors)
-
-- `@bpm.process.start.id` and `@bpm.process.start.on` are mutually required — if one is present, the other must also be present
-- `@bpm.process.start.id` must be a string
-- `@bpm.process.start.on` must be a string representing either:
-  - A CRUD operation: `CREATE`, `READ`, `UPDATE`, or `DELETE`
-  - A bound action defined on the entity
-- `@bpm.process.start.if` must be a valid CDS expression (if present)
-
-#### Warnings
-
-- Unknown annotations under `@bpm.process.start.*` trigger a warning listing allowed annotations
-- If no imported process definition is found for the given `id`, a warning is issued as input validation is skipped
-
-#### Input Validation (when process definition is found)
-
-When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and the process definition is imported:
-
-**Errors:**
-
-- Entity attributes specified in `@bpm.process.start.inputs` (or all direct attributes if `inputs` is omitted) must exist in the process definition inputs
-- Mandatory inputs from the process definition must be present in the entity
-
-**Warnings:**
-
-- Type mismatches between entity attributes and process definition inputs
-- Array cardinality mismatches (entity is array but process expects single value or vice versa)
-- Mandatory flag mismatches (process input is mandatory but entity attribute is not marked as `@mandatory`)
-
-**Note:** Associations and compositions are recursively validated, and cycles in entity associations are detected and reported as errors.
-
-### Process Cancel/Suspend/Resume
-
-#### Required Annotations (Errors)
-
-- `@bpm.process.<cancel|suspend|resume>.on` is required for cancel/suspend/resume operations and must be a string representing either:
-  - A CRUD operation: `CREATE`, `READ`, `UPDATE`, or `DELETE`
-  - A bound action defined on the entity
-- `@bpm.process.<cancel|suspend|resume>.cascade` is optional (defaults to false); if provided, must be a boolean
-- `@bpm.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
-- If any annotation with `@bpm.process.<cancel|suspend|resume>` is defined, a valid business key expression must be defined using `@bpm.process.businessKey`.
-  - Example: `@bpm.process.businessKey: (id || '-' || name)` would concatenate `id` and `name` with a `-` separator as a business key.
-  - The business key definition must match the one configured in the SBPA Process Builder.
-
-#### Warnings
-
-- Unknown annotations under `@bpm.process.<cancel|suspend|resume>.*` trigger a warning listing allowed annotations
-
 ## Programmatic Approach
 
 The plugin provides two ways to interact with SBPA processes programmatically:
 
-1. **Generic ProcessService** -- Use the built-in `ProcessService` directly for untyped, flexible process management without importing a specific process.
-2. **Specific / Imported ProcessService** -- Provides the types and sits on top of the generic ProcessService.
+1. **Specific ProcessService** -- Provides a process specific abstraction on the process as a CAP service.
+2. **Generic ProcessService** -- Provides a generic abstraction on the [SBPA workflow api](https://api.sap.com/api/SPA_Workflow_Runtime/overview) as a CAP service.
 
 Both approaches work locally (in-memory), in hybrid mode (against a real SBPA instance), and in production.
 
-### Generic ProcessService
-
-The generic `ProcessService` is a built-in CDS service that ships with the plugin. It provides low-level events and functions for managing workflow instances without requiring any process imports. This is useful for quick prototyping, dynamic process management, or cases where type safety is not needed.
-The generic `ProcessService` allows setting the business key to mimic the behavior of the real SBPA workflow. The business key in the header is only used when the application runs locally, so to avoid issues, the business key should be built the same way as in the actual process.
-
-#### Service Definition
-
-The generic `ProcessService` defines the following events and functions:
-
-| Operation                   | Type     | Description                                                       |
-| --------------------------- | -------- | ----------------------------------------------------------------- |
-| `start`                     | event    | Start a workflow instance with a `definitionId` and `context`     |
-| `cancel`                    | event    | Cancel all running/suspended instances matching a `businessKey`   |
-| `suspend`                   | event    | Suspend all running instances matching a `businessKey`            |
-| `resume`                    | event    | Resume all suspended instances matching a `businessKey`           |
-| `getAttributes`             | function | Retrieve attributes for a specific process instance               |
-| `getOutputs`                | function | Retrieve outputs for a specific process instance                  |
-| `getInstancesByBusinessKey` | function | Find process instances by business key and optional status filter |
-
-#### Usage
-
-```typescript
-const processService = await cds.connect.to('ProcessService');
-
-// Start a process
-await processService.emit('start', {
-  definitionId: 'eu12.myorg.myproject.myProcess',
-  context: { orderId: '12345', amount: 100.0 },
-});
-
-// Cancel all running instances for a business key
-await processService.emit('cancel', {
-  businessKey: 'order-12345',
-  cascade: false,
-});
-
-// Suspend running instances
-await processService.emit('suspend', {
-  businessKey: 'order-12345',
-  cascade: false,
-});
-
-// Resume suspended instances
-await processService.emit('resume', {
-  businessKey: 'order-12345',
-  cascade: false,
-});
-
-// Query instances by business key
-const instances = await processService.send('getInstancesByBusinessKey', {
-  businessKey: 'order-12345',
-  status: ['RUNNING', 'SUSPENDED'],
-});
-
-// Get attributes of a specific instance
-const attributes = await processService.send('getAttributes', {
-  processInstanceId: 'instance-uuid',
-});
-
-// Get outputs of a specific instance
-const outputs = await processService.send('getOutputs', {
-  processInstanceId: 'instance-uuid',
-});
-```
-
-> **Note:** The generic ProcessService uses `emit` for lifecycle events (start, cancel, suspend, resume) which are processed asynchronously through the CDS outbox, and `send` for query functions (getAttributes, getOutputs, getInstancesByBusinessKey) which return data synchronously.
-> Make sure to check whether the outbox is correctly used. If not, refer to cds.queued to make sure it is used.
-
-### Imported Process Services (Typed)
+### Specific Process Services
 
 For full type safety and build-time validation, you can import a specific SBPA process. This generates a typed CDS service with input/output types derived from the process definition.
 
@@ -616,42 +494,127 @@ If no status filter is provided, all statuses except `CANCELLED` are returned.
 - The typed process service does not currently support local development.
 - The process import is currently only possible via the command line.
 
-## Running the Sample
+### Generic ProcessService
 
-Make sure to follow https://cap.cloud.sap/docs/get-started/ to install global dependencies that are required for CAP application development.
+The generic `ProcessService` is a built-in CDS service that ships with the plugin. It provides low-level events and functions for managing workflow instances without requiring any process imports. This is useful for quick prototyping, dynamic process management, or cases where type safety is not needed.
+The generic `ProcessService` allows setting the business key to mimic the behavior of the real SBPA workflow. The business key in the header is only used when the application runs locally, so to avoid issues, the business key should be built the same way as in the actual process.
 
-Install the dependencies for the plugin and build the project:
+#### Service Definition
 
+The generic `ProcessService` defines the following events and functions:
+
+| Operation                   | Type     | Description                                                       |
+| --------------------------- | -------- | ----------------------------------------------------------------- |
+| `start`                     | event    | Start a workflow instance with a `definitionId` and `context`     |
+| `cancel`                    | event    | Cancel all running/suspended instances matching a `businessKey`   |
+| `suspend`                   | event    | Suspend all running instances matching a `businessKey`            |
+| `resume`                    | event    | Resume all suspended instances matching a `businessKey`           |
+| `getAttributes`             | function | Retrieve attributes for a specific process instance               |
+| `getOutputs`                | function | Retrieve outputs for a specific process instance                  |
+| `getInstancesByBusinessKey` | function | Find process instances by business key and optional status filter |
+
+#### Usage
+
+```typescript
+const processService = await cds.connect.to('ProcessService');
+
+// Start a process
+await processService.emit('start', {
+  definitionId: 'eu12.myorg.myproject.myProcess',
+  context: { orderId: '12345', amount: 100.0 },
+});
+
+// Cancel all running instances for a business key
+await processService.emit('cancel', {
+  businessKey: 'order-12345',
+  cascade: false,
+});
+
+// Suspend running instances
+await processService.emit('suspend', {
+  businessKey: 'order-12345',
+  cascade: false,
+});
+
+// Resume suspended instances
+await processService.emit('resume', {
+  businessKey: 'order-12345',
+  cascade: false,
+});
+
+// Query instances by business key
+const instances = await processService.send('getInstancesByBusinessKey', {
+  businessKey: 'order-12345',
+  status: ['RUNNING', 'SUSPENDED'],
+});
+
+// Get attributes of a specific instance
+const attributes = await processService.send('getAttributes', {
+  processInstanceId: 'instance-uuid',
+});
+
+// Get outputs of a specific instance
+const outputs = await processService.send('getOutputs', {
+  processInstanceId: 'instance-uuid',
+});
 ```
-npm i
-npm run build
-```
 
-### Running the Bookshop Example
+> **Note:** The generic ProcessService uses `emit` for lifecycle events (start, cancel, suspend, resume) which are processed asynchronously through the CDS outbox, and `send` for query functions (getAttributes, getOutputs, getInstancesByBusinessKey) which return data synchronously.
+> Make sure to check whether the outbox is correctly used. If not, refer to cds.queued to make sure it is used.
 
-Using cds-tsx:
+## Build-Time Validation
 
-```
-npm i -g tsx
-cd tests/bookshop
-npm run build
-cds-tsx w
-```
+Validation occurs during `cds build` and produces **errors** (hard failures that stop the build) or **warnings** (soft failures that are logged but don't stop the build).
 
-Using cds watch:
+### Process Start
 
-```
-npm run compile
-cd tests/bookshop
-npm run build
-cds watch
-```
+#### Required Annotations (Errors)
 
-### Troubleshooting
+- `@bpm.process.start.id` and `@bpm.process.start.on` are mutually required — if one is present, the other must also be present
+- `@bpm.process.start.id` must be a string
+- `@bpm.process.start.on` must be a string representing either:
+  - A CRUD operation: `CREATE`, `READ`, `UPDATE`, or `DELETE`
+  - A bound action defined on the entity
+- `@bpm.process.start.if` must be a valid CDS expression (if present)
 
-- `npm run clean:all` cleans all generated files and rebuilds them
-- `npm run clean:build` cleans the build files and rebuilds them
-- `npm run clean:types` cleans the generated cds-typer files and rebuilds them
+#### Warnings
+
+- Unknown annotations under `@bpm.process.start.*` trigger a warning listing allowed annotations
+- If no imported process definition is found for the given `id`, a warning is issued as input validation is skipped
+
+#### Input Validation (when process definition is found)
+
+When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and the process definition is imported:
+
+**Errors:**
+
+- Entity attributes specified in `@bpm.process.start.inputs` (or all direct attributes if `inputs` is omitted) must exist in the process definition inputs
+- Mandatory inputs from the process definition must be present in the entity
+
+**Warnings:**
+
+- Type mismatches between entity attributes and process definition inputs
+- Array cardinality mismatches (entity is array but process expects single value or vice versa)
+- Mandatory flag mismatches (process input is mandatory but entity attribute is not marked as `@mandatory`)
+
+**Note:** Associations and compositions are recursively validated, and cycles in entity associations are detected and reported as errors.
+
+### Process Cancel/Suspend/Resume
+
+#### Required Annotations (Errors)
+
+- `@bpm.process.<cancel|suspend|resume>.on` is required for cancel/suspend/resume operations and must be a string representing either:
+  - A CRUD operation: `CREATE`, `READ`, `UPDATE`, or `DELETE`
+  - A bound action defined on the entity
+- `@bpm.process.<cancel|suspend|resume>.cascade` is optional (defaults to false); if provided, must be a boolean
+- `@bpm.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
+- If any annotation with `@bpm.process.<cancel|suspend|resume>` is defined, a valid business key expression must be defined using `@bpm.process.businessKey`.
+  - Example: `@bpm.process.businessKey: (id || '-' || name)` would concatenate `id` and `name` with a `-` separator as a business key.
+  - The business key definition must match the one configured in the SBPA Process Builder.
+
+#### Warnings
+
+- Unknown annotations under `@bpm.process.<cancel|suspend|resume>.*` trigger a warning listing allowed annotations
 
 ## Support, Feedback, Contributing
 
