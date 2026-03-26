@@ -13,8 +13,6 @@ The application consists of two SAP Fiori Elements apps, each backed by its own 
 
 A third read-only service (`CatalogService` at `/browse`) exposes books for public browsing.
 
-Both apps are accessible from a shared **Fiori Launchpad sandbox** at `/fiori.html`.
-
 ## Processes
 
 <details> 
@@ -122,7 +120,6 @@ cat-service.cds # CatalogService (read-only browse)
 cat-service.js # CatalogService handler
 external/ # Generated process service definitions (do not edit)
 app/
-fiori.html # Local Fiori Launchpad sandbox
 services.cds # Imports annotations from both apps
 books/ # Fiori Elements app for Manage Books
 authors/ # Fiori Elements app for Manage Authors
@@ -225,7 +222,6 @@ cds watch
 
 Open http://localhost:4004 in your browser. From there:
 
-- **Fiori Launchpad**: http://localhost:4004/fiori.html (both apps as tiles)
 - **Manage Books**: http://localhost:4004/books/index.html
 - **Manage Authors**: http://localhost:4004/authors/index.html
 
