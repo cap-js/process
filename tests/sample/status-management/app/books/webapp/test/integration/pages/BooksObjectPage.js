@@ -1,17 +1,17 @@
-sap.ui.define(['sap/fe/test/ObjectPage'], function(ObjectPage) {
-    'use strict';
+sap.ui.define(['sap/fe/test/ObjectPage'], function (ObjectPage) {
+  'use strict';
 
-    var CustomPageDefinitions = {
-        actions: {},
-        assertions: {}
-    };
+  var CustomPageDefinitions = {
+    actions: {},
+    assertions: {},
+  };
 
-    return new ObjectPage(
-        {
-            appId: 'books',
-            componentId: 'BooksObjectPage',
-            contextPath: '/Books'
-        },
-        CustomPageDefinitions
-    );
+  return new ObjectPage(
+    {
+      appId: 'books',
+      componentId: 'BooksObjectPage',
+      contextPath: '/Books',
+    },
+    CustomPageDefinitions,
+  );
 });
