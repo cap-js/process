@@ -5,7 +5,7 @@ annotate AuthorsService.Authors with {
 
   name @mandatory;
 
-  dateOfBirth @assert: (case
+  dateOfBirth @mandatory@assert: (case
     when dateOfBirth > dateOfDeath then 'Date of birth cannot be after date of death'
   end);
 

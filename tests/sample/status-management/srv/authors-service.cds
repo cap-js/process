@@ -4,9 +4,9 @@ service AuthorsService @(path:'/api/authors', protocol: 'odata-v4') {
   @odata.draft.enabled
   entity Authors as projection on my.Authors {
     *,
-    virtual verificationStatus: String,
-    virtual isVerified: Boolean default false,
-    virtual verificationCriticality: Integer default 0
+    @UI.Hidden: (not $draft.IsActiveEntity) virtual verificationStatus: String,
+    @UI.Hidden: (not $draft.IsActiveEntity) virtual isVerified: Boolean default false,
+    @UI.Hidden: (not $draft.IsActiveEntity) virtual verificationCriticality: Integer default 0
   };
 }
 

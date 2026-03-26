@@ -4,12 +4,13 @@ using { BooksService } from './books-service.cds';
 annotate BooksService.Books with {
 
   title @mandatory;
-
-  author @assert: (case 
+  descr @mandatory;
+  price @mandatory;
+  author @mandatory @assert: (case 
     when not exists author then 'Specified Author does not exist'
   end);
 
-  genre @assert: (case 
+  genre @mandatory @assert: (case 
     when not exists genre then 'Specified Genre does not exist'
   end);
 
