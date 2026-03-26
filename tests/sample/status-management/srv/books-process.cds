@@ -1,6 +1,6 @@
-using { AdminService } from './admin-service.cds';
+using { BooksService } from './books-service.cds';
 
-annotate AdminService.Books with @(
+annotate BooksService.Books with @(
     
     bpm.process.businessKey: (title),
     bpm.process.start : {

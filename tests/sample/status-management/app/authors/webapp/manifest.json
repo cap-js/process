@@ -30,7 +30,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/admin/",
+        "uri": "/api/authors/",
         "type": "OData",
         "settings": {
           "annotations": [],

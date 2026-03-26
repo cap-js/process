@@ -1,4 +1,4 @@
-using AdminService as service from '../../srv/admin-service';
+using AuthorsService as service from '../../srv/authors-service';
 annotate service.Authors with @(
     UI.FieldGroup #GeneratedGroup : {
         $Type : 'UI.FieldGroupType',
