@@ -1,3 +1,5 @@
+// TODO: update, reference in main readme; screenshots of process; update usage local
+
 # Status Management Bookshop
 
 A CAP sample application demonstrating how to integrate SAP Build Process Automation (SBPA) workflows into a bookshop scenario using the `@cap-js/process` plugin. The project showcases two distinct integration patterns -- **declarative** and **programmatic** -- for managing process lifecycles.
