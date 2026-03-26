@@ -41,11 +41,11 @@ app/
 
 ## How the `@cap-js/process` Plugin Is Used
 
-The [`@cap-js/process`](https://www.npmjs.com/package/@cap-js/process) plugin provides a CAP-native way to interact with SAP Build Process Automation. It generates typed service definitions from SBPA process definitions and offers both declarative CDS annotations and a programmatic API for managing process instances.
+The [`@cap-js/process`](https://github.com/cap-js/process) plugin provides a CAP-native way to interact with SAP Build Process Automation. It generates typed service definitions from SBPA process definitions and offers both declarative CDS annotations and a programmatic API for managing process instances.
 
 ### Pattern 1: Declarative Process Integration (Books)
 
-The book approval process is managed entirely through CDS annotations in `srv/admin-process.cds`, with no JavaScript needed for start/cancel:
+The book approval process is managed entirely through CDS annotations in `srv/books-process.cds`, with no JavaScript needed for start/cancel:
 
 ```cds
 annotate BooksService.Books with @(
@@ -148,7 +148,3 @@ cds watch --profile hybrid
 ```
 
 For more information how to setup the plugin, please refer to the [plugins documentation](https://github.com/cap-js/process).
-
-## License
-
-Copyright (c) 2022 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, version 2.0 except as noted otherwise in the [LICENSE](LICENSE) file.
