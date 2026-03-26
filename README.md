@@ -61,7 +61,7 @@ The plugin allows you to import existing SBPA processes as CDS services. To do s
 Imported processes ensure type safety and enable build-time validation.
 
 ```
-cds bind --exec -- cds-tsx import --from process --name <Process_ID>
+cds import --from process --name <Process_ID>
 ```
 
 ## Annotations
@@ -529,10 +529,10 @@ To import a process, you need credentials via `cds bind` and must be logged in t
 
 Import your SBPA process directly from the API:
 
-**Note:** For remote imports, you must have ProcessService credentials bound (e.g., via `cds bind process -2 <instance>`). The plugin will automatically resolve the bindings at import time.
+**Note:** For remote imports, you must have ProcessService credentials bound. `cds import --from process` will resolve the credentials.
 
 ```bash
-cds bind --exec -- cds-tsx import --from process --name eu12.myorg.myproject.myProcess --no-copy
+cds import --from process --name eu12.myorg.myproject.myProcess
 ```
 
 ##### From Local JSON File
