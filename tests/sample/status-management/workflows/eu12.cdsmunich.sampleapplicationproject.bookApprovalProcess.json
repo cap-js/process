@@ -1,0 +1,159 @@
+{
+  "uid": "76a6d601-ef75-43aa-8fed-346fb0fc2727",
+  "name": "Book Approval Process",
+  "description": "",
+  "type": "bpi.process",
+  "createdAt": "2026-03-25T11:46:56.091829Z",
+  "updatedAt": "2026-03-26T12:00:00.525166Z",
+  "header": {
+    "inputs": {
+      "title": "inputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "booktitle": {
+          "type": "string",
+          "title": "bookTitle",
+          "description": ""
+        },
+        "author": {
+          "$ref": "$.cfc75dd1-c8d4-407b-914a-3592082e1004",
+          "refName": "Author",
+          "title": "author",
+          "description": ""
+        },
+        "description": {
+          "type": "string",
+          "title": "description",
+          "description": ""
+        },
+        "price": {
+          "type": "number",
+          "title": "price",
+          "description": ""
+        },
+        "entityid": {
+          "type": "string",
+          "title": "entityID",
+          "description": ""
+        }
+      },
+      "required": []
+    },
+    "outputs": {
+      "title": "outputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "isapproved": {
+          "type": "boolean",
+          "title": "isApproved",
+          "description": ""
+        },
+        "finalstatus": {
+          "type": "string",
+          "title": "finalStatus",
+          "description": ""
+        }
+      },
+      "required": ["isapproved", "finalstatus"]
+    },
+    "processAttributes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "processAttributes",
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "requiresBusinessUser": false
+  },
+  "dependencies": [
+    {
+      "artifactUid": "3e51af12-9a42-4a95-9a3a-d12ef176ea42",
+      "type": "content"
+    },
+    {
+      "artifactUid": "5227d63c-f620-476c-893a-517bd14c302e",
+      "type": "content"
+    },
+    {
+      "artifactUid": "cfc75dd1-c8d4-407b-914a-3592082e1004",
+      "type": "both"
+    }
+  ],
+  "identifier": "bookApprovalProcess",
+  "valid": true,
+  "projectId": "eu12.cdsmunich.sampleapplicationproject",
+  "dataTypes": [
+    {
+      "uid": "cfc75dd1-c8d4-407b-914a-3592082e1004",
+      "name": "Author",
+      "description": "",
+      "type": "datatype",
+      "createdAt": "2026-03-25T11:54:07.324680Z",
+      "updatedAt": "2026-03-25T11:54:32.177064Z",
+      "header": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "title": "Author",
+        "properties": {
+          "name": {
+            "type": "string",
+            "uid": "35918fe0-f647-4e16-918c-c5dfaa1d5c9b"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "uid": "ac1a6ddf-073d-4365-8a8d-f97fe4e49915"
+          }
+        },
+        "version": 1
+      },
+      "identifier": "author",
+      "valid": true
+    }
+  ]
+}

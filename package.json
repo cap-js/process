@@ -1,7 +1,7 @@
 {
   "name": "@cap-js/process",
   "version": "0.1.0",
-  "description": "",
+  "description": "CAP Plugin to interact with SAP Build Process Automation to manage processes.",
   "main": "cds-plugin.js",
   "files": [
     "cds-plugin.js",
@@ -36,8 +36,10 @@
     "import:process:importSimple": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Simple_Inputs --force"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "SAP SE (https://www.sap.com)",
+  "repository": "cap-js/process",
+  "homepage": "https://cap.cloud.sap",
+  "license": "Apache-2.0",
   "type": "commonjs",
   "peerDependencies": {
     "@sap/cds": ">=9"
@@ -49,7 +51,8 @@
     "#cds-models/*": "./@cds-models/*/index.js"
   },
   "workspaces": [
-    "tests/bookshop"
+    "tests/bookshop",
+    "tests/sample/status-management"
   ],
   "dependencies": {
     "@sap-cloud-sdk/connectivity": "^4.5.1",
