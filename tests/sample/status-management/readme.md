@@ -1,5 +1,3 @@
-// TODO: update, reference in main readme; screenshots of process; update usage local
-
 # Status Management Bookshop
 
 A CAP sample application demonstrating how to integrate SAP Build Process Automation (SBPA) workflows into a bookshop scenario using the `@cap-js/process` plugin. The project showcases two distinct integration patterns -- **declarative** and **programmatic** -- for managing process lifecycles.
@@ -17,28 +15,118 @@ A third read-only service (`CatalogService` at `/browse`) exposes books for publ
 
 Both apps are accessible from a shared **Fiori Launchpad sandbox** at `/fiori.html`.
 
+## Processes
+
+<details> 
+<summary>
+Book approval process
+</summary>
+
+```
+              ┌────────────────────────────────────────┐
+              │              Process Start             │
+              └───────────────────┬────────────────────┘
+                                  │
+              ┌───────────────────▼────────────────────┐
+              │   Set status to 'Manager Approval      │
+              │               Pending'                 │
+              └───────────────────┬────────────────────┘
+                                  │
+              ┌───────────────────▼────────────────────┐
+              │            Manager Approval            │
+              └──────────────┬──────────────┬──────────┘
+                             │              │
+                        [Approve]        [Reject]
+                             │              │
+              ┌──────────────▼────────┐  ┌──▼──────────────────────────┐
+              │ status = 'Manager     │  │ status = 'Manager rejected  │
+              │ Approved, Author      │  │ request'                    │
+              │ Approval Pending'     │  │ isApproved = false          │
+              └──────────────┬────────┘  └──┬──────────────────────────┘
+                             │              │
+              ┌──────────────▼────────┐     │
+              │    Author Approval    │     │
+              └──────┬───────────┬────┘     │
+                     │           │          │
+                [Approve]     [Reject]      │
+                     │           │          │
+   ┌─────────────────▼───┐  ┌────▼──────────────────────────┐
+   │ status = 'Manager   │  │ status = 'Manager approved,   │
+   │ and Author          │  │ but Author rejected request'  │
+   │ Approved'           │  │ isApproved = false            │
+   │ isApproved = true   │  └────┬──────────────────────────┘
+   └─────────────────┬───┘       │          │
+                     └─────┬─────┘          │
+                           │                │
+                           └────────┬───────┘
+                                    │
+                         ┌──────────▼──────────┐
+                         │         End         │
+                         └─────────────────────┘
+```
+
+</details>
+
+<details>
+
+<summary>
+Author verification process
+</summary>
+
+```
+          ┌─────────────────────────────────────────┐
+          │             Process Start               │
+          └──────────────────┬──────────────────────┘
+                             │
+          ┌──────────────────▼──────────────────────┐
+          │   status = "Verification Pending"       │
+          └──────────────────┬──────────────────────┘
+                             │
+          ┌──────────────────▼──────────────────────┐
+          │       Author Verification Approval      │
+          └──────────┬──────────────────────┬───────┘
+                     │                      │
+                 [Verify]               [Reject]
+                     │                      │
+     ┌───────────────▼──────────┐  ┌────────▼────────────────────┐
+     │ status = "Author         │  │ status = "Author was not    │
+     │          verified"       │  │          verified"          │
+     │ isVerified = true        │  │ isVerified = false          │
+     └───────────────┬──────────┘  └────────┬────────────────────┘
+                     │                      │
+                     └──────────┬───────────┘
+                                │
+          ┌─────────────────────▼─────────────────────┐
+          │                   End                     │
+          └───────────────────────────────────────────┘
+```
+
+</details>
+
 ## Project Structure
 
 ```
+
 db/
-  schema.cds              # Domain model: Books, Authors, Genres
-  data/                   # CSV seed data
+schema.cds # Domain model: Books, Authors, Genres
+data/ # CSV seed data
 srv/
-  books-service.cds       # BooksService definition
-  books-service.js        # Books handler: approval status enrichment
-  books-constraints.cds   # Input validation for Books and Genres
-  authors-service.cds     # AuthorsService definition
-  authors-service.js      # Authors handler: verification lifecycle + status enrichment
-  authors-constraints.cds # Input validation for Authors
-  admin-process.cds       # Declarative BPM annotations for Books
-  cat-service.cds         # CatalogService (read-only browse)
-  cat-service.js          # CatalogService handler
-  external/               # Generated process service definitions (do not edit)
+books-service.cds # BooksService definition
+books-service.js # Books handler: approval status enrichment
+books-constraints.cds # Input validation for Books and Genres
+authors-service.cds # AuthorsService definition
+authors-service.js # Authors handler: verification lifecycle + status enrichment
+authors-constraints.cds # Input validation for Authors
+admin-process.cds # Declarative BPM annotations for Books
+cat-service.cds # CatalogService (read-only browse)
+cat-service.js # CatalogService handler
+external/ # Generated process service definitions (do not edit)
 app/
-  fiori.html              # Local Fiori Launchpad sandbox
-  services.cds            # Imports annotations from both apps
-  books/                  # Fiori Elements app for Manage Books
-  authors/                # Fiori Elements app for Manage Authors
+fiori.html # Local Fiori Launchpad sandbox
+services.cds # Imports annotations from both apps
+books/ # Fiori Elements app for Manage Books
+authors/ # Fiori Elements app for Manage Authors
+
 ```
 
 ## How the `@cap-js/process` Plugin Is Used
