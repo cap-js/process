@@ -540,7 +540,7 @@ cds import --from process --name eu12.myorg.myproject.myProcess
 If you already have a process definition JSON file (e.g., exported or previously fetched), you can generate the CDS model directly from it without needing credentials:
 
 ```bash
-cds import --from process ./workflows/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler.json --no-copy
+cds import --from process ./srv/workflows/eu12.myorg.myproject.myProcess.json
 ```
 
 #### What Gets Generated
@@ -551,7 +551,7 @@ The import generates:
 - Typed `ProcessInputs`, `ProcessOutputs`, `ProcessAttribute`, and `ProcessInstance` types based on the process definition
 - Typed actions: `start`, `suspend`, `resume`, `cancel`
 - Typed functions: `getAttributes`, `getOutputs`, `getInstancesByBusinessKey`
-- A process definition JSON in `./workflows/`
+- A process definition JSON in `./srv/workflows/`
 
 After importing, run `cds-typer` to generate TypeScript types for the imported service.
 
