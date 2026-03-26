@@ -29,7 +29,7 @@ module.exports = class AuthorsService extends cds.ApplicationService {
 
     // Cancel verification process when an unverified author is deleted
     this.after('DELETE', Authors, async (author, req) => {
-      if (!author.name) return;
+      if (!author.ID) return;
 
       const instances = await authorProcess.getInstancesByBusinessKey(author.ID, ['RUNNING']);
       if (instances.length > 0) {
@@ -41,7 +41,7 @@ module.exports = class AuthorsService extends cds.ApplicationService {
     this.after('READ', Authors, async (results, _req) => {
       await Promise.all(
         results.map(async (author) => {
-          if (!author.name) {
+          if (!author.ID) {
             author.verificationStatus = VERIFICATION_PENDING;
             author.isVerified = false;
             author.verificationCriticality = 2; // Warning (yellow)

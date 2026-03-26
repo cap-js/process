@@ -18,7 +18,7 @@ module.exports = class BooksService extends cds.ApplicationService {
         results.map(async (book) => {
           const bookID = book.ID;
           if (!bookID) {
-            // Draft entries without a title yet
+            // Draft entries
             book.processStatus = NO_APPROVAL_REQUIRED;
             book.isApproved = true;
             book.processCriticality = 0; // Neutral

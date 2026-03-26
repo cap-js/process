@@ -50,7 +50,7 @@
   },
   "workspaces": [
     "tests/bookshop",
-    "tests/samples/status-management"
+    "tests/sample/status-management"
   ],
   "dependencies": {
     "@sap-cloud-sdk/connectivity": "^4.5.1",

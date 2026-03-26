@@ -115,7 +115,7 @@ books-constraints.cds # Input validation for Books and Genres
 authors-service.cds # AuthorsService definition
 authors-service.js # Authors handler: verification lifecycle + status enrichment
 authors-constraints.cds # Input validation for Authors
-admin-process.cds # Declarative BPM annotations for Books
+books-process.cds   # Declarative BPM annotations for Books
 cat-service.cds # CatalogService (read-only browse)
 cat-service.js # CatalogService handler
 external/ # Generated process service definitions (do not edit)
@@ -136,11 +136,12 @@ The book approval process is managed entirely through CDS annotations in `srv/bo
 
 ```cds
 annotate BooksService.Books with @(
-    bpm.process.businessKey: (title),
+    bpm.process.businessKey: (ID),
     bpm.process.start : {
         id: 'eu12...bookApprovalProcess',
         on: 'CREATE',
         inputs: [
+            { path: $self.ID, as: 'entityid' },
             { path: $self.title, as: 'booktitle' },
             { path: $self.descr, as: 'description' },
             $self.author.name,
@@ -156,7 +157,7 @@ annotate BooksService.Books with @(
 );
 ```
 
-- **`@bpm.process.businessKey`** -- Correlates process instances back to entities using the book title.
+- **`@bpm.process.businessKey`** -- Correlates process instances back to entities using the book's ID.
 - **`@bpm.process.start`** -- Automatically starts the approval process on `CREATE` when the price exceeds 50. Entity fields are mapped to process inputs, with support for renaming (`as`) and navigation paths (`$self.author.name`).
 - **`@bpm.process.cancel`** -- Automatically cancels the running process on `UPDATE` when the price drops to 50 or below.
 
@@ -165,10 +166,12 @@ annotate BooksService.Books with @(
 The author verification process is managed entirely in JavaScript (`srv/authors-service.js`), giving full control over the lifecycle:
 
 ```js
+const authorProcess = await cds.connect.to(AUTHOR_PROCESS);
+
 // Start verification on author creation
-this.after('CREATE', 'Authors', async (author, req) => {
-  const verificationService = await cds.connect.to(AUTHOR_PROCESS);
-  await verificationService.start({
+this.after('CREATE', Authors, async (author, req) => {
+  await authorProcess.start({
+    entityid: author.ID,
     authorname: author.name,
     dateofbirth: author.dateOfBirth ?? '',
     placeofbirth: author.placeOfBirth ?? '',
@@ -176,11 +179,12 @@ this.after('CREATE', 'Authors', async (author, req) => {
 });
 
 // Cancel verification on author deletion
-this.after('DELETE', 'Authors', async (author, req) => {
-  const verificationService = await cds.connect.to(AUTHOR_PROCESS);
-  const instances = await verificationService.getInstancesByBusinessKey(author.name, ['RUNNING']);
+this.after('DELETE', Authors, async (author, req) => {
+  if (!author.ID) return;
+
+  const instances = await authorProcess.getInstancesByBusinessKey(author.ID, ['RUNNING']);
   if (instances.length > 0) {
-    await verificationService.cancel({ businessKey: author.name, cascade: true });
+    await authorProcess.cancel({ businessKey: author.ID, cascade: true });
   }
 });
 ```
