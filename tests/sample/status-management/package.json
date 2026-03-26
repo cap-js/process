@@ -39,6 +39,10 @@
       "eu12.cdsmunich.sampleapplicationproject.BookApprovalProcessService": {
         "kind": "process-service",
         "model": "srv/external/eu12.cdsmunich.sampleapplicationproject.bookApprovalProcess"
+      },
+      "eu12.cdsmunich.sampleapplicationproject.AuthorVerificationProcessService": {
+        "kind": "process-service",
+        "model": "srv/external/eu12.cdsmunich.sampleapplicationproject.authorVerificationProcess"
       }
     }
   }

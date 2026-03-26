@@ -33,6 +33,17 @@ annotate service.Authors with @(
                 Label : 'Place of Death',
                 Value : placeOfDeath,
             },
+            {
+                $Type : 'UI.DataField',
+                Label : 'Verification Status',
+                Value : verificationStatus,
+                Criticality : verificationCriticality,
+            },
+            {
+                $Type : 'UI.DataField',
+                Label : 'Verified',
+                Value : isVerified,
+            },
         ],
     },
     UI.Facets : [
@@ -61,13 +72,19 @@ annotate service.Authors with @(
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Date of Death',
-            Value : dateOfDeath,
+            Label : 'Place of Birth',
+            Value : placeOfBirth,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Place of Birth',
-            Value : placeOfBirth,
+            Label : 'Verification Status',
+            Value : verificationStatus,
+            Criticality : verificationCriticality,
+        },
+        {
+            $Type : 'UI.DataField',
+            Label : 'Verified',
+            Value : isVerified,
         },
     ],
 );

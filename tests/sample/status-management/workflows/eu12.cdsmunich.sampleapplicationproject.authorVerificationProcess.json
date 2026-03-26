@@ -1,0 +1,117 @@
+{
+  "uid": "7b477c46-74fa-4c87-8414-09acb470663f",
+  "name": "Author Verification Process",
+  "description": "",
+  "type": "bpi.process",
+  "createdAt": "2026-03-26T08:54:22.179844Z",
+  "updatedAt": "2026-03-26T09:17:11.736398Z",
+  "header": {
+    "inputs": {
+      "title": "inputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "authorname": {
+          "type": "string",
+          "title": "authorName",
+          "description": ""
+        },
+        "dateofbirth": {
+          "type": "string",
+          "title": "dateOfBirth",
+          "description": ""
+        },
+        "placeofbirth": {
+          "type": "string",
+          "title": "placeOfBirth",
+          "description": ""
+        }
+      },
+      "required": [
+        "authorname"
+      ]
+    },
+    "outputs": {
+      "title": "outputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "isverified": {
+          "type": "boolean",
+          "title": "isverified",
+          "description": ""
+        },
+        "verificationstatus": {
+          "type": "string",
+          "title": "verificationStatus",
+          "description": ""
+        }
+      },
+      "required": [
+        "isverified",
+        "verificationstatus"
+      ]
+    },
+    "processAttributes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "processAttributes",
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  "dependencies": [
+    {
+      "artifactUid": "f31afeb5-9107-423c-932c-69ce21e93880",
+      "type": "content"
+    }
+  ],
+  "identifier": "authorVerificationProcess",
+  "valid": true,
+  "projectId": "eu12.cdsmunich.sampleapplicationproject",
+  "dataTypes": []
+}
