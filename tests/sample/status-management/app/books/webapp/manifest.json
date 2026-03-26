@@ -15,6 +15,19 @@
       "version": "1.20.0",
       "toolsId": "ea000289-e433-433f-9d67-da5f23449471"
     },
+    "crossNavigation": {
+      "inbounds": {
+        "books-manage": {
+          "semanticObject": "Books",
+          "action": "manage",
+          "title": "{{appTitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    },
     "dataSources": {
       "mainService": {
         "uri": "/admin/",

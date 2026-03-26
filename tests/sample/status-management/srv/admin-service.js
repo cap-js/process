@@ -49,9 +49,9 @@ module.exports = class AdminService extends cds.ApplicationService {
                 book.isApproved = isapproved;
                 book.processCriticality = isapproved ? 3 : 1; // Positive (green) or Negative (red)
               } else if (status === 'CANCELED') {
-                book.processStatus = 'Cancelled';
+                book.processStatus = 'Approval process cancelled as price has been reduced';
                 book.isApproved = true;
-                book.processCriticality = 0; // Neutral
+                book.processCriticality = 3; // Positive (green)
               }
             } else if (book.price > 50) {
               // Process was likely just triggered but hasn't registered in SBPA yet
@@ -61,7 +61,7 @@ module.exports = class AdminService extends cds.ApplicationService {
             } else {
               book.processStatus = 'No Approval Required';
               book.isApproved = true;
-              book.processCriticality = 0; // Neutral
+              book.processCriticality = 3; // Positive
             }
           } catch (err) {
             book.processStatus = 'Status Unavailable';
