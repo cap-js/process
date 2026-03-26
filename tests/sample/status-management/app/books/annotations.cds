@@ -10,47 +10,48 @@ annotate service.Books with @(
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'author_ID',
+                Label : 'Author',
                 Value : author_ID,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'title',
+                Label : 'Title',
                 Value : title,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'descr',
+                Label : 'Description',
                 Value : descr,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'stock',
+                Label : 'Stock',
                 Value : stock,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'price',
+                Label : 'Price',
                 Value : price,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'currency_code',
+                Label : 'Currency',
                 Value : currency_code,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'genre_ID',
+                Label : 'Genre',
                 Value : genre_ID,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'processStatus',
+                Label : 'Approval Status',
                 Value : processStatus,
+                Criticality : processCriticality,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'isApproved',
+                Label : 'Approved',
                 Value : isApproved,
             },
         ],
@@ -71,36 +72,43 @@ annotate service.Books with @(
         },
         {
             $Type : 'UI.DataField',
-            Label : 'author_ID',
+            Label : 'Author',
             Value : author_ID,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'title',
+            Label : 'Title',
             Value : title,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'descr',
+            Label : 'Description',
             Value : descr,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'price',
+            Label : 'Price',
             Value : price,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'processStatus',
+            Label : 'Approval Status',
             Value : processStatus,
+            Criticality : processCriticality,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'isApproved',
+            Label : 'Approved',
             Value : isApproved,
         },
     ],
 );
+
+annotate service.Books with {
+    author   @Common.Text : author.name    @Common.TextArrangement : #TextOnly;
+    genre    @Common.Text : genre.name     @Common.TextArrangement : #TextOnly;
+    currency @Common.Text : currency.name  @Common.TextArrangement : #TextOnly;
+};
 
 annotate service.Books with {
     author @Common.ValueList : {
@@ -131,4 +139,3 @@ annotate service.Books with {
         ],
     }
 };
-

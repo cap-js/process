@@ -6,7 +6,8 @@ service AdminService @(odata:'/admin') {
   entity Books as projection on my.Books {
     *,
     virtual processStatus: String,
-    virtual isApproved: Boolean default false
+    virtual isApproved: Boolean default false,
+    virtual processCriticality: Integer default 0
   };
   entity Genres as projection on my.Genres;
 }

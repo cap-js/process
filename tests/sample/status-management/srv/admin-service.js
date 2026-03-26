@@ -7,40 +7,67 @@ module.exports = class AdminService extends cds.ApplicationService {
     this.before(['NEW', 'CREATE'], 'Books', genid);
 
     this.after('READ', Books, async (results, _req) => {
-      for (const book of results) {
-        const bookTitle = book.title;
+      const processService = await cds.connect.to(
+        'eu12.cdsmunich.sampleapplicationproject.BookApprovalProcessService',
+      );
 
-        const processService = await cds.connect.to('ProcessService');
-        const instances = await processService.getInstancesByBusinessKey(bookTitle, [
-          'RUNNING',
-          'COMPLETED',
-          'CANCELED',
-        ]);
-
-        if (instances[0] && instances[0].id && instances[0].status) {
-          if (instances[0].status === 'RUNNING') {
-            // Get attributes from running process
-            const attributes = await processService.getAttributes(instances[0].id);
-            const currentStatus = attributes[0].value;
-            book.processStatus = currentStatus;
-            book.isApproved = false;
-          } else if (instances[0].status === 'COMPLETED') {
-            // get outputs from completed process
-            const outputs = await processService.getOutputs(instances[0].id);
-            console.log(outputs);
-            const { finalstatus, isapproved } = outputs;
-            book.processStatus = finalstatus;
-            book.isApproved = isapproved;
-          } else if (instances[0].status === 'CANCELED') {
-            book.processStatus = 'Process has been cancelled and is not required';
+      // Parallelize all process lookups using Promise.all instead of sequential loop
+      await Promise.all(
+        results.map(async (book) => {
+          const bookTitle = book.title;
+          if (!bookTitle) {
+            // Draft entries without a title yet
+            book.processStatus = 'No Approval Required';
             book.isApproved = true;
+            book.processCriticality = 0; // Neutral
+            return;
           }
-        } else {
-          book.processStatus = 'No process started';
-          book.isApproved = true;
-        }
-      }
+
+          try {
+            const instances = await processService.getInstancesByBusinessKey(bookTitle, [
+              'RUNNING',
+              'COMPLETED',
+              'CANCELED',
+            ]);
+
+            if (instances[0]?.id && instances[0]?.status) {
+              const { id, status } = instances[0];
+
+              if (status === 'RUNNING') {
+                const attributes = await processService.getAttributes(id);
+                book.processStatus = attributes[0]?.value ?? 'Pending Approval';
+                book.isApproved = false;
+                book.processCriticality = 2; // Warning (yellow)
+              } else if (status === 'COMPLETED') {
+                const outputs = await processService.getOutputs(id);
+                const { finalstatus, isapproved } = outputs;
+                book.processStatus = finalstatus;
+                book.isApproved = isapproved;
+                book.processCriticality = isapproved ? 3 : 1; // Positive (green) or Negative (red)
+              } else if (status === 'CANCELED') {
+                book.processStatus = 'Cancelled';
+                book.isApproved = true;
+                book.processCriticality = 0; // Neutral
+              }
+            } else if (book.price > 50) {
+              // Process was likely just triggered but hasn't registered in SBPA yet
+              book.processStatus = 'Pending Approval';
+              book.isApproved = false;
+              book.processCriticality = 2; // Warning (yellow)
+            } else {
+              book.processStatus = 'No Approval Required';
+              book.isApproved = true;
+              book.processCriticality = 0; // Neutral
+            }
+          } catch (err) {
+            book.processStatus = 'Status Unavailable';
+            book.isApproved = false;
+            book.processCriticality = 0; // Neutral
+          }
+        }),
+      );
     });
+
     return super.init();
   }
 };

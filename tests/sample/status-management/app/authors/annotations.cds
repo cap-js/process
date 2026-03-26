@@ -10,27 +10,27 @@ annotate service.Authors with @(
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'name',
+                Label : 'Name',
                 Value : name,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'dateOfBirth',
+                Label : 'Date of Birth',
                 Value : dateOfBirth,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'dateOfDeath',
+                Label : 'Date of Death',
                 Value : dateOfDeath,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'placeOfBirth',
+                Label : 'Place of Birth',
                 Value : placeOfBirth,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'placeOfDeath',
+                Label : 'Place of Death',
                 Value : placeOfDeath,
             },
         ],
@@ -51,24 +51,23 @@ annotate service.Authors with @(
         },
         {
             $Type : 'UI.DataField',
-            Label : 'name',
+            Label : 'Name',
             Value : name,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'dateOfBirth',
+            Label : 'Date of Birth',
             Value : dateOfBirth,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'dateOfDeath',
+            Label : 'Date of Death',
             Value : dateOfDeath,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'placeOfBirth',
+            Label : 'Place of Birth',
             Value : placeOfBirth,
         },
     ],
 );
-
