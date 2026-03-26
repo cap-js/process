@@ -49,7 +49,8 @@
     "#cds-models/*": "./@cds-models/*/index.js"
   },
   "workspaces": [
-    "tests/bookshop"
+    "tests/bookshop",
+    "tests/samples/status-management"
   ],
   "dependencies": {
     "@sap-cloud-sdk/connectivity": "^4.5.1",

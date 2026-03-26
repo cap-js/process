@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@sap/cds": "^9.6.2",
-    "@cap-js/process": "file:../../../cap-js-process-1.0.0.tgz",
+    "@cap-js/process": "file:../../../",
     "@sap-cloud-sdk/connectivity": "^4",
     "@sap-cloud-sdk/http-client": "^4",
     "@sap-cloud-sdk/resilience": "^4"
