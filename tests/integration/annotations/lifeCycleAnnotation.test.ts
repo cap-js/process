@@ -10,8 +10,6 @@ describe('Integration tests for Process Annotation Combinations', () => {
 
   beforeAll(async () => {
     const db = await cds.connect.to('db');
-    // Warmup: ensure DB connection and ProcessService are fully initialized before tests
-    await cds.connect.to('ProcessService');
     db.before('*', (req) => {
       if (req.event === 'CREATE' && req.target?.name === 'cds.outbox.Messages') {
         const msg = JSON.parse(req.query?.INSERT?.entries[0].msg);

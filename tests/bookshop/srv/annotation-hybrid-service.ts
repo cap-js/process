@@ -3,9 +3,10 @@ import Annotation_Lifecycle_ProcessService from '#cds-models/eu12/cdsmunich/capp
 
 class AnnotationHybridService extends cds.ApplicationService {
   async init() {
+    const annotationLifecycleProcess = await cds.connect.to(Annotation_Lifecycle_ProcessService);
+
     this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const annotationLifecycleProcess = await cds.connect.to(Annotation_Lifecycle_ProcessService);
       const instances = await annotationLifecycleProcess.getInstancesByBusinessKey({
         businessKey: ID,
         status: status,

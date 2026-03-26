@@ -1,2 +1,2 @@
-tests/bookshop/workflows/*
+tests/bookshop/srv/workflows/*
 dist/*
