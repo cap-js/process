@@ -36,6 +36,7 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org/
       - run: npm i
+      - run: npm i -g @sap/cds-dk@latest
       - run: npm run build
       - name: get-version
         id: package-version
