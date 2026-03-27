@@ -30,32 +30,7 @@ import {
 } from '../constants';
 
 import { CsnDefinition, CsnEntity } from '../types/csn-extensions';
-
-/**
- * Discovers all @bpm.process.start annotation prefixes on a CSN entity definition.
- * Returns an array of prefixes like ['@bpm.process.start', '@bpm.process.start#two'].
- *
- * CDS compiles annotation properties into flat keys where the qualifier (if any)
- * sits between the annotation name and the property suffix:
- *   '@bpm.process.start.id'       -> prefix '@bpm.process.start'
- *   '@bpm.process.start#two.on'   -> prefix '@bpm.process.start#two'
- *
- * By extracting everything before the first '.' after the PROCESS_START length,
- * we collect all prefixes regardless of which property keys are present, so
- * validation can report missing required properties like .id or .on.
- */
-function findStartAnnotationPrefixes(def: CsnEntity): string[] {
-  const prefixes = new Set<string>();
-
-  for (const key of Object.keys(def)) {
-    if (!key.startsWith(PROCESS_START)) continue;
-    const dotIndex = key.indexOf('.', PROCESS_START.length);
-    if (dotIndex === -1) continue;
-    prefixes.add(key.substring(0, dotIndex));
-  }
-
-  return Array.from(prefixes);
-}
+import { getAnnotationPrefixes } from '../shared/annotations-helper';
 
 /**
  * Configuration for lifecycle annotation validation (cancel, suspend, resume)
@@ -153,8 +128,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     processDefinitions: Map<string, CsnDefinition>,
     allDefinitions: Record<string, CsnDefinition>,
   ) {
-    // Discover all start annotation prefixes (unqualified + qualified)
-    const startPrefixes = findStartAnnotationPrefixes(def);
+    const startPrefixes = Array.from(getAnnotationPrefixes(def, PROCESS_START));
 
     for (const prefix of startPrefixes) {
       const annotationId = `${prefix}.id` as `@${string}`;

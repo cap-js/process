@@ -11,6 +11,7 @@ import {
   PROCESS_LOGGER_PREFIX,
   BUSINESS_KEY,
   BUSINESS_KEY_MAX_LENGTH,
+  PROCESS_START_INPUTS,
 } from './../constants';
 import {
   InputCSNEntry,
@@ -205,7 +206,7 @@ function parseInputToTreeFromInputs(
  * Used by DELETE pre-fetch handlers which still read from the target.
  */
 function parseInputToTreeFromTarget(target: Target): ProcessStartInput[] {
-  const inputsCSN = target['@bpm.process.start.inputs'] as InputCSNEntry[] | undefined;
+  const inputsCSN = target[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
   return parseInputToTreeFromInputs(inputsCSN, target);
 }
 

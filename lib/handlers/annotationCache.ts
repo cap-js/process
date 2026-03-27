@@ -9,6 +9,7 @@ import {
   PROCESS_RESUME_ON,
   CUD_EVENTS,
 } from '../constants';
+import { getAnnotationPrefixes } from '../shared/annotations-helper';
 
 function expandEvent(event: string | undefined, entity: cds.entity): string[] {
   if (!event) return [];
@@ -38,16 +39,7 @@ function expandEvent(event: string | undefined, entity: cds.entity): string[] {
 export function findStartAnnotations(entity: cds.entity): StartAnnotationDescriptor[] {
   const results: StartAnnotationDescriptor[] = [];
 
-  // Collect all unique start annotation prefixes from entity keys.
-  // Keys look like '@bpm.process.start.id', '@bpm.process.start#two.on', etc.
-  // The prefix is everything before the property suffix (.id, .on, .if, .inputs).
-  const prefixes = new Set<string>();
-  for (const key of Object.keys(entity)) {
-    if (!key.startsWith(PROCESS_START)) continue;
-    const dotIndex = key.indexOf('.', PROCESS_START.length);
-    if (dotIndex === -1) continue;
-    prefixes.add(key.substring(0, dotIndex));
-  }
+  const prefixes = getAnnotationPrefixes(entity, PROCESS_START);
 
   for (const prefix of prefixes) {
     const id = entity[`${prefix}.id`] as string | undefined;
