@@ -10,7 +10,6 @@
 
 - Resolving of Cloud credentials during `cds import --from process`
 
-
 ## Version 0.1.0 - 2026-03-27
 
 ### Added
