@@ -1,0 +1,80 @@
+{
+  "uid": "72320290-a084-47ba-9987-fc81d23b7082",
+  "name": "Programmatic_Lifecycle_Process",
+  "description": "",
+  "type": "bpi.process",
+  "createdAt": "2026-03-18T13:11:55.357378Z",
+  "updatedAt": "2026-03-18T13:13:01.103860Z",
+  "header": {
+    "inputs": {
+      "title": "inputs",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "password": {
+          "type": "string",
+          "password": true
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "documentFolder": {
+          "type": "string",
+          "format": "document-folder"
+        }
+      },
+      "properties": {
+        "ID": {
+          "type": "string",
+          "title": "ID",
+          "description": ""
+        },
+        "attribute1": {
+          "type": "string",
+          "title": "Attribute1",
+          "description": ""
+        },
+        "attribute2": {
+          "type": "string",
+          "title": "Attribute2",
+          "description": ""
+        }
+      },
+      "required": [
+        "ID"
+      ]
+    },
+    "outputs": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "outputs",
+      "type": "object",
+      "properties": {}
+    },
+    "processAttributes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "processAttributes",
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  "dependencies": [
+    {
+      "artifactUid": "25ab1d56-63e5-4082-806f-9e41763f40f3",
+      "type": "content"
+    }
+  ],
+  "identifier": "programmatic_Lifecycle_Process",
+  "valid": true,
+  "projectId": "eu12.cdsmunich.capprocesspluginhybridtest",
+  "dataTypes": []
+}

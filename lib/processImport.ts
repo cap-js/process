@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import cds from '@sap/cds';
-import * as csn from '../types/csn-extensions';
+import * as csn from './types/csn-extensions';
 import { getServiceCredentials, CachingTokenProvider, createXsuaaTokenProvider } from './auth';
 import {
   createProcessApiClient,
@@ -75,7 +75,7 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
     processHeader.dataTypes.forEach((dt) => dataTypeCache.set(dt.uid, dt));
   }
 
-  const outputPath = path.join(cds.root, 'workflows', `${processName}.json`);
+  const outputPath = path.join(cds.root, 'srv', 'workflows', `${processName}.json`);
   await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
   await fs.promises.writeFile(outputPath, JSON.stringify(processHeader, null, 2), 'utf8');
 
@@ -83,9 +83,31 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
 }
 
 async function createApiClient(): Promise<IProcessApiClient> {
-  const credentials = getServiceCredentials(PROCESS_SERVICE);
+  let credentials = getServiceCredentials(PROCESS_SERVICE);
+
   if (!credentials) {
-    throw new Error('No ProcessService credentials found. Run with: cds bind --exec -- ...');
+    // Try to resolve cloud bindings automatically (same as cds bind --exec does)
+    // REVISIT: once merged in core
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cdsDk = cds as any;
+      const resolve = cdsDk._localOrGlobal ?? cdsDk._local ?? require;
+      const { env: bindingEnv } = resolve('@sap/cds-dk/lib/bind/shared');
+      process.env.CDS_ENV ??= 'hybrid';
+      cdsDk.env = cds.env.for('cds');
+      Object.assign(process.env, await bindingEnv());
+      cdsDk.env = cds.env.for('cds');
+      cdsDk.requires = cds.env.requires;
+      credentials = getServiceCredentials(PROCESS_SERVICE);
+    } catch (e) {
+      LOG.debug('Auto-resolve bindings failed:', e);
+    }
+  }
+
+  if (!credentials) {
+    throw new Error(
+      'No ProcessService credentials found. Ensure you have bound a process service instance (e.g., via cds bind process -2 <instance>).',
+    );
   }
 
   const apiUrl = credentials.endpoints?.api;
@@ -189,7 +211,6 @@ function addProcessTypes(
   const attributesName = fqn(serviceName, 'ProcessAttributes');
   const instanceName = fqn(serviceName, 'ProcessInstance');
   const instancesName = fqn(serviceName, 'ProcessInstances');
-  const statusName = fqn(serviceName, 'ProcessInstanceStatus');
 
   definitions[inputsName] = buildTypeFromSchema(
     inputsName,
@@ -241,12 +262,6 @@ function addProcessTypes(
     name: instancesName,
     items: { type: instanceName },
   };
-
-  definitions[statusName] = {
-    kind: 'type',
-    name: statusName,
-    items: { type: csn.CdsBuiltinType.String },
-  };
 }
 
 // ============================================================================
@@ -263,7 +278,6 @@ function addProcessActions(
   const outputsType = fqn(serviceName, 'ProcessOutputs');
   const attributesType = fqn(serviceName, 'ProcessAttributes');
   const instancesType = fqn(serviceName, 'ProcessInstances');
-  const statusType = fqn(serviceName, 'ProcessInstanceStatus');
 
   // Start action — three tiers:
   //   1. No input properties:       start() with no params
@@ -311,7 +325,7 @@ function addProcessActions(
     name: fqn(serviceName, 'getInstancesByBusinessKey'),
     params: {
       businessKey: { type: csn.CdsBuiltinType.String, notNull: true },
-      status: { type: statusType },
+      status: { items: { type: csn.CdsBuiltinType.String } },
     },
     returns: { type: instancesType },
   };

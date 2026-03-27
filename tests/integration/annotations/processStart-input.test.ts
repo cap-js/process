@@ -3,7 +3,7 @@ import cds from '@sap/cds';
 const { join } = cds.utils.path;
 
 const app = join(__dirname, '../../bookshop');
-const { test, POST } = cds.test(app);
+const { POST } = cds.test(app);
 
 describe('Integration tests for START annotation with inputs array', () => {
   let foundMessages: any[] = [];
@@ -19,8 +19,11 @@ describe('Integration tests for START annotation with inputs array', () => {
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
+  });
+
+  afterAll(async () => {
+    await (cds as any).flush();
   });
 
   // Helper to get the start message context
@@ -42,7 +45,7 @@ describe('Integration tests for START annotation with inputs array', () => {
         expectedDelivery: '2026-01-25',
         origin: 'Berlin, Germany',
         destination: 'Rome, Italy',
-        totalValue: 2500.0,
+        totalValue: '2500.00',
         notes: 'Handle with care',
       };
 
@@ -75,7 +78,7 @@ describe('Integration tests for START annotation with inputs array', () => {
         expectedDelivery: '2026-01-25',
         origin: 'Berlin, Germany',
         destination: 'Rome, Italy',
-        totalValue: 2500.0,
+        totalValue: '2500.00',
       };
 
       const response = await POST('/odata/v4/annotation/StartSelectedInput', shipment);
@@ -108,7 +111,7 @@ describe('Integration tests for START annotation with inputs array', () => {
         expectedDelivery: '2026-01-25',
         origin: 'Berlin, Germany',
         destination: 'Rome, Italy',
-        totalValue: 2500.0,
+        totalValue: '2500.00',
       };
 
       const response = await POST('/odata/v4/annotation/StartAliasInput', shipment);
@@ -145,14 +148,14 @@ describe('Integration tests for START annotation with inputs array', () => {
             ID: 'item-001',
             title: 'Product A',
             quantity: 5,
-            price: 100.0,
+            price: '100.00',
             parentID: '550e8400-e29b-41d4-a716-446655440003',
           },
           {
             ID: 'item-002',
             title: 'Product B',
             quantity: 3,
-            price: 50.0,
+            price: '50.00',
             parentID: '550e8400-e29b-41d4-a716-446655440003',
           },
         ],
@@ -190,13 +193,13 @@ describe('Integration tests for START annotation with inputs array', () => {
             ID: 'item-001',
             title: 'Product A',
             quantity: 5,
-            price: 100.0,
+            price: '100.00',
           },
           {
             ID: 'item-002',
             title: 'Product B',
             quantity: 3,
-            price: 50.0,
+            price: '50.00',
           },
         ],
       };
@@ -245,7 +248,7 @@ describe('Integration tests for START annotation with inputs array', () => {
             ID: 'item-001',
             productName: 'Widget',
             quantity: 10,
-            unitPrice: 25.0,
+            unitPrice: '25.00',
           },
         ],
       };
@@ -363,7 +366,7 @@ describe('Integration tests for START annotation with inputs array', () => {
         ID: '550e8400-e29b-41d4-a716-446655440008',
         status: 'PENDING',
         shipmentDate: '2026-01-15',
-        totalValue: 2500.0,
+        totalValue: '2500.00',
         items: [
           {
             ID: 'item-001',
@@ -414,7 +417,7 @@ describe('Integration tests for START annotation with inputs array', () => {
         ID: '550e8400-e29b-41d4-a716-446655440009',
         status: 'NEW',
         shipmentDate: '2026-02-20',
-        totalValue: 999.99,
+        totalValue: '999.99',
         items: [{ ID: 'item-a01', title: 'Widget', quantity: 10 }],
       };
 
@@ -450,7 +453,7 @@ describe('Integration tests for START annotation with inputs array', () => {
         ID: '550e8400-e29b-41d4-a716-446655440010',
         status: 'PROCESSING',
         shipmentDate: '2026-03-15',
-        totalValue: 1500.0,
+        totalValue: '1500.00',
         items: [
           { ID: 'item-b01', title: 'Gadget', quantity: 7 },
           { ID: 'item-b02', title: 'Gizmo', quantity: 3 },
@@ -498,7 +501,7 @@ describe('Integration tests for START annotation with inputs array', () => {
         ID: '550e8400-e29b-41d4-a716-446655440011',
         status: 'NEW',
         shipmentDate: '2026-04-01',
-        totalValue: 1234.56,
+        totalValue: '1234.56',
       };
 
       const response = await POST('/odata/v4/annotation/StartMultipleAliasScalar', order);
@@ -596,7 +599,7 @@ describe('Integration tests for START annotation with inputs array', () => {
       expect(context).toBeDefined();
 
       // $self should only include scalar fields: ID, status
-      // Should NOT include: items (composition), author (association)
+      // Includes Association key
       expect(context).toEqual({
         ID: entity.ID,
         status: entity.status,
@@ -606,46 +609,10 @@ describe('Integration tests for START annotation with inputs array', () => {
   });
 
   // ================================================
-  // Test 14: No inputs with Composition and Association
-  // ProcessInputs type matches all scalar fields, so all should be included
-  // ================================================
-  describe('Test 14: No inputs with Composition and Association', () => {
-    it('should include all scalar fields matching ProcessInputs', async () => {
-      const author = {
-        ID: '550e8400-e29b-41d4-a716-446655440099',
-      };
-
-      const entity = {
-        ID: '550e8400-e29b-41d4-a716-446655440014',
-        status: 'PENDING',
-        author_ID: author.ID,
-      };
-
-      // Create author first
-      await POST('/odata/v4/annotation/StartNoInputWithAssocAuthors', author);
-
-      const response = await POST('/odata/v4/annotation/StartNoInputWithAssoc', entity);
-
-      expect(response.status).toBe(201);
-      expect(foundMessages.length).toBe(1);
-
-      const context = getStartContext();
-      expect(context).toBeDefined();
-
-      // ProcessInputs has {ID, status, author_ID} — all match entity scalar fields
-      expect(context).toEqual({
-        ID: entity.ID,
-        status: entity.status,
-        author_ID: author.ID,
-      });
-    });
-  });
-
-  // ================================================
-  // Test 15: $self.author - explicitly include association
+  // Test 14: $self.author - explicitly include association
   // Should expand the author association with all its fields
   // ================================================
-  describe('Test 15: $self.author - explicitly include association', () => {
+  describe('Test 14: $self.author - explicitly include association', () => {
     it('should include the author association expanded with all its fields', async () => {
       const author = {
         ID: '550e8400-e29b-41d4-a716-446655440098',

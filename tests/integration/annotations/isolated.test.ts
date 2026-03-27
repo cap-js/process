@@ -3,7 +3,7 @@ import cds from '@sap/cds';
 const { join } = cds.utils.path;
 
 const app = join(__dirname, '../../bookshop');
-const { test, POST, DELETE, PATCH } = cds.test(app);
+const { POST, DELETE, PATCH } = cds.test(app);
 
 describe('Integration tests for Process Annotations (Isolated)', () => {
   let foundMessages: any[] = [];
@@ -19,13 +19,16 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
   });
 
+  afterAll(async () => {
+    await (cds as any).flush();
+  });
+
   // Helper function to create a test car entity
-  const createTestCar = (id?: string, mileage: number = 100) => ({
-    ID: id || '550e8400-e29b-41d4-a716-446655440000',
+  const createTestCar = ({ id, mileage = 100 }: { id?: string; mileage?: number } = {}) => ({
+    ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',
     mileage,
@@ -54,7 +57,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should start process on CREATE when condition is met', async () => {
-        const car = createTestCar(undefined, 600); // mileage > 500
+        const car = createTestCar({ mileage: 600 }); // mileage > 500
 
         const response = await POST('/odata/v4/annotation/StartOnCreateWhen', car);
 
@@ -70,7 +73,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT start process on CREATE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 400); // mileage <= 500
+        const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
         const response = await POST('/odata/v4/annotation/StartOnCreateWhen', car);
 
@@ -104,7 +107,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should start process on UPDATE when condition is met', async () => {
-        const car = createTestCar(undefined, 100);
+        const car = createTestCar({ mileage: 100 });
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/StartOnUpdateWhen', car);
@@ -125,7 +128,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT start process on UPDATE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 100);
+        const car = createTestCar({ mileage: 100 });
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/StartOnUpdateWhen', car);
@@ -164,7 +167,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should start process on DELETE when condition is met', async () => {
-        const car = createTestCar(undefined, 600); // mileage > 500
+        const car = createTestCar({ mileage: 600 }); // mileage > 500
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/StartOnDeleteWhen', car);
@@ -182,7 +185,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT start process on DELETE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 400); // mileage <= 500
+        const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/StartOnDeleteWhen', car);
@@ -220,7 +223,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should cancel process on CREATE when condition is met', async () => {
-        const car = createTestCar(undefined, 600); // mileage > 500
+        const car = createTestCar({ mileage: 600 }); // mileage > 500
 
         const response = await POST('/odata/v4/annotation/CancelOnCreateWhen', car);
 
@@ -235,7 +238,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT cancel process on CREATE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 400); // mileage <= 500
+        const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
         const response = await POST('/odata/v4/annotation/CancelOnCreateWhen', car);
 
@@ -271,7 +274,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should cancel process on UPDATE with cascade true when condition is met', async () => {
-        const car = createTestCar(undefined, 100);
+        const car = createTestCar({ mileage: 100 });
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/CancelOnUpdateWhen', car);
@@ -294,7 +297,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT cancel process on UPDATE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 100);
+        const car = createTestCar({ mileage: 100 });
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/CancelOnUpdateWhen', car);
@@ -335,7 +338,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should cancel process on DELETE when condition is met', async () => {
-        const car = createTestCar(undefined, 600); // mileage > 500
+        const car = createTestCar({ mileage: 600 }); // mileage > 500
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/CancelOnDeleteWhen', car);
@@ -355,7 +358,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT cancel process on DELETE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 400); // mileage <= 500
+        const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/CancelOnDeleteWhen', car);
@@ -393,7 +396,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should suspend process on CREATE when condition is met', async () => {
-        const car = createTestCar(undefined, 600); // mileage > 500
+        const car = createTestCar({ mileage: 600 }); // mileage > 500
 
         const response = await POST('/odata/v4/annotation/SuspendOnCreateWhen', car);
 
@@ -408,7 +411,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT suspend process on CREATE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 400); // mileage <= 500
+        const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
         const response = await POST('/odata/v4/annotation/SuspendOnCreateWhen', car);
 
@@ -444,7 +447,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should suspend process on UPDATE with cascade true when condition is met', async () => {
-        const car = createTestCar(undefined, 100);
+        const car = createTestCar({ mileage: 100 });
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/SuspendOnUpdateWhen', car);
@@ -470,7 +473,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT suspend process on UPDATE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 100);
+        const car = createTestCar({ mileage: 100 });
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/SuspendOnUpdateWhen', car);
@@ -514,7 +517,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should suspend process on DELETE when condition is met', async () => {
-        const car = createTestCar(undefined, 600); // mileage > 500
+        const car = createTestCar({ mileage: 600 }); // mileage > 500
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/SuspendOnDeleteWhen', car);
@@ -536,7 +539,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT suspend process on DELETE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 400); // mileage <= 500
+        const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/SuspendOnDeleteWhen', car);
@@ -576,7 +579,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should resume process on CREATE when condition is met', async () => {
-        const car = createTestCar(undefined, 600); // mileage > 500
+        const car = createTestCar({ mileage: 600 }); // mileage > 500
 
         const response = await POST('/odata/v4/annotation/ResumeOnCreateWhen', car);
 
@@ -591,7 +594,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT resume process on CREATE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 400); // mileage <= 500
+        const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
         const response = await POST('/odata/v4/annotation/ResumeOnCreateWhen', car);
 
@@ -627,7 +630,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should resume process on UPDATE with cascade true when condition is met', async () => {
-        const car = createTestCar(undefined, 100);
+        const car = createTestCar({ mileage: 100 });
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/ResumeOnUpdateWhen', car);
@@ -650,7 +653,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT resume process on UPDATE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 100);
+        const car = createTestCar({ mileage: 100 });
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/ResumeOnUpdateWhen', car);
@@ -691,7 +694,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should resume process on DELETE when condition is met', async () => {
-        const car = createTestCar(undefined, 600); // mileage > 500
+        const car = createTestCar({ mileage: 600 }); // mileage > 500
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/ResumeOnDeleteWhen', car);
@@ -711,7 +714,7 @@ describe('Integration tests for Process Annotations (Isolated)', () => {
       });
 
       it('should NOT resume process on DELETE when condition is NOT met', async () => {
-        const car = createTestCar(undefined, 400); // mileage <= 500
+        const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
         // First create the entity
         const createResponse = await POST('/odata/v4/annotation/ResumeOnDeleteWhen', car);

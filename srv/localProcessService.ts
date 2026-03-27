@@ -9,7 +9,8 @@ class ProcessService extends cds.ApplicationService {
   async init() {
     this.on('start', async (req: cds.Request) => {
       const { definitionId, context } = req.data;
-      const businessKey = context?.businesskey ?? context?.businessKey;
+      const businessKey = req.headers['businessKey'] as string | undefined;
+      LOG.info('Starting process', definitionId);
 
       LOG.debug(
         `==============================================================\n` +
@@ -28,6 +29,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('cancel', async (req: cds.Request) => {
       const { businessKey } = req.data;
+      LOG.info('Cancelling process(es)', businessKey);
 
       LOG.debug(
         `==============================================================\n` +
@@ -61,6 +63,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('suspend', async (req: cds.Request) => {
       const { businessKey } = req.data;
+      LOG.info('Suspending process(es)', businessKey);
 
       LOG.debug(
         `==============================================================\n` +
@@ -69,10 +72,9 @@ class ProcessService extends cds.ApplicationService {
           `==============================================================`,
       );
 
-      const instances = localWorkflowStore.getInstancesByBusinessKey(
-        businessKey,
+      const instances = localWorkflowStore.getInstancesByBusinessKey(businessKey, [
         WorkflowStatus.RUNNING,
-      );
+      ]);
 
       if (instances.length === 0) {
         LOG.warn(`No running workflow instances found with businessKey: ${businessKey}`);
@@ -94,6 +96,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('resume', async (req: cds.Request) => {
       const { businessKey } = req.data;
+      LOG.info('Resuming process(es)', businessKey);
 
       LOG.debug(
         `==============================================================\n` +
@@ -102,10 +105,9 @@ class ProcessService extends cds.ApplicationService {
           `==============================================================`,
       );
 
-      const instances = localWorkflowStore.getInstancesByBusinessKey(
-        businessKey,
+      const instances = localWorkflowStore.getInstancesByBusinessKey(businessKey, [
         WorkflowStatus.SUSPENDED,
-      );
+      ]);
 
       if (instances.length === 0) {
         LOG.warn(`No suspended workflow instances found with businessKey: ${businessKey}`);
@@ -128,6 +130,7 @@ class ProcessService extends cds.ApplicationService {
     this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
       const { businessKey } = req.data;
       let { status } = req.data;
+      LOG.info('Getting instances for', businessKey);
 
       LOG.debug(
         `==============================================================\n` +
@@ -156,6 +159,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('getAttributes', async (req: cds.Request) => {
       const { processInstanceId } = req.data;
+      LOG.info('Getting attributes for', processInstanceId);
 
       LOG.debug(
         `==============================================================\n` +
@@ -183,6 +187,7 @@ class ProcessService extends cds.ApplicationService {
 
     this.on('getOutputs', async (req: cds.Request) => {
       const { processInstanceId } = req.data;
+      LOG.info('Getting outputs for', processInstanceId);
 
       LOG.debug(
         `==============================================================\n` +

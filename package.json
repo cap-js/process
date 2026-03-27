@@ -1,23 +1,45 @@
 {
   "name": "@cap-js/process",
-  "version": "1.0.0",
-  "description": "",
-  "main": "cds-plugin.ts",
+  "version": "0.1.0",
+  "description": "CAP Plugin to interact with SAP Build Process Automation to manage processes.",
+  "main": "cds-plugin.js",
+  "files": [
+    "cds-plugin.js",
+    "dist/",
+    "srv/*.cds",
+    "srv/*.js"
+  ],
   "scripts": {
-    "test": "jest --silent",
+    "prebuild": "npm run compile",
+    "pretest": "npm run compile",
+    "test": "jest --silent --testPathIgnorePatterns=/tests/hybrid/programmaticApproach.test.ts",
     "test:watch": "jest --watch",
-    "test:integration": "jest tests/integration",
+    "test:hana": "jest tests/integration --silent",
+    "test:hybrid": "jest tests/hybrid --silent",
+    "clean:types": "rm -rf @cds-models tests/bookshop/@cds-models && npm run cds-typer && npm run cds-typer --prefix tests/bookshop",
+    "clean:build": "rm -rf gen tests/bookshop/gen && npm run cds-build && npm run cds-build --prefix tests/bookshop",
+    "clean:all": "rm -rf node_modules tests/bookshop/node_modules gen tests/bookshop/gen @cds-models tests/bookshop/@cds-models && npm i && npm run cds-typer && npm run cds-typer --prefix tests/bookshop && npm run cds-build && npm run cds-build --prefix tests/bookshop",
     "build": "npm run cds-build && npm run cds-typer",
+    "compile": "tsc -p tsconfig.build.json",
     "cds-build": "cds-tsx build",
     "cds-typer": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models",
     "watch": "cds-tsx watch",
     "lint": "npx eslint .",
     "prettier": "npx -y prettier@3 --write .",
-    "prettier:check": "npx -y prettier@3 --check ."
+    "prettier:check": "npx -y prettier@3 --check .",
+    "import:process": "npm run import:process:annotationLifeCycle && npm run import:process:programmaticLifecycle && npm run import:process:programmaticOutput && npm run import:process:importAttributesOutputs && npm run import:process:importComplex && npm run import:process:importSimple",
+    "import:process:annotationLifeCycle": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process --force",
+    "import:process:programmaticLifecycle": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process --force",
+    "import:process:programmaticOutput": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Output_Process --force",
+    "import:process:importAttributesOutputs": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Attributes_And_Outputs --force",
+    "import:process:importComplex": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Complex_Inputs --force",
+    "import:process:importSimple": "cd tests/bookshop && cds import --from process --name eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Simple_Inputs --force"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "SAP SE (https://www.sap.com)",
+  "repository": "cap-js/process",
+  "homepage": "https://cap.cloud.sap",
+  "license": "Apache-2.0",
   "type": "commonjs",
   "peerDependencies": {
     "@sap/cds": ">=9"
@@ -29,7 +51,8 @@
     "#cds-models/*": "./@cds-models/*/index.js"
   },
   "workspaces": [
-    "tests/bookshop"
+    "tests/bookshop",
+    "tests/sample/status-management"
   ],
   "dependencies": {
     "@sap-cloud-sdk/connectivity": "^4.5.1",

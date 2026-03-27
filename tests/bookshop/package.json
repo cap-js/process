@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "description": "A simple CAP project.",
   "dependencies": {
-    "@cap-js/process": "file:../../"
+    "@cap-js/process": "file:../../",
+    "@sap-cloud-sdk/connectivity": "^4",
+    "@sap-cloud-sdk/http-client": "^4",
+    "@sap-cloud-sdk/resilience": "^4",
+    "@cap-js/db-service": "^2",
+    "@cap-js/hana": "^2"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2",
@@ -21,6 +26,9 @@
   },
   "private": true,
   "cds": {
+    "features": {
+      "ieee754compatible": true
+    },
     "requires": {
       "db-ext": {
         "[development]": {
@@ -30,17 +38,50 @@
           "model": "db/hana"
         }
       },
-      "eu12.bpm-horizon-walkme.sdshipmentprocessor.ShipmentHandlerService": {
-        "kind": "process-service",
-        "model": "srv/external/eu12.bpm-horizon-walkme.sdshipmentprocessor.shipmentHandler"
+      "db": {
+        "[hana]": {
+          "kind": "hana"
+        },
+        "[hybrid]": {
+          "kind": "hana"
+        }
       },
-      "StartNoInputProcessService": {
-        "kind": "process-service",
-        "model": "srv/external/startNoInputProcess"
+      "ProcessService": {
+        "[hana]": {
+          "kind": "local-process-service",
+          "outbox": true
+        },
+        "[hybrid]": {
+          "model": "@cap-js/process/srv/BTPProcessService",
+          "outbox": true,
+          "vcap": {
+            "tag": "process"
+          }
+        }
       },
-      "StartNoInputWithAssocProcessService": {
+      "eu12.cdsmunich.capprocesspluginhybridtest.Annotation_Lifecycle_ProcessService": {
         "kind": "process-service",
-        "model": "srv/external/startNoInputWithAssocProcess"
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process"
+      },
+      "eu12.cdsmunich.capprocesspluginhybridtest.Programmatic_Lifecycle_ProcessService": {
+        "kind": "process-service",
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process"
+      },
+      "eu12.cdsmunich.capprocesspluginhybridtest.Programmatic_Output_ProcessService": {
+        "kind": "process-service",
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Output_Process"
+      },
+      "eu12.cdsmunich.capprocesspluginhybridtest.ImportProcess_Attributes_And_OutputsService": {
+        "kind": "process-service",
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Attributes_And_Outputs"
+      },
+      "eu12.cdsmunich.capprocesspluginhybridtest.ImportProcess_Complex_InputsService": {
+        "kind": "process-service",
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Complex_Inputs"
+      },
+      "eu12.cdsmunich.capprocesspluginhybridtest.ImportProcess_Simple_InputsService": {
+        "kind": "process-service",
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Simple_Inputs"
       }
     }
   },

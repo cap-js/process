@@ -33,7 +33,7 @@ import {
   BUSINESS_KEY,
 } from '../constants';
 
-import { CsnDefinition, CsnEntity } from '../../types/csn-extensions';
+import { CsnDefinition, CsnEntity } from '../types/csn-extensions';
 
 /**
  * Configuration for lifecycle annotation validation (cancel, suspend, resume)

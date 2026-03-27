@@ -3,7 +3,7 @@ import cds from '@sap/cds';
 const { join } = cds.utils.path;
 
 const app = join(__dirname, '../../bookshop');
-const { test, POST } = cds.test(app);
+const { POST } = cds.test(app);
 
 describe('Integration tests for Process Annotations with Custom Events (Bound Actions)', () => {
   let foundMessages: any[] = [];
@@ -19,13 +19,16 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
   });
 
+  afterAll(async () => {
+    await (cds as any).flush();
+  });
+
   // Helper function to create a test car entity
-  const createTestCar = (id?: string, mileage: number = 100) => ({
-    ID: id || '550e8400-e29b-41d4-a716-446655440000',
+  const createTestCar = ({ id, mileage = 100 }: { id?: string; mileage?: number } = {}) => ({
+    ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',
     mileage,
@@ -60,7 +63,7 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
     });
 
     it('should start process when bound action is called and condition is met', async () => {
-      const car = createTestCar(undefined, 600); // mileage > 500
+      const car = createTestCar({ mileage: 600 }); // mileage > 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/StartOnActionWhen', car);
@@ -83,7 +86,7 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
     });
 
     it('should NOT start process when bound action is called and condition is NOT met', async () => {
-      const car = createTestCar(undefined, 400); // mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/StartOnActionWhen', car);
@@ -128,7 +131,7 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
     });
 
     it('should cancel process when bound action is called and condition is met', async () => {
-      const car = createTestCar(undefined, 600); // mileage > 500
+      const car = createTestCar({ mileage: 600 }); // mileage > 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/CancelOnActionWhen', car);
@@ -150,7 +153,7 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
     });
 
     it('should NOT cancel process when bound action is called and condition is NOT met', async () => {
-      const car = createTestCar(undefined, 400); // mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/CancelOnActionWhen', car);
@@ -195,7 +198,7 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
     });
 
     it('should suspend process when bound action is called and condition is met', async () => {
-      const car = createTestCar(undefined, 600); // mileage > 500
+      const car = createTestCar({ mileage: 600 }); // mileage > 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/SuspendOnActionWhen', car);
@@ -217,7 +220,7 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
     });
 
     it('should NOT suspend process when bound action is called and condition is NOT met', async () => {
-      const car = createTestCar(undefined, 400); // mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/SuspendOnActionWhen', car);
@@ -262,7 +265,7 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
     });
 
     it('should resume process when bound action is called and condition is met', async () => {
-      const car = createTestCar(undefined, 600); // mileage > 500
+      const car = createTestCar({ mileage: 600 }); // mileage > 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/ResumeOnActionWhen', car);
@@ -284,7 +287,7 @@ describe('Integration tests for Process Annotations with Custom Events (Bound Ac
     });
 
     it('should NOT resume process when bound action is called and condition is NOT met', async () => {
-      const car = createTestCar(undefined, 400); // mileage <= 500
+      const car = createTestCar({ mileage: 400 }); // mileage <= 500
 
       // First create the entity
       const createResponse = await POST('/odata/v4/annotation/ResumeOnActionWhen', car);

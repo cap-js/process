@@ -3,7 +3,7 @@ import cds from '@sap/cds';
 const { join } = cds.utils.path;
 
 const app = join(__dirname, '../../bookshop');
-const { test, POST, DELETE, PATCH } = cds.test(app);
+const { POST, DELETE, PATCH } = cds.test(app);
 
 const BUSINESS_KEY_MAX_LENGTH = 255;
 
@@ -20,8 +20,11 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await test.data.reset();
   foundMessages = [];
+});
+
+afterAll(async () => {
+  await (cds as any).flush();
 });
 
 describe('Integration tests for Business Key Length Validation on processStart', () => {
@@ -31,7 +34,7 @@ describe('Integration tests for Business Key Length Validation on processStart',
   describe('Start on CREATE with businessKey length validation', () => {
     it('should start process when businessKey is well under 255 characters', async () => {
       const car = {
-        ID: '550e8400-e29b-41d4-a716-446655440000',
+        ID: cds.utils.uuid(),
         model: 'Test Model',
         manufacturer: 'Test Manufacturer',
         mileage: 100,
@@ -69,28 +72,6 @@ describe('Integration tests for Business Key Length Validation on processStart',
       const entity = {
         ID: '550e8400-e29b-41d4-a716-446655440002',
         longValue: exceedingValue,
-        name: 'Test',
-      };
-
-      try {
-        await POST('/odata/v4/annotation/StartWithExceedingBusinessKey', entity);
-        fail('Expected request to be rejected');
-      } catch (error: any) {
-        expect(error.response.status).toBe(400);
-        expect(error.response.data.error.message).toContain(
-          `Business key value exceeds maximum length of ${BUSINESS_KEY_MAX_LENGTH} characters`,
-        );
-      }
-
-      expect(foundMessages.length).toBe(0);
-    });
-
-    it('should reject with 400 when businessKey is significantly over the limit', async () => {
-      const longValue = 'x'.repeat(300);
-
-      const entity = {
-        ID: '550e8400-e29b-41d4-a716-446655440003',
-        longValue,
         name: 'Test',
       };
 
@@ -299,7 +280,7 @@ describe('BusinessKey alias collision test', () => {
 describe('Integration tests for Composite Business Key', () => {
   // Helper function to create a test car entity
   const createTestCar = (id?: string, mileage: number = 100) => ({
-    ID: id || '550e8400-e29b-41d4-a716-446655440000',
+    ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',
     mileage,

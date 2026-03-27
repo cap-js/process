@@ -3,7 +3,7 @@ import cds from '@sap/cds';
 const { join } = cds.utils.path;
 
 const app = join(__dirname, '../../bookshop');
-const { test, POST, DELETE } = cds.test(app);
+const { POST, DELETE } = cds.test(app);
 
 describe('Integration tests for multiple process events on DELETE', () => {
   let foundMessages: any[] = [];
@@ -19,12 +19,15 @@ describe('Integration tests for multiple process events on DELETE', () => {
   });
 
   beforeEach(async () => {
-    await test.data.reset();
     foundMessages = [];
   });
 
-  const createTestCar = (id?: string, mileage: number = 100) => ({
-    ID: id || '550e8400-e29b-41d4-a716-446655440000',
+  afterAll(async () => {
+    await (cds as any).flush();
+  });
+
+  const createTestCar = ({ id, mileage = 100 }: { id?: string; mileage?: number } = {}) => ({
+    ID: id || cds.utils.uuid(),
     model: 'Test Model',
     manufacturer: 'Test Manufacturer',
     mileage,
@@ -146,7 +149,7 @@ describe('Integration tests for multiple process events on DELETE', () => {
   // ================================================
   describe('Cancel + Suspend on DELETE with if condition', () => {
     it('should trigger only suspend', async () => {
-      const car = createTestCar(undefined, 50);
+      const car = createTestCar({ mileage: 50 });
 
       await POST('/odata/v4/annotation/DeleteCancelSuspendIfExpr', car);
       foundMessages = [];

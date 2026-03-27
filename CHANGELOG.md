@@ -4,12 +4,8 @@
 - The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - This project adheres to [Semantic Versioning](https://semver.org/).
 
-## Version 1.0.0 - TBD
+## Version 0.1.0 - 2026-03-27
 
 ### Added
 
-### Changed
-
-### Fixed
-
-### Removed
+- Initial release

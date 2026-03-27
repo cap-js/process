@@ -3,7 +3,8 @@ type AnyType {}
 type AttributesReturn : many AnyType;
 type InstancesReturn : many AnyType;
 
-@impl: './BTPProcessService.ts'
+@protocol: 'none'
+@impl: './BTPProcessService'
 service ProcessService {
 
   event start {

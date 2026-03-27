@@ -1,4 +1,4 @@
-import { CsnDefinition, CsnElement, CsnEntity } from '../../types/csn-extensions';
+import { CsnDefinition, CsnElement, CsnEntity } from '../types/csn-extensions';
 import { PROCESS_PREFIX, PROCESS_START_INPUTS } from '../constants';
 import {
   InputCSNEntry,
@@ -11,7 +11,7 @@ import {
 } from '../shared/input-parser';
 
 export type ElementType = {
-  type: string;
+  type?: string;
   isMandatory?: boolean;
   isArray?: boolean;
   properties?: Record<string, ElementType>;
