@@ -97,7 +97,6 @@ async function createApiClient(): Promise<IProcessApiClient> {
       cdsDk.env = cds.env.for('cds');
       Object.assign(process.env, await bindingEnv());
       cdsDk.env = cds.env.for('cds');
-      cdsDk.requires = cds.env.requires;
       credentials = getServiceCredentials(PROCESS_SERVICE);
     } catch (e) {
       LOG.debug('Auto-resolve bindings failed:', e);
