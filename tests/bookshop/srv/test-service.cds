@@ -13,14 +13,14 @@ service TestService {
 
     @bpm.process.start  : {
         id: 'testProcess',
-        on: 'CREATE',
+        on: 'DELETE',
         inputs: [
             $self.name
         ]
     }
     @bpm.process.start #two: {
         id: 'testProcess2',
-        on: 'CREATE',
+        on: 'DELETE',
         if: (age > 19),
     }
     @bpm.process.businessKey#two: (name)

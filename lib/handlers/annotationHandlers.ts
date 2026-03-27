@@ -8,10 +8,9 @@ import {
   buildAnnotationCache,
   EntityRow,
   addDeletedEntityToRequestCancel,
-  addDeletedEntityToRequestStart,
-  addDeletedEntityToRequestStartBusinessKey,
   addDeletedEntityToRequestResume,
   addDeletedEntityToRequestSuspend,
+  prefetchStartDataForDelete,
   ProcessDeleteRequest,
 } from '../handlers';
 
@@ -28,8 +27,7 @@ export function registerAnnotationHandlers(service: cds.Service) {
     const hasStart = cached.startAnnotations.length > 0;
     const results = await Promise.all(
       [
-        hasStart && addDeletedEntityToRequestStart(req),
-        hasStart && addDeletedEntityToRequestStartBusinessKey(req),
+        hasStart && prefetchStartDataForDelete(req, cached.startAnnotations),
         cached.hasCancel && addDeletedEntityToRequestCancel(req),
         cached.hasResume && addDeletedEntityToRequestResume(req),
         cached.hasSuspend && addDeletedEntityToRequestSuspend(req),

@@ -6,8 +6,6 @@ import { WILDCARD } from '../shared/input-parser';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 export const PROCESS_EVENT_MAP: Record<string, keyof DeleteProcessObject> = {
-  start: 'Start',
-  startBusinessKey: 'StartBusinessKey',
   cancel: 'Cancel',
   suspend: 'Suspend',
   resume: 'Resume',
@@ -24,14 +22,14 @@ export interface ProcessDeleteRequest extends cds.Request {
 }
 
 type DeleteProcessObject = {
-  Start?: Results;
-  StartBusinessKey?: Results;
+  Start?: Map<string, Results>;
+  StartBusinessKey?: Map<string, Results>;
   Cancel?: Results;
   Suspend?: Results;
   Resume?: Results;
 };
 
-function buildWhereDeleteExpression(
+export function buildWhereDeleteExpression(
   req: ProcessDeleteRequest,
   conditionExpr: { xpr: expr } | undefined,
 ): unknown {
