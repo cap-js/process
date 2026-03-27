@@ -25,10 +25,11 @@ export function registerAnnotationHandlers(service: cds.Service) {
     const cached = annotationCache.get(cacheKey);
 
     if (!cached) return;
+    const hasStart = cached.startAnnotations.length > 0;
     const results = await Promise.all(
       [
-        cached.hasStart && addDeletedEntityToRequestStart(req),
-        cached.hasStart && addDeletedEntityToRequestStartBusinessKey(req),
+        hasStart && addDeletedEntityToRequestStart(req),
+        hasStart && addDeletedEntityToRequestStartBusinessKey(req),
         cached.hasCancel && addDeletedEntityToRequestCancel(req),
         cached.hasResume && addDeletedEntityToRequestResume(req),
         cached.hasSuspend && addDeletedEntityToRequestSuspend(req),
@@ -58,8 +59,12 @@ async function dispatchProcessHandlers(
   req: cds.Request,
   data: EntityRow,
 ) {
-  if (cached.hasStart) {
-    await handleProcessStart(req, data);
+  if (cached.startAnnotations.length > 0) {
+    await Promise.all(
+      cached.startAnnotations.map((startAnnotation) =>
+        handleProcessStart(req, data, startAnnotation),
+      ),
+    );
   }
   if (cached.hasCancel) {
     await handleProcessCancel(req, data);

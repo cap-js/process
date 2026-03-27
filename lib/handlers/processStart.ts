@@ -6,10 +6,7 @@ import {
   resolveEntityRowOrReject,
 } from './utils';
 import {
-  PROCESS_START_ID,
-  PROCESS_START_ON,
   PROCESS_START_IF,
-  PROCESS_START_INPUTS,
   LOG_MESSAGES,
   PROCESS_LOGGER_PREFIX,
   BUSINESS_KEY,
@@ -32,6 +29,7 @@ import {
   ProcessDeleteRequest,
 } from './onDeleteUtils';
 import { getBusinessKeyColumn } from '../shared/businessKey-helper';
+import { StartAnnotationDescriptor } from '../types/cds-plugin';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // Use InputTreeNode as ProcessStartInput (same structure)
@@ -45,17 +43,20 @@ export type ProcessStartSpec = {
 };
 
 export function getColumnsForProcessStart(target: Target): (column_expr | string)[] {
-  const startSpecs = initStartSpecs(target);
-  startSpecs.inputs = parseInputToTree(target);
-  if (startSpecs.inputs.length === 0) {
+  const inputs = parseInputToTreeFromTarget(target);
+  if (inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
     return ['*'];
   } else {
-    return convertToColumnsExpr(startSpecs.inputs);
+    return convertToColumnsExpr(inputs);
   }
 }
 
-export async function handleProcessStart(req: cds.Request, data: EntityRow): Promise<void> {
+export async function handleProcessStart(
+  req: cds.Request,
+  data: EntityRow,
+  startAnnotation: StartAnnotationDescriptor,
+): Promise<void> {
   if (isDeleteWithoutProcess(req, LOG_MESSAGES.PROCESS_NOT_STARTED, 'start')) return;
 
   const target = req.target as Target;
@@ -63,8 +64,7 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   data = ((req as ProcessDeleteRequest)._Process?.[processEventKey] ??
     getEntityDataFromRequest(data, req.params)) as EntityRow;
 
-  const startSpecs = initStartSpecs(target);
-  startSpecs.inputs = parseInputToTree(target);
+  const startSpecs = buildStartSpecsFromDescriptor(startAnnotation, target);
 
   // if startSpecs.input = [] --> no input defined, fetch entire row
   let columns: (column_expr | string)[];
@@ -148,16 +148,21 @@ export const addDeletedEntityToRequestStartBusinessKey = createAddDeletedEntityH
   },
 });
 
-function initStartSpecs(target: Target): ProcessStartSpec {
-  const startSpecs: ProcessStartSpec = {
-    id: target[PROCESS_START_ID] as string,
-    on: target[PROCESS_START_ON] as string,
-    inputs: [],
-    conditionExpr: target[PROCESS_START_IF]
-      ? ((target[PROCESS_START_IF] as unknown as { xpr: expr }).xpr as expr)
-      : undefined,
+/**
+ * Builds a ProcessStartSpec from a StartAnnotationDescriptor.
+ * Parses the inputs from the descriptor and resolves them against the entity context.
+ */
+function buildStartSpecsFromDescriptor(
+  descriptor: StartAnnotationDescriptor,
+  target: Target,
+): ProcessStartSpec {
+  const inputs = parseInputToTreeFromInputs(descriptor.inputs, target);
+  return {
+    id: descriptor.id,
+    on: descriptor.on,
+    inputs,
+    conditionExpr: descriptor.conditionExpr,
   };
-  return startSpecs;
 }
 
 /**
@@ -182,11 +187,26 @@ function createRuntimeEntityContext(entity: cds.entity): EntityContext {
   };
 }
 
-function parseInputToTree(target: Target): ProcessStartInput[] {
-  const inputsCSN = target[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
+/**
+ * Parses inputs from a raw InputCSNEntry array (from the annotation descriptor)
+ * and builds the input tree against the entity context.
+ */
+function parseInputToTreeFromInputs(
+  inputsCSN: InputCSNEntry[] | undefined,
+  target: Target,
+): ProcessStartInput[] {
   const parsedEntries = parseInputsArray(inputsCSN);
   const runtimeContext = createRuntimeEntityContext(target as cds.entity);
   return buildInputTree(parsedEntries, runtimeContext);
+}
+
+/**
+ * Parses inputs directly from the target's unqualified @bpm.process.start.inputs annotation.
+ * Used by DELETE pre-fetch handlers which still read from the target.
+ */
+function parseInputToTreeFromTarget(target: Target): ProcessStartInput[] {
+  const inputsCSN = target['@bpm.process.start.inputs'] as InputCSNEntry[] | undefined;
+  return parseInputToTreeFromInputs(inputsCSN, target);
 }
 
 function convertToColumnsExpr(array: ProcessStartInput[]): (column_expr | string)[] {

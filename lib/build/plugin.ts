@@ -12,10 +12,6 @@ import {
   validateBusinessKeyAnnotation,
 } from './index';
 import {
-  PROCESS_START_ID,
-  PROCESS_START_ON,
-  PROCESS_START_IF,
-  PROCESS_START_INPUTS,
   PROCESS_CANCEL_ON,
   PROCESS_CANCEL_CASCADE,
   PROCESS_CANCEL_IF,
@@ -34,6 +30,32 @@ import {
 } from '../constants';
 
 import { CsnDefinition, CsnEntity } from '../types/csn-extensions';
+
+/**
+ * Discovers all @bpm.process.start annotation prefixes on a CSN entity definition.
+ * Returns an array of prefixes like ['@bpm.process.start', '@bpm.process.start#two'].
+ *
+ * CDS compiles annotation properties into flat keys where the qualifier (if any)
+ * sits between the annotation name and the property suffix:
+ *   '@bpm.process.start.id'       -> prefix '@bpm.process.start'
+ *   '@bpm.process.start#two.on'   -> prefix '@bpm.process.start#two'
+ *
+ * By extracting everything before the first '.' after the PROCESS_START length,
+ * we collect all prefixes regardless of which property keys are present, so
+ * validation can report missing required properties like .id or .on.
+ */
+function findStartAnnotationPrefixes(def: CsnEntity): string[] {
+  const prefixes = new Set<string>();
+
+  for (const key of Object.keys(def)) {
+    if (!key.startsWith(PROCESS_START)) continue;
+    const dotIndex = key.indexOf('.', PROCESS_START.length);
+    if (dotIndex === -1) continue;
+    prefixes.add(key.substring(0, dotIndex));
+  }
+
+  return Array.from(prefixes);
+}
 
 /**
  * Configuration for lifecycle annotation validation (cancel, suspend, resume)
@@ -131,40 +153,53 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     processDefinitions: Map<string, CsnDefinition>,
     allDefinitions: Record<string, CsnDefinition>,
   ) {
-    // check unknown annotations
-    const allowedAnnotations = [
-      PROCESS_START_ID,
-      PROCESS_START_ON,
-      PROCESS_START_IF,
-      PROCESS_START_INPUTS,
-    ];
-    validateAllowedAnnotations(allowedAnnotations, def, entityName, PROCESS_START, this);
+    // Discover all start annotation prefixes (unqualified + qualified)
+    const startPrefixes = findStartAnnotationPrefixes(def);
 
-    const hasId = def[PROCESS_START_ID] !== undefined;
-    const hasOn = def[PROCESS_START_ON] !== undefined;
-    const hasIf = def[PROCESS_START_IF] !== undefined;
+    for (const prefix of startPrefixes) {
+      const annotationId = `${prefix}.id` as `@${string}`;
+      const annotationOn = `${prefix}.on` as `@${string}`;
+      const annotationIf = `${prefix}.if` as `@${string}`;
+      const annotationInputs = `${prefix}.inputs` as `@${string}`;
 
-    // required fields
-    validateRequiredStartAnnotations(hasOn, hasId, entityName, this);
+      // check unknown annotations for this prefix
+      const allowedAnnotations = [annotationId, annotationOn, annotationIf, annotationInputs];
+      validateAllowedAnnotations(allowedAnnotations, def, entityName, prefix, this);
 
-    const processDef = processDefinitions.get(def[PROCESS_START_ID]);
+      const hasId = def[annotationId] !== undefined;
+      const hasOn = def[annotationOn] !== undefined;
+      const hasIf = def[annotationIf] !== undefined;
 
-    if (hasId) {
-      validateIdAnnotation(def, entityName, processDef, this);
-    }
+      // required fields
+      validateRequiredStartAnnotations(hasOn, hasId, entityName, annotationOn, annotationId, this);
 
-    if (hasOn) {
-      validateOnAnnotation(def, entityName, PROCESS_START_ON, this);
-    }
+      const processDef = processDefinitions.get(def[annotationId]);
 
-    if (hasIf) {
-      validateIfAnnotation(def, entityName, PROCESS_START_IF, this);
-    }
+      if (hasId) {
+        validateIdAnnotation(def, entityName, annotationId, processDef, this);
+      }
 
-    if (hasId && hasOn && processDef) {
-      const processInputs = allDefinitions[`${processDef.name}.ProcessInputs`];
-      if (typeof processInputs !== 'undefined') {
-        validateInputTypes(this, entityName, def, processInputs, allDefinitions);
+      if (hasOn) {
+        validateOnAnnotation(def, entityName, annotationOn, this);
+      }
+
+      if (hasIf) {
+        validateIfAnnotation(def, entityName, annotationIf, this);
+      }
+
+      if (hasId && hasOn && processDef) {
+        const processInputs = allDefinitions[`${processDef.name}.ProcessInputs`];
+        if (typeof processInputs !== 'undefined') {
+          validateInputTypes(
+            this,
+            entityName,
+            def,
+            processInputs,
+            allDefinitions,
+            annotationInputs,
+            annotationId,
+          );
+        }
       }
     }
   }

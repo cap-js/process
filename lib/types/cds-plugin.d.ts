@@ -1,8 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as csn from './csn-extensions';
+import { expr } from '@sap/cds';
+import { InputCSNEntry } from '../shared/input-parser';
+
+/**
+ * Describes a single @bpm.process.start annotation (qualified or unqualified).
+ * Used to pass resolved annotation values into handleProcessStart.
+ */
+export interface StartAnnotationDescriptor {
+  qualifier?: string;
+  id: string;
+  on: string;
+  conditionExpr?: expr;
+  inputs?: InputCSNEntry[];
+}
 
 export interface EntityEventCache {
-  hasStart: boolean;
+  startAnnotations: StartAnnotationDescriptor[];
   hasCancel: boolean;
   hasSuspend: boolean;
   hasResume: boolean;
