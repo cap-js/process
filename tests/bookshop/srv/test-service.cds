@@ -22,9 +22,10 @@ service TestService {
         id: 'testProcess2',
         on: 'CREATE',
         if: (age > 19),
-        businessKey: (name)
     }
+    @bpm.process.businessKey#two: (name)
     @bpm.process.businessKey: (name || age)
+
     entity TwoProcessStart {
         key ID: String;
         name: String;

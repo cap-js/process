@@ -8,6 +8,7 @@ import {
   PROCESS_SUSPEND_ON,
   PROCESS_RESUME_ON,
   CUD_EVENTS,
+  BUSINESS_KEY,
 } from '../constants';
 import { getAnnotationPrefixes } from '../shared/annotations-helper';
 
@@ -53,7 +54,9 @@ export function findStartAnnotations(entity: cds.entity): StartAnnotationDescrip
         : undefined;
 
     const ifAnnotation = entity[`${prefix}.if`] as { xpr: expr } | undefined;
-    const businessKeyAnnotation = entity[`${prefix}.businessKey`] as { '=': string } | undefined;
+    const businessKeyAnnotation = qualifier
+      ? (entity[`${BUSINESS_KEY}#${qualifier}`] as { '=': string } | undefined)
+      : (entity[BUSINESS_KEY] as { '=': string } | undefined);
     const inputs = entity[`${prefix}.inputs`] as InputCSNEntry[] | undefined;
 
     results.push({

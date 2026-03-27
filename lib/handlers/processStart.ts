@@ -1,4 +1,4 @@
-import { column_expr, expr, Target } from '@sap/cds';
+import { column_expr, Target } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
@@ -29,19 +29,12 @@ import {
   PROCESS_EVENT_MAP,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
-import { getBusinessKeyColumn } from '../shared/businessKey-helper';
+import { formatBusinessKeyColumn, getBusinessKeyColumn } from '../shared/businessKey-helper';
 import { StartAnnotationDescriptor } from '../types/cds-plugin';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // Use InputTreeNode as ProcessStartInput (same structure)
 type ProcessStartInput = InputTreeNode;
-
-export type ProcessStartSpec = {
-  id?: string;
-  on?: string;
-  inputs: ProcessStartInput[];
-  conditionExpr: expr | undefined;
-};
 
 export function getColumnsForProcessStart(target: Target): (column_expr | string)[] {
   const inputs = parseInputToTreeFromTarget(target);
@@ -65,24 +58,26 @@ export async function handleProcessStart(
   data = ((req as ProcessDeleteRequest)._Process?.[processEventKey] ??
     getEntityDataFromRequest(data, req.params)) as EntityRow;
 
-  const startSpecs = buildStartSpecsFromDescriptor(startAnnotation, target);
+  const inputs = parseInputToTreeFromInputs(startAnnotation.inputs, target);
 
-  // if startSpecs.input = [] --> no input defined, fetch entire row
+  // if inputs = [] --> no input defined, fetch entire row
   let columns: (column_expr | string)[];
-  if (startSpecs.inputs.length === 0) {
+  if (inputs.length === 0) {
     columns = [WILDCARD];
     LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
   } else {
-    columns = convertToColumnsExpr(startSpecs.inputs);
+    columns = convertToColumnsExpr(inputs);
   }
 
-  const businessKeyColumn = getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
+  const businessKeyColumn = startAnnotation.businessKey
+    ? formatBusinessKeyColumn(startAnnotation.businessKey)
+    : getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
 
   // fetch entity data (without businessKey to avoid alias collision)
   const row = await resolveEntityRowOrReject(
     req,
     data,
-    startSpecs.conditionExpr,
+    startAnnotation.conditionExpr,
     'Failed to fetch entity for process start.',
     LOG_MESSAGES.PROCESS_NOT_STARTED,
     columns,
@@ -100,7 +95,7 @@ export async function handleProcessStart(
       const businessKeyRow = await resolveEntityRowOrReject(
         req,
         data,
-        startSpecs.conditionExpr,
+        startAnnotation.conditionExpr,
         'Failed to fetch business key for process start.',
         LOG_MESSAGES.PROCESS_NOT_STARTED,
         [businessKeyColumn],
@@ -116,12 +111,12 @@ export async function handleProcessStart(
   }
 
   // emit process start
-  const payload = { definitionId: startSpecs.id!, context: row };
+  const payload = { definitionId: startAnnotation.id!, context: row };
   await emitProcessEvent(
     'start',
     req,
     payload,
-    `Failed to start process with definition ID ${startSpecs.id!}.`,
+    `Failed to start process with definition ID ${startAnnotation.id!}.`,
     businessKeyValue,
   );
 }
@@ -148,23 +143,6 @@ export const addDeletedEntityToRequestStartBusinessKey = createAddDeletedEntityH
     return businessKeyCol ? [businessKeyCol] : [];
   },
 });
-
-/**
- * Builds a ProcessStartSpec from a StartAnnotationDescriptor.
- * Parses the inputs from the descriptor and resolves them against the entity context.
- */
-function buildStartSpecsFromDescriptor(
-  descriptor: StartAnnotationDescriptor,
-  target: Target,
-): ProcessStartSpec {
-  const inputs = parseInputToTreeFromInputs(descriptor.inputs, target);
-  return {
-    id: descriptor.id,
-    on: descriptor.on,
-    inputs,
-    conditionExpr: descriptor.conditionExpr,
-  };
-}
 
 /**
  * Creates an EntityContext for runtime cds.entity
