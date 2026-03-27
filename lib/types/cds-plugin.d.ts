@@ -13,6 +13,7 @@ export interface StartAnnotationDescriptor {
   on: string;
   conditionExpr?: expr;
   inputs?: InputCSNEntry[];
+  businessKey?: string;
 }
 
 export interface EntityEventCache {
