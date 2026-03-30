@@ -50,11 +50,10 @@ export function getColumnsForProcessStart(target: Target): (column_expr | string
   startSpecs.inputs = parseInputToTree(target);
   if (startSpecs.inputs.length === 0) {
     LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
-
     return resolveColumnsFromProcessDefinition(startSpecs.id!, target);
-  } else {
-    return convertToColumnsExpr(startSpecs.inputs);
   }
+
+  return convertToColumnsExpr(startSpecs.inputs);
 }
 
 export async function handleProcessStart(req: cds.Request, data: EntityRow): Promise<void> {
@@ -71,7 +70,11 @@ export async function handleProcessStart(req: cds.Request, data: EntityRow): Pro
   // if startSpecs.input = [] --> no input annotation defined, resolve from process definition
   let columns: (column_expr | string)[];
   if (startSpecs.inputs.length === 0) {
-    columns = resolveColumnsFromProcessDefinition(startSpecs.id!, target);
+    if (startSpecs.id) {
+      columns = resolveColumnsFromProcessDefinition(startSpecs.id, target);
+    } else {
+      columns = [WILDCARD];
+    }
     LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
   } else {
     columns = convertToColumnsExpr(startSpecs.inputs);
@@ -221,13 +224,11 @@ function resolveColumnsFromProcessDefinition(
   target: Target,
 ): (column_expr | string)[] {
   const processFields = getProcessInputFieldNames(definitionId);
-  if (processFields) {
-    const entityElements = Object.keys((target as cds.entity).elements ?? {});
-    const matchingFields = processFields.filter((f) => entityElements.includes(f));
-    return matchingFields;
-  }
+  if (!processFields) return [WILDCARD];
 
-  return [WILDCARD];
+  const entityElements = Object.keys((target as cds.entity).elements ?? {});
+  const matchingFields = processFields.filter((f) => entityElements.includes(f));
+  return matchingFields;
 }
 
 function convertToColumnsExpr(array: ProcessStartInput[]): (column_expr | string)[] {
