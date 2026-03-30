@@ -13,19 +13,16 @@ service TestService {
 
     @bpm.process.start  : {
         id: 'testProcess',
-        on: 'DELETE',
+        on: 'CREATE',
         inputs: [
             $self.name
         ]
     }
     @bpm.process.start #two: {
         id: 'testProcess2',
-        on: 'DELETE',
+        on: 'CREATE',
         if: (age > 19),
     }
-    @bpm.process.businessKey#two: (name)
-    @bpm.process.businessKey: (name || age)
-
     entity TwoProcessStart {
         key ID: String;
         name: String;

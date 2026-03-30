@@ -1650,6 +1650,105 @@ service AnnotationService {
     // COMBINATION ENTITIES - Real-world lifecycle scenarios
     // ============================================
 
+    // ============================================
+    // MULTIPLE START ANNOTATION TESTS
+    // Testing multiple @bpm.process.start with qualifiers
+    // ============================================
+
+    // Two start annotations both on CREATE
+    @bpm.process.start      : {
+        id: 'multiStartCreateProcess1',
+        on: 'CREATE',
+    }
+    @bpm.process.start #two : {
+        id: 'multiStartCreateProcess2',
+        on: 'CREATE',
+    }
+    entity MultiStartOnCreate            as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two start annotations on different events (CREATE + UPDATE)
+    @bpm.process.start      : {
+        id: 'multiStartDiffEventProcess1',
+        on: 'CREATE',
+    }
+    @bpm.process.start #two : {
+        id: 'multiStartDiffEventProcess2',
+        on: 'UPDATE',
+    }
+    entity MultiStartDiffEvents          as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two start annotations both on DELETE
+    @bpm.process.start      : {
+        id: 'multiStartDeleteProcess1',
+        on: 'DELETE',
+    }
+    @bpm.process.start #two : {
+        id: 'multiStartDeleteProcess2',
+        on: 'DELETE',
+    }
+    @bpm.process.businessKey: (ID)
+    entity MultiStartOnDelete            as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two start annotations on CREATE with different qualified business keys
+    @bpm.process.start          : {
+        id: 'multiStartBkProcess1',
+        on: 'CREATE',
+    }
+    @bpm.process.start #two     : {
+        id: 'multiStartBkProcess2',
+        on: 'CREATE',
+    }
+    @bpm.process.businessKey    : (ID)
+    @bpm.process.businessKey#two: (model || '-' || manufacturer)
+    entity MultiStartDiffBusinessKeys    as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two start annotations on CREATE, qualified one has an if condition
+    @bpm.process.start      : {
+        id: 'multiStartIfProcess1',
+        on: 'CREATE',
+    }
+    @bpm.process.start #two : {
+        id: 'multiStartIfProcess2',
+        on: 'CREATE',
+        if: (mileage > 500)
+    }
+    entity MultiStartWithCondition       as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
     // --------------------------------------------
     // Scenario 1: Basic Workflow Lifecycle
     // Start process on CREATE, Cancel on DELETE
