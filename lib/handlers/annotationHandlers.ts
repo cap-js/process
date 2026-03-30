@@ -7,10 +7,8 @@ import {
   handleProcessSuspend,
   buildAnnotationCache,
   EntityRow,
-  addDeletedEntityToRequestCancel,
-  addDeletedEntityToRequestResume,
-  addDeletedEntityToRequestSuspend,
   prefetchStartDataForDelete,
+  prefetchLifecycleDataForDelete,
   ProcessDeleteRequest,
 } from '../handlers';
 
@@ -25,12 +23,18 @@ export function registerAnnotationHandlers(service: cds.Service) {
 
     if (!cached) return;
     const hasStart = cached.startAnnotations.length > 0;
+    const hasCancels = cached.cancelAnnotations.length > 0;
+    const hasSuspends = cached.suspendAnnotations.length > 0;
+    const hasResumes = cached.resumeAnnotations.length > 0;
     const results = await Promise.all(
       [
         hasStart && prefetchStartDataForDelete(req, cached.startAnnotations),
-        cached.hasCancel && addDeletedEntityToRequestCancel(req),
-        cached.hasResume && addDeletedEntityToRequestResume(req),
-        cached.hasSuspend && addDeletedEntityToRequestSuspend(req),
+        hasCancels &&
+          prefetchLifecycleDataForDelete(req, cached.cancelAnnotations, 'cancel'),
+        hasSuspends &&
+          prefetchLifecycleDataForDelete(req, cached.suspendAnnotations, 'suspend'),
+        hasResumes &&
+          prefetchLifecycleDataForDelete(req, cached.resumeAnnotations, 'resume'),
       ].filter(Boolean),
     );
     (req as ProcessDeleteRequest)._Process = Object.assign({}, ...results);
@@ -64,13 +68,19 @@ async function dispatchProcessHandlers(
       ),
     );
   }
-  if (cached.hasCancel) {
-    await handleProcessCancel(req, data);
+  if (cached.cancelAnnotations.length > 0) {
+    await Promise.all(
+      cached.cancelAnnotations.map((ann) => handleProcessCancel(req, data, ann)),
+    );
   }
-  if (cached.hasSuspend) {
-    await handleProcessSuspend(req, data);
+  if (cached.suspendAnnotations.length > 0) {
+    await Promise.all(
+      cached.suspendAnnotations.map((ann) => handleProcessSuspend(req, data, ann)),
+    );
   }
-  if (cached.hasResume) {
-    await handleProcessResume(req, data);
+  if (cached.resumeAnnotations.length > 0) {
+    await Promise.all(
+      cached.resumeAnnotations.map((ann) => handleProcessResume(req, data, ann)),
+    );
   }
 }

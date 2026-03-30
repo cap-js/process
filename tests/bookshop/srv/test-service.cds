@@ -11,18 +11,10 @@ service TestService {
         name: String;
     }
 
-    @bpm.process.start  : {
-        id: 'testProcess',
-        on: 'CREATE',
-        inputs: [
-            $self.name
-        ]
+    @bpm.process.cancel #two: {
+        on: 'DELETE'
     }
-    @bpm.process.start #two: {
-        id: 'testProcess2',
-        on: 'CREATE',
-        if: (age > 19),
-    }
+    @bpm.process.businessKey: (name || name)
     entity TwoProcessStart {
         key ID: String;
         name: String;

@@ -1,5 +1,5 @@
 import cds from '@sap/cds';
-import { expr, Target } from '@sap/cds';
+import { Results } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
@@ -7,31 +7,28 @@ import {
   ProcessLifecyclePayload,
   resolveEntityRowOrReject,
 } from './utils';
+import { buildWhereDeleteExpression, ProcessDeleteRequest } from './onDeleteUtils';
 import {
-  createAddDeletedEntityHandler,
-  isDeleteWithoutProcess,
-  PROCESS_EVENT_MAP,
-  ProcessDeleteRequest,
-} from './onDeleteUtils';
-import { getBusinessKeyColumnOrReject } from '../shared/businessKey-helper';
-import { BUSINESS_KEY } from '../constants';
+  formatBusinessKeyColumn,
+  getBusinessKeyColumnOrReject,
+} from '../shared/businessKey-helper';
+import { LifecycleAnnotationDescriptor } from '../types/cds-plugin';
+import { PROCESS_LOGGER_PREFIX } from '../constants';
 
-type ProcessActionType = 'cancel' | 'resume' | 'suspend';
+const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
-interface ProcessActionSpec {
-  on?: string;
-  cascade: boolean;
-  conditionExpr: expr | undefined;
-  businessKey: string | undefined;
-}
+export type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
-interface ProcessActionConfig {
+type DeleteProcessMapKey = 'Cancel' | 'Suspend' | 'Resume';
+
+const ACTION_TO_DELETE_KEY: Record<ProcessActionType, DeleteProcessMapKey> = {
+  cancel: 'Cancel',
+  suspend: 'Suspend',
+  resume: 'Resume',
+};
+
+export interface ProcessActionConfig {
   action: ProcessActionType;
-  annotations: {
-    ON: string;
-    CASCADE: string;
-    IF: string;
-  };
   logMessages: {
     NOT_TRIGGERED: string;
     FETCH_FAILED: string;
@@ -40,48 +37,41 @@ interface ProcessActionConfig {
     FAILED: string;
   };
 }
-interface ProcessActionDeleteConfig {
-  action: ProcessActionType;
-  annotations: {
-    IF: string;
-  };
-}
-
-function initSpecs(
-  target: Target,
-  annotations: ProcessActionConfig['annotations'],
-): ProcessActionSpec {
-  const targetAnnotations = target as cds.entity;
-  return {
-    on: targetAnnotations[annotations.ON] as string,
-    cascade: (targetAnnotations[annotations.CASCADE] as boolean) ?? false,
-    conditionExpr: targetAnnotations[annotations.IF]
-      ? (targetAnnotations[annotations.IF] as { xpr: expr }).xpr
-      : undefined,
-    businessKey: targetAnnotations[BUSINESS_KEY]?.['='],
-  };
-}
 
 export function createProcessActionHandler(config: ProcessActionConfig) {
-  return async function handleProcessAction(req: cds.Request, data: EntityRow): Promise<void> {
-    if (isDeleteWithoutProcess(req, config.logMessages.NOT_TRIGGERED, config.action)) return;
+  const deleteKey = ACTION_TO_DELETE_KEY[config.action];
 
-    const target = req.target as Target;
-    const processEventKey = PROCESS_EVENT_MAP[config.action];
-    data = ((req as ProcessDeleteRequest)._Process?.[processEventKey] ??
-      getEntityDataFromRequest(data, req.params)) as EntityRow;
-    // Initialize specifications from annotations
-    const specs = initSpecs(target, config.annotations);
+  return async function handleProcessAction(
+    req: cds.Request,
+    data: EntityRow,
+    descriptor: LifecycleAnnotationDescriptor,
+  ): Promise<void> {
+    const qualifierKey = descriptor.qualifier ?? '';
+
+    // For DELETE: look up pre-fetched data by qualifier
+    if (req.event === 'DELETE') {
+      const prefetchMap = (req as ProcessDeleteRequest)._Process?.[deleteKey] as
+        | Map<string, Results>
+        | undefined;
+      const prefetched = prefetchMap?.get(qualifierKey) as EntityRow | undefined;
+      if (!prefetched) {
+        LOG.debug(config.logMessages.NOT_TRIGGERED);
+        return;
+      }
+      data = prefetched;
+    } else {
+      data = getEntityDataFromRequest(data, req.params) as EntityRow;
+    }
 
     // Get business key column
-    const businessKeyColumn = getBusinessKeyColumnOrReject(req, specs.businessKey);
+    const businessKeyColumn = getBusinessKeyColumnOrReject(req, descriptor.businessKey);
     if (!businessKeyColumn) return;
 
     // fetch entity
     const row = await resolveEntityRowOrReject(
       req,
       data,
-      specs.conditionExpr,
+      descriptor.conditionExpr,
       config.logMessages.FETCH_FAILED,
       config.logMessages.NOT_TRIGGERED,
       [businessKeyColumn],
@@ -89,21 +79,49 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
     if (!row) return;
 
     // Emit process event
-
     const payload: ProcessLifecyclePayload = {
       businessKey: (row as { businessKey: string }).businessKey,
-      cascade: specs.cascade,
+      cascade: descriptor.cascade,
     };
     await emitProcessEvent(config.action, req, payload, config.logMessages.FAILED);
   };
 }
 
-export function createProcessActionAddDeletedEntityHandler(config: ProcessActionDeleteConfig) {
-  return createAddDeletedEntityHandler({
-    action: config.action,
-    ifAnnotation: config.annotations.IF,
-    getColumns: (req) => [
-      getBusinessKeyColumnOrReject(req, (req.target as cds.entity)[BUSINESS_KEY]?.['=']),
-    ],
-  });
+/**
+ * Pre-fetches entity data for all lifecycle annotations (cancel/suspend/resume) before DELETE.
+ * Returns a partial _Process object with a Map keyed by qualifier ('' for unqualified).
+ *
+ * Each annotation may have a different condition and business key,
+ * so we issue separate SELECTs per annotation.
+ */
+export async function prefetchLifecycleDataForDelete(
+  req: cds.Request,
+  annotations: LifecycleAnnotationDescriptor[],
+  action: ProcessActionType,
+): Promise<EntityRow | void> {
+  const deleteKey = ACTION_TO_DELETE_KEY[action];
+  const deleteReq = req as ProcessDeleteRequest;
+
+  const resultMap = new Map<string, EntityRow>();
+
+  await Promise.all(
+    annotations.map(async (ann) => {
+      const qualifierKey = ann.qualifier ?? '';
+      const conditionExpr = ann.conditionExpr ? { xpr: ann.conditionExpr } : undefined;
+      const where = buildWhereDeleteExpression(deleteReq, conditionExpr);
+      if (!where) return;
+
+      if (!ann.businessKey) return;
+      const businessKeyColumn = formatBusinessKeyColumn(ann.businessKey);
+
+      const entity = await SELECT.one.from(req.subject).columns([businessKeyColumn]).where(where);
+      if (entity) {
+        resultMap.set(qualifierKey, entity);
+      }
+    }),
+  );
+
+  if (resultMap.size > 0) {
+    return { [deleteKey]: resultMap };
+  }
 }
