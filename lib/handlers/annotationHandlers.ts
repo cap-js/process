@@ -26,15 +26,13 @@ export function registerAnnotationHandlers(service: cds.Service) {
     const hasCancels = cached.cancelAnnotations.length > 0;
     const hasSuspends = cached.suspendAnnotations.length > 0;
     const hasResumes = cached.resumeAnnotations.length > 0;
+
     const results = await Promise.all(
       [
         hasStart && prefetchStartDataForDelete(req, cached.startAnnotations),
-        hasCancels &&
-          prefetchLifecycleDataForDelete(req, cached.cancelAnnotations, 'cancel'),
-        hasSuspends &&
-          prefetchLifecycleDataForDelete(req, cached.suspendAnnotations, 'suspend'),
-        hasResumes &&
-          prefetchLifecycleDataForDelete(req, cached.resumeAnnotations, 'resume'),
+        hasCancels && prefetchLifecycleDataForDelete(req, cached.cancelAnnotations, 'cancel'),
+        hasSuspends && prefetchLifecycleDataForDelete(req, cached.suspendAnnotations, 'suspend'),
+        hasResumes && prefetchLifecycleDataForDelete(req, cached.resumeAnnotations, 'resume'),
       ].filter(Boolean),
     );
     (req as ProcessDeleteRequest)._Process = Object.assign({}, ...results);
@@ -61,26 +59,29 @@ async function dispatchProcessHandlers(
   req: cds.Request,
   data: EntityRow,
 ) {
-  if (cached.startAnnotations.length > 0) {
+  const hasStart = cached.startAnnotations.length > 0;
+  const hasCancels = cached.cancelAnnotations.length > 0;
+  const hasSuspends = cached.suspendAnnotations.length > 0;
+  const hasResumes = cached.resumeAnnotations.length > 0;
+
+  if (hasStart) {
     await Promise.all(
-      cached.startAnnotations.map((startAnnotation) =>
-        handleProcessStart(req, data, startAnnotation),
-      ),
+      cached.startAnnotations.map((startAnn) => handleProcessStart(req, data, startAnn)),
     );
   }
-  if (cached.cancelAnnotations.length > 0) {
+  if (hasCancels) {
     await Promise.all(
-      cached.cancelAnnotations.map((ann) => handleProcessCancel(req, data, ann)),
+      cached.cancelAnnotations.map((cancelAnn) => handleProcessCancel(req, data, cancelAnn)),
     );
   }
-  if (cached.suspendAnnotations.length > 0) {
+  if (hasSuspends) {
     await Promise.all(
-      cached.suspendAnnotations.map((ann) => handleProcessSuspend(req, data, ann)),
+      cached.suspendAnnotations.map((suspendAnn) => handleProcessSuspend(req, data, suspendAnn)),
     );
   }
-  if (cached.resumeAnnotations.length > 0) {
+  if (hasResumes) {
     await Promise.all(
-      cached.resumeAnnotations.map((ann) => handleProcessResume(req, data, ann)),
+      cached.resumeAnnotations.map((resumeAnn) => handleProcessResume(req, data, resumeAnn)),
     );
   }
 }

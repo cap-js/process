@@ -16,7 +16,7 @@ service TestService {
         on: 'CREATE'
     }
     @bpm.process.cancel #one: {
-        on: 'DELETE'
+        on: '*'
     }
     @bpm.process.cancel #two: {
         on: 'DELETE'

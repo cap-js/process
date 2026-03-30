@@ -36,6 +36,48 @@ function getColumnsForDescriptor(
   return convertToColumnsExpr(inputs);
 }
 
+/**
+ * Resolves the business key value for a start annotation.
+ * For DELETE: reads from the pre-fetched Map on req._Process.StartBusinessKey.
+ * For other events: issues a separate SELECT to avoid alias collision with context columns.
+ * Validates business key length and rejects the request if it exceeds the limit.
+ *
+ * Returns the resolved business key string, or undefined if no business key is configured.
+ */
+async function resolveBusinessKeyValue(
+  req: cds.Request,
+  data: EntityRow,
+  startAnnotation: StartAnnotationDescriptor,
+  qualifierKey: string,
+): Promise<string | undefined> {
+  const businessKeyColumn = getBusinessKeyColumn(startAnnotation.businessKey);
+  if (!businessKeyColumn) return undefined;
+
+  let businessKeyValue: string | undefined;
+  if (req.event === 'DELETE') {
+    const businessKeyData = getDeletePrefetchedBusinessKey(req, qualifierKey);
+    businessKeyValue = businessKeyData?.businessKey as string | undefined;
+  } else {
+    const businessKeyRow = await resolveEntityRowOrReject(
+      req,
+      data,
+      startAnnotation.conditionExpr,
+      'Failed to fetch business key for process start.',
+      LOG_MESSAGES.PROCESS_NOT_STARTED,
+      [businessKeyColumn],
+    );
+    businessKeyValue = businessKeyRow?.businessKey as string | undefined;
+  }
+
+  if (businessKeyValue && businessKeyValue.length > BUSINESS_KEY_MAX_LENGTH) {
+    const msg = `Business key value exceeds maximum length of ${BUSINESS_KEY_MAX_LENGTH} characters. Process start will fail.`;
+    LOG.error(msg);
+    return req.reject({ status: 400, message: msg });
+  }
+
+  return businessKeyValue;
+}
+
 export async function handleProcessStart(
   req: cds.Request,
   data: EntityRow,
@@ -56,16 +98,7 @@ export async function handleProcessStart(
   }
 
   const target = req.target as Target;
-  const inputs = parseInputToTreeFromInputs(startAnnotation.inputs, target);
-
-  // if inputs = [] --> no input defined, fetch entire row
-  let columns: (column_expr | string)[];
-  if (inputs.length === 0) {
-    columns = [WILDCARD];
-    LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
-  } else {
-    columns = convertToColumnsExpr(inputs);
-  }
+  const columns = getColumnsForDescriptor(startAnnotation, target);
 
   // fetch entity data (without businessKey to avoid alias collision)
   const row = await resolveEntityRowOrReject(
@@ -78,30 +111,7 @@ export async function handleProcessStart(
   );
   if (!row) return;
 
-  const businessKeyColumn = getBusinessKeyColumn(startAnnotation.businessKey);
-  let businessKeyValue: string | undefined;
-  if (businessKeyColumn) {
-    if (req.event === 'DELETE') {
-      const businessKeyData = getDeletePrefetchedBusinessKey(req, qualifierKey);
-      businessKeyValue = businessKeyData?.businessKey as string | undefined;
-    } else {
-      const businessKeyRow = await resolveEntityRowOrReject(
-        req,
-        data,
-        startAnnotation.conditionExpr,
-        'Failed to fetch business key for process start.',
-        LOG_MESSAGES.PROCESS_NOT_STARTED,
-        [businessKeyColumn],
-      );
-      businessKeyValue = businessKeyRow?.businessKey as string | undefined;
-    }
-
-    if (businessKeyValue && businessKeyValue.length > BUSINESS_KEY_MAX_LENGTH) {
-      const msg = `Business key value exceeds maximum length of ${BUSINESS_KEY_MAX_LENGTH} characters. Process start will fail.`;
-      LOG.error(msg);
-      return req.reject({ status: 400, message: msg });
-    }
-  }
+  const businessKeyValue = await resolveBusinessKeyValue(req, data, startAnnotation, qualifierKey);
 
   // emit process start
   const payload = { definitionId: startAnnotation.id!, context: row };
