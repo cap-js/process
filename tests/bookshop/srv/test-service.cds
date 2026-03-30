@@ -19,7 +19,7 @@ service TestService {
         on: '*'
     }
     @bpm.process.cancel #two: {
-        on: 'DELETE'
+        on: 'DELETE',
     }
     @bpm.process.suspend #three: {
         on: 'DELETE',

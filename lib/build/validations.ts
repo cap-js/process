@@ -1,7 +1,6 @@
 import cds from '@sap/cds';
 import { ProcessValidationPlugin } from './plugin';
 import { CsnDefinition, CsnElement, CsnEntity } from '../types/csn-extensions';
-import { BUSINESS_KEY } from '../constants';
 import {
   createCsnEntityContext,
   ElementType,
@@ -87,11 +86,12 @@ export function validateIfAnnotation(
 export function validateBusinessKeyAnnotation(
   def: CsnEntity,
   entityName: string,
+  businessKeyAnnotation: `@${string}`,
   buildPlugin: ProcessValidationPlugin,
 ) {
-  const bKeyExpr = def[BUSINESS_KEY];
+  const bKeyExpr = def[businessKeyAnnotation];
   if (!bKeyExpr || !bKeyExpr['='] || (!bKeyExpr['xpr'] && !bKeyExpr['ref'])) {
-    buildPlugin.pushMessage(ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION(entityName, BUSINESS_KEY), ERROR);
+    buildPlugin.pushMessage(ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION(entityName, businessKeyAnnotation), ERROR);
   }
 }
 
