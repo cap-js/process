@@ -274,7 +274,7 @@ export function getProcessDefinitions(
 
 export function getParsedInputEntries(
   def: CsnEntity,
-  inputsAnnotationKey: `@${string}` = '@bpm.process.start.inputs',
+  inputsAnnotationKey: `@${string}`,
 ): ParsedInputEntry[] | undefined {
   const inputsCSN = def[inputsAnnotationKey] as InputCSNEntry[] | undefined;
   if (!inputsCSN || inputsCSN.length === 0) {

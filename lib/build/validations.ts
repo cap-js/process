@@ -172,8 +172,8 @@ export function validateInputTypes(
   def: CsnDefinition,
   processDef: CsnDefinition,
   allDefinitions: Record<string, CsnDefinition> | undefined,
-  inputsAnnotationKey: `@${string}` = '@bpm.process.start.inputs',
-  idAnnotationKey: `@${string}` = '@bpm.process.start.id',
+  inputsAnnotationKey: `@${string}`,
+  idAnnotationKey: `@${string}`,
 ) {
   const parsedEntries = getParsedInputEntries(def as CsnEntity, inputsAnnotationKey);
   const elements = (def as CsnEntity).elements ?? {};
