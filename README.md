@@ -395,7 +395,9 @@ The plugin provides two ways to interact with SBPA processes programmatically:
 1. **Specific ProcessService** -- Provides a process specific abstraction on the process as a CAP service.
 2. **Generic ProcessService** -- Provides a generic abstraction on the [SBPA workflow api](https://api.sap.com/api/SPA_Workflow_Runtime/overview) as a CAP service.
 
-Both approaches work locally (in-memory), in hybrid mode (against a real SBPA instance), and in production.
+The approaches work only in hybrid mode (against a real SBPA instance), and in production. For getAttributes and getOutputs, it is currently not possible to get the real attributes as in a running process.
+For the lifecycle operations, the generic ProcessService allows you to set a business key in the header, which can then be used to execute the lifecycle operations in the local environment.
+The specific ProcessService does not work locally in the current state of the plugin.
 
 ### Specific Process Services
 
@@ -526,6 +528,13 @@ await processService.emit('start', {
   context: { orderId: '12345', amount: 100.0 },
 });
 
+// Start a process with local businessKey
+await processService.emit('start', {
+  definitionId: 'eu12.myorg.myproject.myProcess',
+  context: { orderId: '12345', amount: 100.0 },
+  {orderId}, // orderId -> "order-12345"
+})
+
 // Cancel all running instances for a business key
 await processService.emit('cancel', {
   businessKey: 'order-12345',
@@ -598,8 +607,6 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
 - Type mismatches between entity attributes and process definition inputs
 - Array cardinality mismatches (entity is array but process expects single value or vice versa)
 - Mandatory flag mismatches (process input is mandatory but entity attribute is not marked as `@mandatory`)
-
-**Note:** Associations and compositions are recursively validated, and cycles in entity associations are detected and reported as errors.
 
 ### Process Cancel/Suspend/Resume
 
