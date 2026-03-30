@@ -5,12 +5,7 @@ import {
   getEntityDataFromRequest,
   resolveEntityRowOrReject,
 } from './utils';
-import {
-  LOG_MESSAGES,
-  PROCESS_LOGGER_PREFIX,
-  BUSINESS_KEY,
-  BUSINESS_KEY_MAX_LENGTH,
-} from './../constants';
+import { LOG_MESSAGES, PROCESS_LOGGER_PREFIX, BUSINESS_KEY_MAX_LENGTH } from './../constants';
 import {
   InputCSNEntry,
   InputTreeNode,
@@ -22,7 +17,7 @@ import {
 
 import cds from '@sap/cds';
 import { buildWhereDeleteExpression, ProcessDeleteRequest } from './onDeleteUtils';
-import { formatBusinessKeyColumn, getBusinessKeyColumn } from '../shared/businessKey-helper';
+import { getBusinessKeyColumn } from '../shared/businessKey-helper';
 import { StartAnnotationDescriptor } from '../types/cds-plugin';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -72,10 +67,6 @@ export async function handleProcessStart(
     columns = convertToColumnsExpr(inputs);
   }
 
-  const businessKeyColumn = startAnnotation.businessKey
-    ? formatBusinessKeyColumn(startAnnotation.businessKey)
-    : getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
-
   // fetch entity data (without businessKey to avoid alias collision)
   const row = await resolveEntityRowOrReject(
     req,
@@ -87,6 +78,7 @@ export async function handleProcessStart(
   );
   if (!row) return;
 
+  const businessKeyColumn = getBusinessKeyColumn(startAnnotation.businessKey);
   let businessKeyValue: string | undefined;
   if (businessKeyColumn) {
     if (req.event === 'DELETE') {
@@ -127,9 +119,7 @@ export async function handleProcessStart(
  * or undefined if the condition was not met / no data was pre-fetched.
  */
 function getDeletePrefetchedStart(req: cds.Request, qualifierKey: string): EntityRow | undefined {
-  return (req as ProcessDeleteRequest)._Process?.Start?.get(qualifierKey) as
-    | EntityRow
-    | undefined;
+  return (req as ProcessDeleteRequest)._Process?.Start?.get(qualifierKey) as EntityRow | undefined;
 }
 
 /**
@@ -178,9 +168,7 @@ export async function prefetchStartDataForDelete(
       }
 
       // Fetch business key separately (to avoid alias collision)
-      const businessKeyColumn = ann.businessKey
-        ? formatBusinessKeyColumn(ann.businessKey)
-        : getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
+      const businessKeyColumn = getBusinessKeyColumn(ann.businessKey);
       if (businessKeyColumn) {
         const bkEntity = await SELECT.one
           .from(req.subject)

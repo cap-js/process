@@ -11,10 +11,21 @@ service TestService {
         name: String;
     }
 
+    @bpm.process.start: {
+        id: 'testProcess',
+        on: 'CREATE'
+    }
+    @bpm.process.cancel #one: {
+        on: 'DELETE'
+    }
     @bpm.process.cancel #two: {
         on: 'DELETE'
     }
-    @bpm.process.businessKey: (name || name)
+    @bpm.process.suspend #three: {
+        on: 'DELETE',
+    }
+    @bpm.process.businessKey #two: (age)
+    @bpm.process.businessKey: (name)
     entity TwoProcessStart {
         key ID: String;
         name: String;
