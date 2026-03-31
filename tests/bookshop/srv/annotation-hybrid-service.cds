@@ -38,11 +38,14 @@ service AnnotationHybridService {
   }
   @bpm.process.start #two      : {
       id: 'eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process_Two',
-      on: 'CREATE'
+      on: 'CREATE',
+      inputs: [
+        { path: $self.ID, as: 'id'}
+      ]
   }
   @bpm.process.businessKey: (ID)
   entity TwoProcessStarts {
-    key ID           : UUID;
+    key ID           : UUID @mandatory;
           model        : String(100);
           manufacturer : String(100);
           mileage      : Integer;

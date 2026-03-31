@@ -126,7 +126,10 @@ describe('Integration tests for multiple @bpm.process.start annotations', () => 
       expect(startMsgs.length).toBe(2);
 
       const definitionIds = startMsgs.map((m: any) => m.data.definitionId).sort();
-      expect(definitionIds).toEqual(['multiStartBothQualifiedProcess1', 'multiStartBothQualifiedProcess2']);
+      expect(definitionIds).toEqual([
+        'multiStartBothQualifiedProcess1',
+        'multiStartBothQualifiedProcess2',
+      ]);
     });
   });
 
