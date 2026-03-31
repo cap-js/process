@@ -6,7 +6,6 @@ import {
   getEntityDataFromRequest,
   resolveEntityRowOrReject,
 } from './utils';
-
 import {
   LOG_MESSAGES,
   PROCESS_LOGGER_PREFIX,
@@ -21,11 +20,11 @@ import {
   EntityContext,
   WILDCARD,
 } from '../shared/input-parser';
-
 import cds from '@sap/cds';
 import { buildWhereDeleteExpression, ProcessDeleteRequest } from './onDeleteUtils';
 import { getBusinessKeyColumn } from '../shared/businessKey-helper';
 import { StartAnnotationDescriptor } from '../types/cds-plugin';
+
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 // Use InputTreeNode as ProcessStartInput (same structure)
@@ -48,12 +47,9 @@ function getColumnsForDescriptor(
 }
 
 /**
- * Resolves the business key value for a start annotation.
- * For DELETE: reads from the pre-fetched Map on req._Process.StartBusinessKey.
- * For other events: issues a separate SELECT to avoid alias collision with context columns.
- * Validates business key length and rejects the request if it exceeds the limit.
+ * Resolves business key value for process start
+ * rejects if business key value exceeds maximum length
  *
- * Returns the resolved business key string, or undefined if no business key is configured.
  */
 async function resolveBusinessKeyValue(
   req: cds.Request,
@@ -85,9 +81,30 @@ async function resolveBusinessKeyValue(
     LOG.error(msg);
     return req.reject({ status: 400, message: msg });
   }
-
   return businessKeyValue;
 }
+
+/**
+ * Returns the pre-fetched entity data for a given start qualifier on DELETE,
+ * or undefined if the condition was not met / no data was pre-fetched.
+ */
+function getDeletePrefetchedStart(req: cds.Request, qualifierKey: string): EntityRow | undefined {
+  return (req as ProcessDeleteRequest)._Process?.Start?.get(qualifierKey) as EntityRow | undefined;
+}
+
+/**
+ * Returns the pre-fetched business key data for a given start qualifier on DELETE,
+ * or undefined if no business key was pre-fetched.
+ */
+function getDeletePrefetchedBusinessKey(
+  req: cds.Request,
+  qualifierKey: string,
+): EntityRow | undefined {
+  return (req as ProcessDeleteRequest)._Process?.StartBusinessKey?.get(qualifierKey) as
+    | EntityRow
+    | undefined;
+}
+
 export async function handleProcessStart(
   req: cds.Request,
   data: EntityRow,
@@ -135,32 +152,8 @@ export async function handleProcessStart(
 }
 
 /**
- * Returns the pre-fetched entity data for a given start qualifier on DELETE,
- * or undefined if the condition was not met / no data was pre-fetched.
- */
-function getDeletePrefetchedStart(req: cds.Request, qualifierKey: string): EntityRow | undefined {
-  return (req as ProcessDeleteRequest)._Process?.Start?.get(qualifierKey) as EntityRow | undefined;
-}
-
-/**
- * Returns the pre-fetched business key data for a given start qualifier on DELETE,
- * or undefined if no business key was pre-fetched.
- */
-function getDeletePrefetchedBusinessKey(
-  req: cds.Request,
-  qualifierKey: string,
-): EntityRow | undefined {
-  return (req as ProcessDeleteRequest)._Process?.StartBusinessKey?.get(qualifierKey) as
-    | EntityRow
-    | undefined;
-}
-
-/**
  * Pre-fetches entity data and business key for all start annotations before DELETE.
  * Returns a partial _Process object with Maps keyed by qualifier ('' for unqualified).
- *
- * Each start annotation may have different inputs (columns) and conditions,
- * so we issue separate SELECTs per annotation.
  */
 export async function prefetchStartDataForDelete(
   req: cds.Request,

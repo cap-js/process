@@ -15,6 +15,10 @@ import {
 import { getBusinessKeyColumnOrReject } from '../shared/businessKey-helper';
 import { BUSINESS_KEY } from '../constants';
 
+type ProcessActionType = 'cancel' | 'resume' | 'suspend';
+
+export type DeleteProcessMapKey = 'Cancel' | 'Suspend' | 'Resume';
+
 interface ProcessActionSpec {
   on?: string;
   cascade: boolean;
@@ -29,11 +33,7 @@ interface ProcessActionDeleteConfig {
   };
 }
 
-export type ProcessActionType = 'cancel' | 'resume' | 'suspend';
-
-export type DeleteProcessMapKey = 'Cancel' | 'Suspend' | 'Resume';
-
-export interface ProcessActionConfig {
+interface ProcessActionConfig {
   action: ProcessActionType;
   annotations: {
     ON: string;

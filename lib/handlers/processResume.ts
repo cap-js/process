@@ -3,10 +3,10 @@ import {
   createProcessActionHandler,
 } from './processActionHandler';
 import {
-  LOG_MESSAGES,
+  PROCESS_RESUME_ON,
   PROCESS_RESUME_CASCADE,
   PROCESS_RESUME_IF,
-  PROCESS_RESUME_ON,
+  LOG_MESSAGES,
 } from '../constants';
 
 const action = 'resume';

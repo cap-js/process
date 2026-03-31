@@ -9,10 +9,10 @@ import {
   EntityRow,
   prefetchStartDataForDelete,
   ProcessDeleteRequest,
+  addDeletedEntityToRequestCancel,
+  addDeletedEntityToRequestResume,
+  addDeletedEntityToRequestSuspend,
 } from '../handlers';
-import { addDeletedEntityToRequestCancel } from './processCancel';
-import { addDeletedEntityToRequestResume } from './processResume';
-import { addDeletedEntityToRequestSuspend } from './processSuspend';
 
 export function registerAnnotationHandlers(service: cds.Service) {
   if (service instanceof cds.ApplicationService == false) return;

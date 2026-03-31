@@ -12,30 +12,32 @@ import {
   validateBusinessKeyAnnotation,
 } from './index';
 import {
-  PROCESS_CANCEL,
-  PROCESS_SUSPEND,
-  PROCESS_RESUME,
   PROCESS_START,
+  PROCESS_CANCEL,
+  PROCESS_CANCEL_ON,
+  PROCESS_CANCEL_CASCADE,
+  PROCESS_CANCEL_IF,
+  PROCESS_RESUME,
+  PROCESS_RESUME_ON,
+  PROCESS_RESUME_CASCADE,
+  PROCESS_RESUME_IF,
+  PROCESS_SUSPEND,
+  PROCESS_SUSPEND_ON,
+  PROCESS_SUSPEND_CASCADE,
+  PROCESS_SUSPEND_IF,
   PROCESS_PREFIX,
   SUFFIX_ID,
   SUFFIX_ON,
   SUFFIX_IF,
   SUFFIX_INPUTS,
-  PROCESS_CANCEL_CASCADE,
-  PROCESS_CANCEL_IF,
-  PROCESS_CANCEL_ON,
-  PROCESS_RESUME_CASCADE,
-  PROCESS_RESUME_IF,
-  PROCESS_RESUME_ON,
-  PROCESS_SUSPEND_CASCADE,
-  PROCESS_SUSPEND_IF,
-  PROCESS_SUSPEND_ON,
   BUSINESS_KEY,
 } from '../constants';
-
 import { CsnDefinition, CsnEntity } from '../types/csn-extensions';
 import { getAnnotationPrefixes } from '../shared/annotations-helper';
 
+/**
+ * Configuration for lifecycle annotation validation (cancel, suspend, resume)
+ */
 interface LifecycleConfig {
   annotationOn: `@${string}`;
   annotationCascade: `@${string}`;
@@ -188,6 +190,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     annotationIf: `@${string}`,
     annotationPrefix: string,
   ) {
+    // check for unknown annotations
     const allowedAnnotations = [annotationOn, annotationCascade, annotationIf];
     validateAllowedAnnotations(allowedAnnotations, def, entityName, annotationPrefix, this);
 

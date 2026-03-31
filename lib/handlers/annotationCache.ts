@@ -41,9 +41,9 @@ export function buildAnnotationCache(service: cds.Service) {
       const cacheKey = `${entity.name}:${event}`;
       cache.set(cacheKey, {
         startAnnotations: matchingStarts,
-        hasCancel: hasCancel,
-        hasSuspend: hasSuspend,
-        hasResume: hasResume,
+        hasCancel,
+        hasSuspend,
+        hasResume,
       });
     }
   }

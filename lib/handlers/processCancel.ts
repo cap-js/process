@@ -3,10 +3,10 @@ import {
   createProcessActionHandler,
 } from './processActionHandler';
 import {
-  LOG_MESSAGES,
+  PROCESS_CANCEL_ON,
   PROCESS_CANCEL_CASCADE,
   PROCESS_CANCEL_IF,
-  PROCESS_CANCEL_ON,
+  LOG_MESSAGES,
 } from '../constants';
 
 const action = 'cancel';

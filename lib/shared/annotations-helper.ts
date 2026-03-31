@@ -12,21 +12,20 @@ import { StartAnnotationDescriptor } from '../types/cds-plugin';
 import { InputCSNEntry } from './input-parser';
 
 /**
+ * Extracts the qualifier from an annotation prefix.
+ * e.g. '@bpm.process.cancel#two' with base '@bpm.process.cancel' returns 'two'.
+ * Returns undefined if the prefix has no qualifier (equals the base) or if the
+ * separator is not the expected '#' character.
+ */
+function extractQualifier(prefix: string, annotationBase: string): string | undefined {
+  if (prefix.length <= annotationBase.length) return undefined;
+  const remainder = prefix.substring(annotationBase.length);
+  return remainder.startsWith('#') ? remainder.substring(1) : undefined;
+}
+
+/**
  * Scans all keys on a CDS entity object and returns the unique annotation prefixes
  * that match the given base annotation.
- *
- * CDS compiles annotations into flat keys on the entity object. For example:
- *   '@bpm.process.start.id': 'proc1'
- *   '@bpm.process.start.on': 'CREATE'
- *   '@bpm.process.start#two.id': 'proc2'
- *   '@bpm.process.start#two.on': 'UPDATE'
- *
- * Given annotationBase '@bpm.process.start', this returns:
- *   Set { '@bpm.process.start', '@bpm.process.start#two' }
- *
- * The returned prefixes can then be combined with property suffixes (e.g. '.id', '.on')
- * to read individual annotation values, and passed to extractQualifier() to get the
- * qualifier name (if any).
  */
 export function getAnnotationPrefixes(entity: cds.entity | CsnEntity, annotationBase: string) {
   const prefixes = new Set<string>();
@@ -38,18 +37,6 @@ export function getAnnotationPrefixes(entity: cds.entity | CsnEntity, annotation
   }
 
   return prefixes;
-}
-
-/**
- * Extracts the qualifier from an annotation prefix.
- * e.g. '@bpm.process.cancel#two' with base '@bpm.process.cancel' returns 'two'.
- * Returns undefined if the prefix has no qualifier (equals the base) or if the
- * separator is not the expected '#' character.
- */
-export function extractQualifier(prefix: string, annotationBase: string): string | undefined {
-  if (prefix.length <= annotationBase.length) return undefined;
-  const remainder = prefix.substring(annotationBase.length);
-  return remainder.startsWith('#') ? remainder.substring(1) : undefined;
 }
 
 export function findStartAnnotations(entity: cds.entity): StartAnnotationDescriptor[] {

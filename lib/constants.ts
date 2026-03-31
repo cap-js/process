@@ -64,11 +64,23 @@ export const PROCESS_RESUME_IF = `${PROCESS_RESUME}${SUFFIX_IF}` as const;
 /**
  * Annotation prefix for filtering
  */
+export const BUILD_PREFIX = '@bpm' as const;
 export const PROCESS_PREFIX = '@bpm.process' as const;
+
+/**
+ * Process Event Annotations (Runtime)
+ * These annotations are used on dynamically created ProcessService events
+ */
+export const PROCESS_START_EVENT = '@Process.StartEvent' as const;
+export const PROCESS_CANCEL_EVENT = '@Process.CancelEvent' as const;
+export const PROCESS_SUSPEND_EVENT = '@Process.SuspendEvent' as const;
+export const PROCESS_RESUME_EVENT = '@Process.ResumeEvent' as const;
+export const PROCESS_DEFINITION_ID = '@Process.DefinitionId' as const;
 
 /**
  * Log Messages
  */
+
 export const LOG_MESSAGES = {
   PROCESS_NOT_STARTED: 'Not starting process as start condition(s) are not met.',
   PROCESS_INPUTS_FROM_DEFINITION:

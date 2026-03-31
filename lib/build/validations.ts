@@ -1,6 +1,7 @@
 import cds from '@sap/cds';
 import { ProcessValidationPlugin } from './plugin';
 import { CsnDefinition, CsnElement, CsnEntity } from '../types/csn-extensions';
+import { BUSINESS_KEY } from '../constants';
 import {
   createCsnEntityContext,
   ElementType,
@@ -29,7 +30,6 @@ import {
   ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION,
 } from './constants';
 import { EntityContext, ParsedInputEntry } from '../shared/input-parser';
-import { BUSINESS_KEY } from '../constants';
 
 const Plugin = cds.build?.Plugin;
 const ERROR = Plugin?.ERROR;
@@ -84,7 +84,6 @@ export function validateIfAnnotation(
     buildPlugin.pushMessage(ERROR_IF_MUST_BE_EXPRESSION(entityName, annotationIf), ERROR);
   }
 }
-
 export function validateBusinessKeyAnnotation(
   def: CsnEntity,
   entityName: string,
