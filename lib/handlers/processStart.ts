@@ -1,4 +1,5 @@
 import { column_expr, expr, Target } from '@sap/cds';
+import * as csn from '../types/csn-extensions';
 import {
   emitProcessEvent,
   EntityRow,
@@ -200,7 +201,7 @@ function getProcessInputFieldNames(definitionId: string): string[] | undefined {
   let serviceName: string | undefined;
   for (const name in definitions) {
     if (Object.hasOwn(definitions, name)) {
-      const def = definitions[name] as unknown as Record<string, unknown>;
+      const def = definitions[name] as unknown as csn.CsnBaseDefinition;
       if (def[PROCESS_PREFIX] === definitionId) {
         serviceName = name;
         break;
@@ -211,7 +212,7 @@ function getProcessInputFieldNames(definitionId: string): string[] | undefined {
   if (!serviceName) return undefined;
 
   const processInputsType = definitions[`${serviceName}.ProcessInputs`] as
-    | { elements?: Record<string, unknown> }
+    | { elements?: Record<string, csn.CsnElement> }
     | undefined;
 
   if (!processInputsType?.elements) return undefined;
