@@ -1,11 +1,23 @@
-import { column_expr, Target } from '@sap/cds';
+import { column_expr, expr, Target } from '@sap/cds';
+import * as csn from '../types/csn-extensions';
 import {
   emitProcessEvent,
   EntityRow,
   getEntityDataFromRequest,
   resolveEntityRowOrReject,
 } from './utils';
-import { LOG_MESSAGES, PROCESS_LOGGER_PREFIX, BUSINESS_KEY_MAX_LENGTH } from './../constants';
+
+import {
+  PROCESS_START_ID,
+  PROCESS_START_ON,
+  PROCESS_START_IF,
+  PROCESS_START_INPUTS,
+  LOG_MESSAGES,
+  PROCESS_LOGGER_PREFIX,
+  PROCESS_PREFIX,
+  BUSINESS_KEY,
+  BUSINESS_KEY_MAX_LENGTH,
+} from './../constants';
 import {
   InputCSNEntry,
   InputTreeNode,
@@ -30,8 +42,12 @@ function getColumnsForDescriptor(
 ): (column_expr | string)[] {
   const inputs = parseInputToTreeFromInputs(startAnnotation.inputs, target);
   if (inputs.length === 0) {
-    LOG.debug(LOG_MESSAGES.NO_PROCESS_INPUTS_DEFINED);
-    return [WILDCARD];
+    LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
+    if (startAnnotation.id) {
+      return resolveColumnsFromProcessDefinition(startAnnotation.id, target);
+    } else {
+      return [WILDCARD];
+    }
   }
   return convertToColumnsExpr(inputs);
 }
@@ -77,7 +93,6 @@ async function resolveBusinessKeyValue(
 
   return businessKeyValue;
 }
-
 export async function handleProcessStart(
   req: cds.Request,
   data: EntityRow,
@@ -234,6 +249,41 @@ function parseInputToTreeFromInputs(
   const parsedEntries = parseInputsArray(inputsCSN);
   const runtimeContext = createRuntimeEntityContext(target as cds.entity);
   return buildInputTree(parsedEntries, runtimeContext);
+}
+
+function getProcessInputFieldNames(definitionId: string): string[] | undefined {
+  const definitions = cds.model?.definitions;
+  if (!definitions) return undefined;
+  let serviceName: string | undefined;
+  for (const name in definitions) {
+    const def = definitions[name] as unknown as csn.CsnBaseDefinition;
+    if (def.kind === 'service' && def[PROCESS_PREFIX] === definitionId) {
+      serviceName = name;
+      break;
+    }
+  }
+
+  if (!serviceName) return undefined;
+
+  const processInputsType = definitions[`${serviceName}.ProcessInputs`] as
+    | { elements?: Record<string, csn.CsnElement> }
+    | undefined;
+
+  if (!processInputsType?.elements) return undefined;
+
+  return Object.keys(processInputsType.elements);
+}
+
+function resolveColumnsFromProcessDefinition(
+  definitionId: string,
+  target: Target,
+): (column_expr | string)[] {
+  const processFields = getProcessInputFieldNames(definitionId);
+  if (!processFields) return [WILDCARD];
+
+  const entityElements = Object.keys((target as cds.entity).elements ?? {});
+  const matchingFields = processFields.filter((f) => entityElements.includes(f));
+  return matchingFields;
 }
 
 function convertToColumnsExpr(array: ProcessStartInput[]): (column_expr | string)[] {

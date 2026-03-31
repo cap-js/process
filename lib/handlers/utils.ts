@@ -41,6 +41,10 @@ async function fetchEntity(
     results = {};
   }
 
+  if (columns.length === 0) {
+    return {};
+  }
+
   const keyFields = getKeyFieldsForEntity(request.target as cds.entity);
 
   // build where clause

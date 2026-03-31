@@ -1481,6 +1481,21 @@ service AnnotationService {
             name : String(100);
     }
 
+    // Test 15: No inputs, ProcessInputs exists but zero entity fields match
+    // Should send empty context {}
+    // --------------------------------------------
+    @bpm.process.start: {
+        id: 'startNoInputProcess',
+        on: 'CREATE',
+    }
+    entity StartNoInputZeroMatch {
+        key ID               : UUID;
+            shipmentDate     : Date;
+            expectedDelivery : Date;
+            totalValue       : Decimal(15, 2);
+            notes            : String(500);
+    }
+
     // ============================================
     // BUSINESS KEY LENGTH VALIDATION TESTS
     // Testing businessKey max length (255 chars) on processStart
