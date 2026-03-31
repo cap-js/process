@@ -86,4 +86,22 @@ describe('Annotation Approach Hybrid Tests', () => {
     expect(canceledInstances.length).toBe(1);
     expect(canceledInstances[0]).toHaveProperty('status', 'CANCELED');
   });
+
+  it('should start two processes on create', async () => {
+    const ID = generateID();
+
+    // CREATE triggers start
+    await POST('/odata/v4/annotation-hybrid/TwoProcessStarts', {
+      ID,
+      model: 'Test Model',
+      manufacturer: 'Test Manufacturer',
+      mileage: 100,
+      year: 2020,
+    });
+
+    const runningInstances = await waitForInstances(ID, ['RUNNING']);
+    expect(runningInstances.length).toBe(2);
+    expect(runningInstances[0]).toHaveProperty('status', 'RUNNING');
+    expect(runningInstances[1]).toHaveProperty('status', 'RUNNING');
+  });
 });

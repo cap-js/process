@@ -90,6 +90,10 @@
       "StartNoInputWithAssocProcessService": {
         "kind": "process-service",
         "model": "srv/external/startNoInputWithAssocProcess"
+      },
+      "eu12.cdsmunich.capprocesspluginhybridtest.Annotation_Lifecycle_Process_TwoService": {
+        "kind": "process-service",
+        "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process_Two"
       }
     }
   },

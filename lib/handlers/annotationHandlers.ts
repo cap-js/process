@@ -58,13 +58,10 @@ async function dispatchProcessHandlers(
   req: cds.Request,
   data: EntityRow,
 ) {
-  const hasStart = cached.startAnnotations.length > 0;
+  await Promise.all(
+    cached.startAnnotations.map((startAnn) => handleProcessStart(req, data, startAnn)),
+  );
 
-  if (hasStart) {
-    await Promise.all(
-      cached.startAnnotations.map((startAnn) => handleProcessStart(req, data, startAnn)),
-    );
-  }
   if (cached.hasCancel) {
     await handleProcessCancel(req, data);
   }
