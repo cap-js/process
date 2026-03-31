@@ -9,22 +9,6 @@ describe('Integration tests for START annotation with inputs array', () => {
   let foundMessages: any[] = [];
 
   beforeAll(async () => {
-    // Mock process definition for startNoInputProcess (no external CDS file needed).
-    // getProcessInputFieldNames() reads cds.model.definitions at request time,
-    // so injecting here is sufficient for both StartNoInput and StartNoInputZeroMatch.
-    const defs = cds.model!.definitions as any;
-    defs['StartNoInputProcessService'] = {
-      kind: 'service',
-      '@bpm.process': 'startNoInputProcess',
-    };
-    defs['StartNoInputProcessService.ProcessInputs'] = {
-      kind: 'type',
-      elements: {
-        status: { type: 'cds.String' },
-        origin: { type: 'cds.String' },
-      },
-    };
-
     const db = await cds.connect.to('db');
     db.before('*', (req) => {
       if (req.event === 'CREATE' && req.target?.name === 'cds.outbox.Messages') {

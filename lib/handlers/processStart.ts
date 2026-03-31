@@ -200,12 +200,10 @@ function getProcessInputFieldNames(definitionId: string): string[] | undefined {
   if (!definitions) return undefined;
   let serviceName: string | undefined;
   for (const name in definitions) {
-    if (Object.hasOwn(definitions, name)) {
-      const def = definitions[name] as unknown as csn.CsnBaseDefinition;
-      if (def[PROCESS_PREFIX] === definitionId) {
-        serviceName = name;
-        break;
-      }
+    const def = definitions[name] as unknown as csn.CsnBaseDefinition;
+    if (def.kind === 'service' && def[PROCESS_PREFIX] === definitionId) {
+      serviceName = name;
+      break;
     }
   }
 

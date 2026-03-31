@@ -82,6 +82,14 @@
       "eu12.cdsmunich.capprocesspluginhybridtest.ImportProcess_Simple_InputsService": {
         "kind": "process-service",
         "model": "srv/external/eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Simple_Inputs"
+      },
+      "StartNoInputProcessService": {
+        "kind": "process-service",
+        "model": "srv/external/startNoInputProcess"
+      },
+      "StartNoInputWithAssocProcessService": {
+        "kind": "process-service",
+        "model": "srv/external/startNoInputWithAssocProcess"
       }
     }
   },
