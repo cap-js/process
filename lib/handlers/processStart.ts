@@ -39,9 +39,8 @@ function getColumnsForDescriptor(
     LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
     if (startAnnotation.id) {
       return resolveColumnsFromProcessDefinition(startAnnotation.id, target);
-    } else {
-      return [WILDCARD];
     }
+    return [WILDCARD];
   }
   return convertToColumnsExpr(inputs);
 }

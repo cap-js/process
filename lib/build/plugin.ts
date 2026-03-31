@@ -131,7 +131,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     processDefinitions: Map<string, CsnDefinition>,
     allDefinitions: Record<string, CsnDefinition>,
   ) {
-    const startPrefixes = Array.from(getAnnotationPrefixes(def, PROCESS_START));
+    const startPrefixes = getAnnotationPrefixes(def, PROCESS_START);
 
     for (const prefix of startPrefixes) {
       const annotationId = `${prefix}${SUFFIX_ID}` as `@${string}`;
