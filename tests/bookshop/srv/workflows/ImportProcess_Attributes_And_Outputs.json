@@ -1,0 +1,867 @@
+{
+    "contents": {
+        "9d2f0a4b-1765-4ebf-8266-e03de9207cdf": {
+            "classDefinition": "com.sap.bpm.wfs.Model",
+            "id": "eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Attributes_And_Outputs",
+            "subject": "ImportProcess_Attributes_And_Outputs",
+            "businessKey": "",
+            "customAttributes": [
+                {
+                    "id": "intattribute",
+                    "label": "IntAttribute",
+                    "value": "${context.startEvent.intattribute}",
+                    "type": "number"
+                },
+                {
+                    "id": "stringattribute",
+                    "label": "StringAttribute",
+                    "value": "${context.startEvent.stringattribute}",
+                    "type": "string"
+                }
+            ],
+            "propagateChildErrors": false,
+            "processIdentifier": "importProcess_Attributes_And_Outputs",
+            "artifactId": "5edc02ff-ce9a-4aaf-94bb-440b0c981a20",
+            "name": "ImportProcess_Attributes_And_Outputs",
+            "events": {
+                "5ab063dc-8539-4b00-804c-10cbeb292a87": {
+                    "name": "StartEvent"
+                },
+                "345c87ea-0bc9-491c-927d-d1c11feeba19": {
+                    "name": "EndEvent"
+                }
+            },
+            "sequenceFlows": {
+                "87e0ae9f-6c83-4a88-a13c-a3c63c271acf": {
+                    "name": "sequenceFlow"
+                }
+            },
+            "schemas": "a753c266-5585-49b6-99a4-0cbbb6d5edd1",
+            "technicalDeploymentId": "dd8daef0-23f3-4411-9c80-96d6f513db98",
+            "projectId": "eu12.cdsmunich.capprocesspluginhybridtest",
+            "projectVersion": "1.0.11"
+        },
+        "5ab063dc-8539-4b00-804c-10cbeb292a87": {
+            "classDefinition": "com.sap.bpm.wfs.StartEvent",
+            "mappings": {
+                "out": {
+                    "['custom']": {
+                        "expression": {
+                            "type": "ObjectExpression",
+                            "properties": []
+                        },
+                        "type": "expression"
+                    },
+                    "['startEvent']": {
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "SAP_SAFE_PARSE"
+                            },
+                            "arguments": [
+                                {
+                                    "type": "Identifier",
+                                    "name": "output"
+                                },
+                                {
+                                    "type": "ArrayExpression",
+                                    "elements": []
+                                }
+                            ]
+                        },
+                        "type": "expression"
+                    }
+                }
+            },
+            "interfaces": {
+                "out": {
+                    "schema": "pb3e7XuqdebhSrN_5564uNc",
+                    "definition": "#/definitions/out"
+                }
+            },
+            "id": "startEvent",
+            "name": "StartEvent"
+        },
+        "345c87ea-0bc9-491c-927d-d1c11feeba19": {
+            "classDefinition": "com.sap.bpm.wfs.EndEvent",
+            "mappings": {
+                "in": {
+                    "['complexe']": {
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "MemberExpression",
+                                "computed": false,
+                                "object": {
+                                    "type": "LogicalExpression",
+                                    "operator": "||",
+                                    "left": {
+                                        "type": "MemberExpression",
+                                        "computed": false,
+                                        "object": {
+                                            "type": "MemberExpression",
+                                            "computed": false,
+                                            "object": {
+                                                "type": "Identifier",
+                                                "name": "context"
+                                            },
+                                            "property": {
+                                                "type": "Identifier",
+                                                "name": "startEvent"
+                                            }
+                                        },
+                                        "property": {
+                                            "type": "Identifier",
+                                            "name": "complexe"
+                                        }
+                                    },
+                                    "right": {
+                                        "type": "ArrayExpression",
+                                        "elements": []
+                                    }
+                                },
+                                "property": {
+                                    "type": "Identifier",
+                                    "name": "map"
+                                }
+                            },
+                            "arguments": [
+                                {
+                                    "type": "FunctionExpression",
+                                    "params": [
+                                        {
+                                            "type": "Identifier",
+                                            "name": "listItem"
+                                        }
+                                    ],
+                                    "body": {
+                                        "type": "BlockStatement",
+                                        "body": [
+                                            {
+                                                "type": "ReturnStatement",
+                                                "argument": {
+                                                    "type": "ObjectExpression",
+                                                    "properties": [
+                                                        {
+                                                            "type": "Property",
+                                                            "key": {
+                                                                "type": "Identifier",
+                                                                "name": "StringList"
+                                                            },
+                                                            "computed": false,
+                                                            "value": {
+                                                                "type": "CallExpression",
+                                                                "callee": {
+                                                                    "type": "Identifier",
+                                                                    "name": "SAP_SAFE_PARSE"
+                                                                },
+                                                                "arguments": [
+                                                                    {
+                                                                        "type": "Identifier",
+                                                                        "name": "listItem"
+                                                                    },
+                                                                    {
+                                                                        "type": "ArrayExpression",
+                                                                        "elements": [
+                                                                            {
+                                                                                "type": "Literal",
+                                                                                "value": "StringList",
+                                                                                "raw": "'StringList'"
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "kind": "init",
+                                                            "method": false,
+                                                            "shorthand": false
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "generator": false,
+                                    "expression": false,
+                                    "async": false
+                                }
+                            ]
+                        },
+                        "type": "expression"
+                    },
+                    "['optionalcomplexe']": {
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "SAP_SAFE_PARSE"
+                            },
+                            "arguments": [
+                                {
+                                    "type": "Identifier",
+                                    "name": "context"
+                                },
+                                {
+                                    "type": "ArrayExpression",
+                                    "elements": [
+                                        {
+                                            "type": "Literal",
+                                            "value": "startEvent",
+                                            "raw": "'startEvent'"
+                                        },
+                                        {
+                                            "type": "Literal",
+                                            "value": "optionalcomplexe",
+                                            "raw": "'optionalcomplexe'"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "type": "expression"
+                    },
+                    "['optionalstring']": {
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "SAP_SAFE_PARSE"
+                            },
+                            "arguments": [
+                                {
+                                    "type": "Identifier",
+                                    "name": "context"
+                                },
+                                {
+                                    "type": "ArrayExpression",
+                                    "elements": [
+                                        {
+                                            "type": "Literal",
+                                            "value": "startEvent",
+                                            "raw": "'startEvent'"
+                                        },
+                                        {
+                                            "type": "Literal",
+                                            "value": "stringattribute",
+                                            "raw": "'stringattribute'"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "type": "expression"
+                    },
+                    "['string']": {
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "SAP_SAFE_PARSE"
+                            },
+                            "arguments": [
+                                {
+                                    "type": "Identifier",
+                                    "name": "context"
+                                },
+                                {
+                                    "type": "ArrayExpression",
+                                    "elements": [
+                                        {
+                                            "type": "Literal",
+                                            "value": "startEvent",
+                                            "raw": "'startEvent'"
+                                        },
+                                        {
+                                            "type": "Literal",
+                                            "value": "stringattribute",
+                                            "raw": "'stringattribute'"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "type": "expression"
+                    }
+                }
+            },
+            "interfaces": {
+                "in": {
+                    "schema": "pb3e7XuqdebhSrN_5564uNc",
+                    "definition": "#/definitions/in"
+                }
+            },
+            "id": "endEvent_1",
+            "name": "EndEvent"
+        },
+        "87e0ae9f-6c83-4a88-a13c-a3c63c271acf": {
+            "classDefinition": "com.sap.bpm.wfs.SequenceFlow",
+            "id": "pbtnevEtrats",
+            "name": "sequenceFlow",
+            "sourceRef": "5ab063dc-8539-4b00-804c-10cbeb292a87",
+            "targetRef": "345c87ea-0bc9-491c-927d-d1c11feeba19"
+        },
+        "a753c266-5585-49b6-99a4-0cbbb6d5edd1": {
+            "classDefinition": "com.sap.bpm.wfs.Schemas",
+            "schemas": {
+                "pb3e7XuqdebhSrN_5564uNc": {
+                    "origin": "local",
+                    "version": "1.0.0",
+                    "schemaRef": "$.5edc02ff-ce9a-4aaf-94bb-440b0c981a20",
+                    "content": {
+                        "definitions": {
+                            "out": {
+                                "title": "inputs",
+                                "type": "object",
+                                "$schema": "http://json-schema.org/draft-07/schema#",
+                                "definitions": {
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "title": "date"
+                                    },
+                                    "dateTime": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "title": "dateTime"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "password": true,
+                                        "title": "password"
+                                    },
+                                    "time": {
+                                        "type": "string",
+                                        "format": "time",
+                                        "title": "time"
+                                    },
+                                    "documentFolder": {
+                                        "type": "string",
+                                        "format": "document-folder",
+                                        "title": "documentFolder"
+                                    }
+                                },
+                                "properties": {
+                                    "stringattribute": {
+                                        "type": "string",
+                                        "title": "StringAttribute",
+                                        "description": ""
+                                    },
+                                    "intattribute": {
+                                        "type": "number",
+                                        "title": "IntAttribute",
+                                        "description": ""
+                                    },
+                                    "complexe": {
+                                        "type": "array",
+                                        "items": {
+                                            "$schema": "http://json-schema.org/draft-07/schema#",
+                                            "type": "object",
+                                            "title": "Complexe",
+                                            "properties": {
+                                                "StringList": {
+                                                    "uid": "4ed37465-be1c-44f1-b15b-94cba0cc04f4",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "SubString1": {
+                                                                "type": "string",
+                                                                "uid": "567555b3-ffee-41d4-a650-e9006ca9c5f6",
+                                                                "title": "SubString1"
+                                                            },
+                                                            "Substring2": {
+                                                                "type": "string",
+                                                                "uid": "794440a0-a06e-4fa6-a703-1f8fe4bc9d94",
+                                                                "title": "Substring2"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "SubString1",
+                                                            "Substring2"
+                                                        ]
+                                                    },
+                                                    "type": "array",
+                                                    "title": "StringList"
+                                                },
+                                                "StringType": {
+                                                    "type": "object",
+                                                    "uid": "23add1b4-d9e0-4955-8b24-2196d210a43d",
+                                                    "properties": {
+                                                        "SubStringType": {
+                                                            "type": "object",
+                                                            "uid": "3ca99589-d0b0-462a-92bf-bc872d81a0b3",
+                                                            "properties": {
+                                                                "SubSubStringType": {
+                                                                    "type": "object",
+                                                                    "uid": "f3dd8f45-fcd2-4fe2-9d2f-868e51f52b64",
+                                                                    "properties": {
+                                                                        "SubSubSubDate": {
+                                                                            "type": "string",
+                                                                            "format": "date",
+                                                                            "title": "SubSubSubDate"
+                                                                        },
+                                                                        "SubSubSubPassword": {
+                                                                            "type": "string",
+                                                                            "password": true,
+                                                                            "title": "SubSubSubPassword"
+                                                                        },
+                                                                        "SubSubSubAny": {
+                                                                            "uid": "99fd32c0-7ce9-4c22-bb85-890160827365",
+                                                                            "title": "SubSubSubAny"
+                                                                        }
+                                                                    },
+                                                                    "title": "SubSubStringType"
+                                                                }
+                                                            },
+                                                            "title": "SubStringType"
+                                                        }
+                                                    },
+                                                    "title": "StringType"
+                                                }
+                                            },
+                                            "required": [
+                                                "StringList"
+                                            ],
+                                            "definitions": {
+                                                "password": {
+                                                    "type": "string",
+                                                    "password": true,
+                                                    "title": "password"
+                                                },
+                                                "date": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "title": "date"
+                                                }
+                                            },
+                                            "version": 1,
+                                            "description": "",
+                                            "refName": "ImportProcess_Complex_DataType"
+                                        },
+                                        "title": "Complexe",
+                                        "description": "",
+                                        "refName": "ImportProcess_Complex_DataType"
+                                    },
+                                    "optionalcomplexe": {
+                                        "$schema": "http://json-schema.org/draft-07/schema#",
+                                        "type": "object",
+                                        "title": "OptionalComplexe",
+                                        "properties": {
+                                            "StringList": {
+                                                "uid": "4ed37465-be1c-44f1-b15b-94cba0cc04f4",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "SubString1": {
+                                                            "type": "string",
+                                                            "uid": "567555b3-ffee-41d4-a650-e9006ca9c5f6",
+                                                            "title": "SubString1"
+                                                        },
+                                                        "Substring2": {
+                                                            "type": "string",
+                                                            "uid": "794440a0-a06e-4fa6-a703-1f8fe4bc9d94",
+                                                            "title": "Substring2"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "SubString1",
+                                                        "Substring2"
+                                                    ]
+                                                },
+                                                "type": "array",
+                                                "title": "StringList"
+                                            },
+                                            "StringType": {
+                                                "type": "object",
+                                                "uid": "23add1b4-d9e0-4955-8b24-2196d210a43d",
+                                                "properties": {
+                                                    "SubStringType": {
+                                                        "type": "object",
+                                                        "uid": "3ca99589-d0b0-462a-92bf-bc872d81a0b3",
+                                                        "properties": {
+                                                            "SubSubStringType": {
+                                                                "type": "object",
+                                                                "uid": "f3dd8f45-fcd2-4fe2-9d2f-868e51f52b64",
+                                                                "properties": {
+                                                                    "SubSubSubDate": {
+                                                                        "type": "string",
+                                                                        "format": "date",
+                                                                        "title": "SubSubSubDate"
+                                                                    },
+                                                                    "SubSubSubPassword": {
+                                                                        "type": "string",
+                                                                        "password": true,
+                                                                        "title": "SubSubSubPassword"
+                                                                    },
+                                                                    "SubSubSubAny": {
+                                                                        "uid": "99fd32c0-7ce9-4c22-bb85-890160827365",
+                                                                        "title": "SubSubSubAny"
+                                                                    }
+                                                                },
+                                                                "title": "SubSubStringType"
+                                                            }
+                                                        },
+                                                        "title": "SubStringType"
+                                                    }
+                                                },
+                                                "title": "StringType"
+                                            }
+                                        },
+                                        "required": [
+                                            "StringList"
+                                        ],
+                                        "definitions": {
+                                            "password": {
+                                                "type": "string",
+                                                "password": true,
+                                                "title": "password"
+                                            },
+                                            "date": {
+                                                "type": "string",
+                                                "format": "date",
+                                                "title": "date"
+                                            }
+                                        },
+                                        "version": 1,
+                                        "description": "",
+                                        "refName": "ImportProcess_Complex_DataType"
+                                    }
+                                },
+                                "required": [
+                                    "stringattribute",
+                                    "intattribute",
+                                    "complexe"
+                                ]
+                            },
+                            "in": {
+                                "title": "outputs",
+                                "type": "object",
+                                "$schema": "http://json-schema.org/draft-07/schema#",
+                                "definitions": {
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "title": "date"
+                                    },
+                                    "dateTime": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "title": "dateTime"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "password": true,
+                                        "title": "password"
+                                    },
+                                    "time": {
+                                        "type": "string",
+                                        "format": "time",
+                                        "title": "time"
+                                    },
+                                    "documentFolder": {
+                                        "type": "string",
+                                        "format": "document-folder",
+                                        "title": "documentFolder"
+                                    }
+                                },
+                                "properties": {
+                                    "string": {
+                                        "type": "string",
+                                        "title": "String",
+                                        "description": ""
+                                    },
+                                    "optionalstring": {
+                                        "type": "string",
+                                        "title": "OptionalString",
+                                        "description": ""
+                                    },
+                                    "optionalcomplexe": {
+                                        "$schema": "http://json-schema.org/draft-07/schema#",
+                                        "type": "object",
+                                        "title": "OptionalComplexe",
+                                        "properties": {
+                                            "StringList": {
+                                                "uid": "4ed37465-be1c-44f1-b15b-94cba0cc04f4",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "SubString1": {
+                                                            "type": "string",
+                                                            "uid": "567555b3-ffee-41d4-a650-e9006ca9c5f6",
+                                                            "title": "SubString1"
+                                                        },
+                                                        "Substring2": {
+                                                            "type": "string",
+                                                            "uid": "794440a0-a06e-4fa6-a703-1f8fe4bc9d94",
+                                                            "title": "Substring2"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "SubString1",
+                                                        "Substring2"
+                                                    ]
+                                                },
+                                                "type": "array",
+                                                "title": "StringList"
+                                            },
+                                            "StringType": {
+                                                "type": "object",
+                                                "uid": "23add1b4-d9e0-4955-8b24-2196d210a43d",
+                                                "properties": {
+                                                    "SubStringType": {
+                                                        "type": "object",
+                                                        "uid": "3ca99589-d0b0-462a-92bf-bc872d81a0b3",
+                                                        "properties": {
+                                                            "SubSubStringType": {
+                                                                "type": "object",
+                                                                "uid": "f3dd8f45-fcd2-4fe2-9d2f-868e51f52b64",
+                                                                "properties": {
+                                                                    "SubSubSubDate": {
+                                                                        "type": "string",
+                                                                        "format": "date",
+                                                                        "title": "SubSubSubDate"
+                                                                    },
+                                                                    "SubSubSubPassword": {
+                                                                        "type": "string",
+                                                                        "password": true,
+                                                                        "title": "SubSubSubPassword"
+                                                                    },
+                                                                    "SubSubSubAny": {
+                                                                        "uid": "99fd32c0-7ce9-4c22-bb85-890160827365",
+                                                                        "title": "SubSubSubAny"
+                                                                    }
+                                                                },
+                                                                "title": "SubSubStringType"
+                                                            }
+                                                        },
+                                                        "title": "SubStringType"
+                                                    }
+                                                },
+                                                "title": "StringType"
+                                            }
+                                        },
+                                        "required": [
+                                            "StringList"
+                                        ],
+                                        "definitions": {
+                                            "password": {
+                                                "type": "string",
+                                                "password": true,
+                                                "title": "password"
+                                            },
+                                            "date": {
+                                                "type": "string",
+                                                "format": "date",
+                                                "title": "date"
+                                            }
+                                        },
+                                        "version": 1,
+                                        "description": "",
+                                        "refName": "ImportProcess_Complex_DataType"
+                                    },
+                                    "complexe": {
+                                        "type": "array",
+                                        "items": {
+                                            "$schema": "http://json-schema.org/draft-07/schema#",
+                                            "type": "object",
+                                            "title": "Complexe",
+                                            "properties": {
+                                                "StringList": {
+                                                    "uid": "4ed37465-be1c-44f1-b15b-94cba0cc04f4",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "SubString1": {
+                                                                "type": "string",
+                                                                "uid": "567555b3-ffee-41d4-a650-e9006ca9c5f6",
+                                                                "title": "SubString1"
+                                                            },
+                                                            "Substring2": {
+                                                                "type": "string",
+                                                                "uid": "794440a0-a06e-4fa6-a703-1f8fe4bc9d94",
+                                                                "title": "Substring2"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "SubString1",
+                                                            "Substring2"
+                                                        ]
+                                                    },
+                                                    "type": "array",
+                                                    "title": "StringList"
+                                                },
+                                                "StringType": {
+                                                    "type": "object",
+                                                    "uid": "23add1b4-d9e0-4955-8b24-2196d210a43d",
+                                                    "properties": {
+                                                        "SubStringType": {
+                                                            "type": "object",
+                                                            "uid": "3ca99589-d0b0-462a-92bf-bc872d81a0b3",
+                                                            "properties": {
+                                                                "SubSubStringType": {
+                                                                    "type": "object",
+                                                                    "uid": "f3dd8f45-fcd2-4fe2-9d2f-868e51f52b64",
+                                                                    "properties": {
+                                                                        "SubSubSubDate": {
+                                                                            "type": "string",
+                                                                            "format": "date",
+                                                                            "title": "SubSubSubDate"
+                                                                        },
+                                                                        "SubSubSubPassword": {
+                                                                            "type": "string",
+                                                                            "password": true,
+                                                                            "title": "SubSubSubPassword"
+                                                                        },
+                                                                        "SubSubSubAny": {
+                                                                            "uid": "99fd32c0-7ce9-4c22-bb85-890160827365",
+                                                                            "title": "SubSubSubAny"
+                                                                        }
+                                                                    },
+                                                                    "title": "SubSubStringType"
+                                                                }
+                                                            },
+                                                            "title": "SubStringType"
+                                                        }
+                                                    },
+                                                    "title": "StringType"
+                                                }
+                                            },
+                                            "required": [
+                                                "StringList"
+                                            ],
+                                            "definitions": {
+                                                "password": {
+                                                    "type": "string",
+                                                    "password": true,
+                                                    "title": "password"
+                                                },
+                                                "date": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "title": "date"
+                                                }
+                                            },
+                                            "version": 1,
+                                            "description": "",
+                                            "refName": "ImportProcess_Complex_DataType"
+                                        },
+                                        "title": "Complexe",
+                                        "description": "",
+                                        "refName": "ImportProcess_Complex_DataType"
+                                    }
+                                },
+                                "required": [
+                                    "string",
+                                    "complexe"
+                                ]
+                            }
+                        },
+                        "title": "pb3e7XuqdebhSrN_5564uNc"
+                    }
+                },
+                "pbRw1egG6lgFqcxejg57tbi": {
+                    "origin": "local",
+                    "version": "1.0.0",
+                    "schemaRef": "$.11cbfe86-2e73-4198-868a-d7a2115d82c1",
+                    "content": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "title": "ImportProcess_Complex_DataType",
+                        "properties": {
+                            "StringList": {
+                                "uid": "4ed37465-be1c-44f1-b15b-94cba0cc04f4",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "SubString1": {
+                                            "type": "string",
+                                            "uid": "567555b3-ffee-41d4-a650-e9006ca9c5f6",
+                                            "title": "SubString1"
+                                        },
+                                        "Substring2": {
+                                            "type": "string",
+                                            "uid": "794440a0-a06e-4fa6-a703-1f8fe4bc9d94",
+                                            "title": "Substring2"
+                                        }
+                                    },
+                                    "required": [
+                                        "SubString1",
+                                        "Substring2"
+                                    ]
+                                },
+                                "type": "array",
+                                "title": "StringList"
+                            },
+                            "StringType": {
+                                "type": "object",
+                                "uid": "23add1b4-d9e0-4955-8b24-2196d210a43d",
+                                "properties": {
+                                    "SubStringType": {
+                                        "type": "object",
+                                        "uid": "3ca99589-d0b0-462a-92bf-bc872d81a0b3",
+                                        "properties": {
+                                            "SubSubStringType": {
+                                                "type": "object",
+                                                "uid": "f3dd8f45-fcd2-4fe2-9d2f-868e51f52b64",
+                                                "properties": {
+                                                    "SubSubSubDate": {
+                                                        "type": "string",
+                                                        "format": "date",
+                                                        "title": "SubSubSubDate"
+                                                    },
+                                                    "SubSubSubPassword": {
+                                                        "type": "string",
+                                                        "password": true,
+                                                        "title": "SubSubSubPassword"
+                                                    },
+                                                    "SubSubSubAny": {
+                                                        "uid": "99fd32c0-7ce9-4c22-bb85-890160827365",
+                                                        "title": "SubSubSubAny"
+                                                    }
+                                                },
+                                                "title": "SubSubStringType"
+                                            }
+                                        },
+                                        "title": "SubStringType"
+                                    }
+                                },
+                                "title": "StringType"
+                            }
+                        },
+                        "required": [
+                            "StringList"
+                        ],
+                        "definitions": {
+                            "password": {
+                                "type": "string",
+                                "password": true,
+                                "title": "password"
+                            },
+                            "date": {
+                                "type": "string",
+                                "format": "date",
+                                "title": "date"
+                            }
+                        },
+                        "version": 1,
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "06b0ed72-8891-4aac-a8d1-4ac105cd5960": {
+            "classDefinition": "com.sap.bpm.wfs.Translation",
+            "bundles": {
+                "": {
+                    "endEvent_1.name": "EndEvent",
+                    "workflow.intattribute.label": "IntAttribute",
+                    "workflow.stringattribute.label": "StringAttribute",
+                    "workflow.name": "ImportProcess_Attributes_And_Outputs",
+                    "workflow.subject": "ImportProcess_Attributes_And_Outputs",
+                    "pbtnevEtrats.name": "sequenceFlow",
+                    "startEvent.name": "StartEvent"
+                }
+            }
+        }
+    }
+}
