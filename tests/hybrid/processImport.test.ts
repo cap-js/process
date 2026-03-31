@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import cds from '@sap/cds';
 import { importProcess } from '../../lib/processImport';
 
 const NAMESPACE = 'eu12.cdsmunich.capprocesspluginhybridtest';
@@ -14,9 +13,6 @@ function readCdsFile(dir: string, processName: string): string {
 }
 
 describe('Process Import: imported CDS files match external definitions', () => {
-  afterAll(async () => {
-    await (cds as any).flush();
-  });
   it('should match for importProcess_Simple_Inputs', () => {
     const imported = readCdsFile(IMPORTED_CDS_DIR, 'importProcess_Simple_Inputs');
     const external = readCdsFile(EXTERNAL_CDS_DIR, 'importProcess_Simple_Inputs');
@@ -40,15 +36,12 @@ describe('Process Import: imported CDS files match external definitions', () => 
 });
 
 describe('Process Import: raw SBPA workflow JSON produces same CSN as ProcessHeader JSON', () => {
-  afterAll(async () => {
-    await (cds as any).flush();
-  });
   it('should produce identical CSN for importProcess_Simple_Inputs', async () => {
     const rawCsn = await importProcess(
       path.join(WORKFLOWS_DIR, 'ImportProcess_Simple_Inputs.json'),
     );
     const headerCsn = await importProcess(
-      path.join(IMPORTED_CDS_DIR, `${NAMESPACE}.importProcess_Simple_Inputs.json`),
+      path.join(WORKFLOWS_DIR, `${NAMESPACE}.importProcess_Simple_Inputs.json`),
     );
 
     expect(rawCsn).toEqual(headerCsn);
@@ -59,7 +52,7 @@ describe('Process Import: raw SBPA workflow JSON produces same CSN as ProcessHea
       path.join(WORKFLOWS_DIR, 'ImportProcess_Complex_Inputs.json'),
     );
     const headerCsn = await importProcess(
-      path.join(IMPORTED_CDS_DIR, `${NAMESPACE}.importProcess_Complex_Inputs.json`),
+      path.join(WORKFLOWS_DIR, `${NAMESPACE}.importProcess_Complex_Inputs.json`),
     );
 
     expect(rawCsn).toEqual(headerCsn);
@@ -70,7 +63,7 @@ describe('Process Import: raw SBPA workflow JSON produces same CSN as ProcessHea
       path.join(WORKFLOWS_DIR, 'ImportProcess_Attributes_And_Outputs.json'),
     );
     const headerCsn = await importProcess(
-      path.join(IMPORTED_CDS_DIR, `${NAMESPACE}.importProcess_Attributes_And_Outputs.json`),
+      path.join(WORKFLOWS_DIR, `${NAMESPACE}.importProcess_Attributes_And_Outputs.json`),
     );
 
     expect(rawCsn).toEqual(headerCsn);

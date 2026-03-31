@@ -33,6 +33,11 @@ interface SchemaMapContext {
 //  MAIN ENTRY POINT
 // ============================================================================
 
+/**
+ * Module-level cache for data types, populated during loadProcessHeader / fetchAndSaveProcessDefinition
+ * and consumed by buildCsnModel → resolveTypeReference. Reset at the start of each importProcess call.
+ * Call order: importProcess resets → loadProcessHeader populates → buildCsnModel reads.
+ */
 let dataTypeCache = new Map<string, DataType>();
 
 export async function importProcess(
@@ -196,6 +201,12 @@ function convertWorkflowToProcessHeader(workflow: any): ProcessHeader {
     } else {
       dataTypeSchemas.push({ schemaRef: schema.schemaRef, content: schema.content });
     }
+  }
+
+  if (!processSchemaContent) {
+    throw new Error(
+      `Raw workflow JSON does not contain a schema entry with schemaRef "${processSchemaRef}".`,
+    );
   }
 
   // 4. Extract inputs (definitions.out) and outputs (definitions.in) from the process schema
@@ -719,8 +730,8 @@ function mapDateFormatToCdsType(format?: string): csn.CdsBuiltinType {
 
 /**
  * Map a string-typed JSON schema property to the correct CDS type,
- * taking into account the `format` property (used in raw workflow JSON)
- * and the `password` flag.
+ * taking into account the `format` property (used in raw workflow JSON).
+ * Note: password-typed strings have no dedicated CDS type and map to String.
  */
 function mapStringFormat(schema: JsonSchema): csn.CdsBuiltinType {
   if (schema.format) {
