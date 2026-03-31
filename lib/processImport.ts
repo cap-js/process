@@ -13,6 +13,8 @@ import {
 import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from './constants';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
+const CLASS_DEFINITION = 'com.sap.bpm.wfs.Model';
+const CLASS_SCHEMA = 'com.sap.bpm.wfs.Schemas';
 
 // ============================================================================
 //  TYPES
@@ -44,7 +46,7 @@ interface RawWorkflowEntry {
 
 /** The `com.sap.bpm.wfs.Model` entry. */
 interface RawWorkflowModelEntry extends RawWorkflowEntry {
-  classDefinition: 'com.sap.bpm.wfs.Model';
+  classDefinition: typeof CLASS_DEFINITION;
   projectId: string;
   processIdentifier: string;
   artifactId: string;
@@ -55,7 +57,7 @@ interface RawWorkflowModelEntry extends RawWorkflowEntry {
 
 /** The `com.sap.bpm.wfs.Schemas` entry. */
 interface RawWorkflowSchemasEntry extends RawWorkflowEntry {
-  classDefinition: 'com.sap.bpm.wfs.Schemas';
+  classDefinition: typeof CLASS_SCHEMA;
   schemas: Record<string, RawWorkflowSchemaItem>;
 }
 
@@ -200,7 +202,7 @@ function isRawWorkflowJson(parsed: unknown): boolean {
   const obj = parsed as RawWorkflowJson;
   if (!obj?.contents || typeof obj.contents !== 'object') return false;
   for (const key in obj.contents) {
-    if (obj.contents[key]?.classDefinition === 'com.sap.bpm.wfs.Model') return true;
+    if (obj.contents[key]?.classDefinition === CLASS_DEFINITION) return true;
   }
   return false;
 }
@@ -211,14 +213,14 @@ function convertWorkflowToProcessHeader(workflow: RawWorkflowJson): ProcessHeade
   // 1. Find the Model entry
   let modelEntry: RawWorkflowModelEntry | undefined;
   for (const key in contents) {
-    if (contents[key]?.classDefinition === 'com.sap.bpm.wfs.Model') {
+    if (contents[key]?.classDefinition === CLASS_DEFINITION) {
       modelEntry = contents[key] as RawWorkflowModelEntry;
       break;
     }
   }
 
   if (!modelEntry) {
-    throw new Error('Raw workflow JSON does not contain a com.sap.bpm.wfs.Model entry.');
+    throw new Error('Raw workflow JSON does not contain a CLASSDEFINITION entry.');
   }
 
   const projectId: string = modelEntry.projectId;
@@ -362,7 +364,7 @@ function loadProcessHeader(filePath: string): ProcessHeader {
   const content = fs.readFileSync(path.resolve(filePath), 'utf-8');
   const parsed = JSON.parse(content);
 
-  // Detect raw SBPA workflow JSON format (has "contents" with "com.sap.bpm.wfs.Model")
+  // Detect raw SBPA workflow JSON format (has "contents" with "CLASSDEFINITION")
   if (isRawWorkflowJson(parsed)) {
     LOG.debug('Detected raw SBPA workflow JSON format, converting to ProcessHeader...');
     const header = convertWorkflowToProcessHeader(parsed);
