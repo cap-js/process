@@ -196,25 +196,26 @@ async function generateCsnModel(jsonFilePath: string): Promise<csn.CsnModel> {
  * This is different from the ProcessHeader format returned by the unified API.
  */
 
-function isRawWorkflowJson(parsed: unknown): parsed is RawWorkflowJson {
-  if (!parsed || typeof parsed !== 'object') return false;
-  const obj = parsed as Record<string, unknown>;
-  if (!obj.contents || typeof obj.contents !== 'object') return false;
-  return Object.values(obj.contents as Record<string, unknown>).some(
-    (entry) =>
-      entry !== null &&
-      typeof entry === 'object' &&
-      (entry as RawWorkflowEntry).classDefinition === 'com.sap.bpm.wfs.Model',
-  );
+function isRawWorkflowJson(parsed: unknown): boolean {
+  const obj = parsed as RawWorkflowJson;
+  if (!obj?.contents || typeof obj.contents !== 'object') return false;
+  for (const key in obj.contents) {
+    if (obj.contents[key]?.classDefinition === 'com.sap.bpm.wfs.Model') return true;
+  }
+  return false;
 }
 
 function convertWorkflowToProcessHeader(workflow: RawWorkflowJson): ProcessHeader {
   const contents = workflow.contents;
 
   // 1. Find the Model entry
-  const modelEntry = Object.values(contents).find(
-    (e): e is RawWorkflowModelEntry => e?.classDefinition === 'com.sap.bpm.wfs.Model',
-  );
+  let modelEntry: RawWorkflowModelEntry | undefined;
+  for (const key in contents) {
+    if (contents[key]?.classDefinition === 'com.sap.bpm.wfs.Model') {
+      modelEntry = contents[key] as RawWorkflowModelEntry;
+      break;
+    }
+  }
 
   if (!modelEntry) {
     throw new Error('Raw workflow JSON does not contain a com.sap.bpm.wfs.Model entry.');
