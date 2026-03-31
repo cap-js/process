@@ -12,8 +12,17 @@ import {
   PROCESS_SUSPEND,
   PROCESS_RESUME,
   CUD_EVENTS,
+  SUFFIX_ID,
+  SUFFIX_ON,
+  SUFFIX_IF,
+  SUFFIX_CASCADE,
+  SUFFIX_INPUTS,
 } from '../constants';
-import { extractQualifier, getAnnotationPrefixes, resolveBusinessKey } from '../shared/annotations-helper';
+import {
+  extractQualifier,
+  getAnnotationPrefixes,
+  resolveBusinessKey,
+} from '../shared/annotations-helper';
 
 function expandEvent(event: string | undefined, entity: cds.entity): string[] {
   if (!event) return [];
@@ -46,15 +55,15 @@ export function findStartAnnotations(entity: cds.entity): StartAnnotationDescrip
   const prefixes = getAnnotationPrefixes(entity, PROCESS_START);
 
   for (const prefix of prefixes) {
-    const id = entity[`${prefix}.id`] as string | undefined;
-    const on = entity[`${prefix}.on`] as string | undefined;
+    const id = entity[`${prefix}${SUFFIX_ID}`] as string | undefined;
+    const on = entity[`${prefix}${SUFFIX_ON}`] as string | undefined;
 
     if (!id || !on) continue;
 
     const qualifier = extractQualifier(prefix, PROCESS_START);
 
-    const ifAnnotation = entity[`${prefix}.if`] as { xpr: expr } | undefined;
-    const inputs = entity[`${prefix}.inputs`] as InputCSNEntry[] | undefined;
+    const ifAnnotation = entity[`${prefix}${SUFFIX_IF}`] as { xpr: expr } | undefined;
+    const inputs = entity[`${prefix}${SUFFIX_INPUTS}`] as InputCSNEntry[] | undefined;
 
     const businessKey = resolveBusinessKey(entity, qualifier);
 
@@ -96,13 +105,13 @@ export function findLifecycleAnnotations(
   const prefixes = getAnnotationPrefixes(entity, annotationBase);
 
   for (const prefix of prefixes) {
-    const on = entity[`${prefix}.on`] as string | undefined;
+    const on = entity[`${prefix}${SUFFIX_ON}`] as string | undefined;
     if (!on) continue;
 
     const qualifier = extractQualifier(prefix, annotationBase);
 
-    const cascade = (entity[`${prefix}.cascade`] as boolean) ?? false;
-    const ifAnnotation = entity[`${prefix}.if`] as { xpr: expr } | undefined;
+    const cascade = (entity[`${prefix}${SUFFIX_CASCADE}`] as boolean) ?? false;
+    const ifAnnotation = entity[`${prefix}${SUFFIX_IF}`] as { xpr: expr } | undefined;
     const businessKey = resolveBusinessKey(entity, qualifier);
 
     results.push({

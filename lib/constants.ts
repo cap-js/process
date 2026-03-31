@@ -25,54 +25,49 @@ export const BUSINESS_KEY_MAX_LENGTH = 255;
 export const BUSINESS_KEY_ALIAS = 'as businessKey' as const;
 
 /**
- * Process Start Annotations
+ * Annotation property suffixes.
+ * Used to construct fully-qualified annotation keys from a prefix,
+ * e.g. `${prefix}${SUFFIX_ON}` → '@bpm.process.start.on' or '@bpm.process.cancel#two.on'.
+ */
+export const SUFFIX_ID = '.id' as const;
+export const SUFFIX_ON = '.on' as const;
+export const SUFFIX_IF = '.if' as const;
+export const SUFFIX_CASCADE = '.cascade' as const;
+export const SUFFIX_INPUTS = '.inputs' as const;
+
+/**
+ * Process annotation base prefixes
  */
 export const PROCESS_START = '@bpm.process.start' as const;
-export const PROCESS_START_ID = '@bpm.process.start.id' as const;
-export const PROCESS_START_ON = '@bpm.process.start.on' as const;
-export const PROCESS_START_IF = '@bpm.process.start.if' as const;
-export const PROCESS_START_INPUTS = '@bpm.process.start.inputs' as const;
-
-/**
- * Process Cancel Annotations
- */
 export const PROCESS_CANCEL = '@bpm.process.cancel' as const;
-export const PROCESS_CANCEL_ON = '@bpm.process.cancel.on' as const;
-export const PROCESS_CANCEL_CASCADE = '@bpm.process.cancel.cascade' as const;
-export const PROCESS_CANCEL_IF = '@bpm.process.cancel.if' as const;
-
-/**
- * Process Suspend Annotations
- */
 export const PROCESS_SUSPEND = '@bpm.process.suspend' as const;
-export const PROCESS_SUSPEND_ON = '@bpm.process.suspend.on' as const;
-export const PROCESS_SUSPEND_CASCADE = '@bpm.process.suspend.cascade' as const;
-export const PROCESS_SUSPEND_IF = '@bpm.process.suspend.if' as const;
+export const PROCESS_RESUME = '@bpm.process.resume' as const;
 
 /**
- * Process Resume Annotations
+ * Derived full-path annotation keys (unqualified).
+ * These combine the base prefix with the suffix for convenience and backward compatibility.
  */
-export const PROCESS_RESUME = '@bpm.process.resume' as const;
-export const PROCESS_RESUME_ON = '@bpm.process.resume.on' as const;
-export const PROCESS_RESUME_CASCADE = '@bpm.process.resume.cascade' as const;
-export const PROCESS_RESUME_IF = '@bpm.process.resume.if' as const;
+export const PROCESS_START_ID = `${PROCESS_START}${SUFFIX_ID}` as const;
+export const PROCESS_START_ON = `${PROCESS_START}${SUFFIX_ON}` as const;
+export const PROCESS_START_IF = `${PROCESS_START}${SUFFIX_IF}` as const;
+export const PROCESS_START_INPUTS = `${PROCESS_START}${SUFFIX_INPUTS}` as const;
+
+export const PROCESS_CANCEL_ON = `${PROCESS_CANCEL}${SUFFIX_ON}` as const;
+export const PROCESS_CANCEL_CASCADE = `${PROCESS_CANCEL}${SUFFIX_CASCADE}` as const;
+export const PROCESS_CANCEL_IF = `${PROCESS_CANCEL}${SUFFIX_IF}` as const;
+
+export const PROCESS_SUSPEND_ON = `${PROCESS_SUSPEND}${SUFFIX_ON}` as const;
+export const PROCESS_SUSPEND_CASCADE = `${PROCESS_SUSPEND}${SUFFIX_CASCADE}` as const;
+export const PROCESS_SUSPEND_IF = `${PROCESS_SUSPEND}${SUFFIX_IF}` as const;
+
+export const PROCESS_RESUME_ON = `${PROCESS_RESUME}${SUFFIX_ON}` as const;
+export const PROCESS_RESUME_CASCADE = `${PROCESS_RESUME}${SUFFIX_CASCADE}` as const;
+export const PROCESS_RESUME_IF = `${PROCESS_RESUME}${SUFFIX_IF}` as const;
 
 /**
  * Annotation prefix for filtering
  */
-export const BUILD_PREFIX = '@bpm' as const;
 export const PROCESS_PREFIX = '@bpm.process' as const;
-
-/**
- * Process Event Annotations (Runtime)
- * These annotations are used on dynamically created ProcessService events
- */
-export const PROCESS_START_EVENT = '@Process.StartEvent' as const;
-export const PROCESS_CANCEL_EVENT = '@Process.CancelEvent' as const;
-export const PROCESS_SUSPEND_EVENT = '@Process.SuspendEvent' as const;
-export const PROCESS_RESUME_EVENT = '@Process.ResumeEvent' as const;
-export const PROCESS_DEFINITION_ID = '@Process.DefinitionId' as const;
-
 /**
  * Log Messages
  */

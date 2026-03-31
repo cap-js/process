@@ -17,6 +17,11 @@ import {
   PROCESS_RESUME,
   PROCESS_START,
   PROCESS_PREFIX,
+  SUFFIX_ID,
+  SUFFIX_ON,
+  SUFFIX_IF,
+  SUFFIX_CASCADE,
+  SUFFIX_INPUTS,
 } from '../constants';
 
 import { CsnDefinition, CsnEntity } from '../types/csn-extensions';
@@ -89,10 +94,10 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     const startPrefixes = Array.from(getAnnotationPrefixes(def, PROCESS_START));
 
     for (const prefix of startPrefixes) {
-      const annotationId = `${prefix}.id` as `@${string}`;
-      const annotationOn = `${prefix}.on` as `@${string}`;
-      const annotationIf = `${prefix}.if` as `@${string}`;
-      const annotationInputs = `${prefix}.inputs` as `@${string}`;
+      const annotationId = `${prefix}${SUFFIX_ID}` as `@${string}`;
+      const annotationOn = `${prefix}${SUFFIX_ON}` as `@${string}`;
+      const annotationIf = `${prefix}${SUFFIX_IF}` as `@${string}`;
+      const annotationInputs = `${prefix}${SUFFIX_INPUTS}` as `@${string}`;
 
       // check unknown annotations for this prefix
       const allowedAnnotations = [annotationId, annotationOn, annotationIf, annotationInputs];
@@ -145,9 +150,9 @@ export class ProcessValidationPlugin extends BuildPluginBase {
     const prefixes = Array.from(getAnnotationPrefixes(def, annotationBase));
 
     for (const prefix of prefixes) {
-      const annotationOn = `${prefix}.on` as `@${string}`;
-      const annotationCascade = `${prefix}.cascade` as `@${string}`;
-      const annotationIf = `${prefix}.if` as `@${string}`;
+      const annotationOn = `${prefix}${SUFFIX_ON}` as `@${string}`;
+      const annotationCascade = `${prefix}${SUFFIX_CASCADE}` as `@${string}`;
+      const annotationIf = `${prefix}${SUFFIX_IF}` as `@${string}`;
 
       // check for unknown annotations for this prefix
       const allowedAnnotations = [annotationOn, annotationCascade, annotationIf];
