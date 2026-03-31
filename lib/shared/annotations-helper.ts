@@ -55,7 +55,7 @@ export function findStartAnnotations(entity: cds.entity): StartAnnotationDescrip
     const ifAnnotation = entity[`${prefix}${SUFFIX_IF}`] as { xpr: expr } | undefined;
     const inputs = entity[`${prefix}${SUFFIX_INPUTS}`] as InputCSNEntry[] | undefined;
 
-    const businessKey = entity[`${BUSINESS_KEY}`]?.['='] as string | undefined;
+    const businessKey = (entity[`${BUSINESS_KEY}`] as { '=': string } | undefined)?.['='];
 
     results.push({
       qualifier,

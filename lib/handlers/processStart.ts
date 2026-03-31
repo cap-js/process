@@ -158,7 +158,7 @@ export async function handleProcessStart(
 export async function prefetchStartDataForDelete(
   req: cds.Request,
   startAnnotations: StartAnnotationDescriptor[],
-): Promise<EntityRow | void> {
+): Promise<Record<string, Map<string, EntityRow>>> {
   const target = req.target as Target;
   const deleteReq = req as ProcessDeleteRequest;
 
@@ -177,6 +177,12 @@ export async function prefetchStartDataForDelete(
       const selectColumns = columns.length > 0 ? columns : [WILDCARD];
       const entity = await SELECT.one.from(req.subject).columns(selectColumns).where(where);
       if (entity) {
+        if (startMap.has(qualifierKey)) {
+          LOG.warn(
+            `Duplicate start annotation qualifier '${qualifierKey}' detected; the previous prefetch will be overwritten.`,
+          );
+        }
+
         startMap.set(qualifierKey, entity);
       }
 
