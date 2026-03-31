@@ -17,11 +17,10 @@ import {
   PROCESS_RESUME,
   PROCESS_START,
   PROCESS_PREFIX,
-  BUSINESS_KEY,
 } from '../constants';
 
 import { CsnDefinition, CsnEntity } from '../types/csn-extensions';
-import { getAnnotationPrefixes } from '../shared/annotations-helper';
+import { extractQualifier, getAnnotationPrefixes, resolveBusinessKeyAnnotation } from '../shared/annotations-helper';
 
 /**
  * Base annotation prefixes for lifecycle annotations (cancel, suspend, resume).
@@ -161,15 +160,8 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       // Resolve business key with qualified fallback:
       // For qualified prefix like '@bpm.process.cancel#two', extract qualifier 'two'
       // and try '@bpm.process.businessKey#two' first, then fall back to '@bpm.process.businessKey'
-      const qualifier = prefix.length > annotationBase.length
-        ? prefix.substring(annotationBase.length + 1) // skip the '#'
-        : undefined;
-      const qualifiedBusinessKey = qualifier
-        ? `${BUSINESS_KEY}#${qualifier}` as `@${string}`
-        : undefined;
-      const resolvedBusinessKeyAnnotation = (qualifiedBusinessKey && def[qualifiedBusinessKey] !== undefined)
-        ? qualifiedBusinessKey
-        : BUSINESS_KEY;
+      const qualifier = extractQualifier(prefix, annotationBase);
+      const resolvedBusinessKeyAnnotation = resolveBusinessKeyAnnotation(def, qualifier);
       const hasBusinessKey = def[resolvedBusinessKeyAnnotation] !== undefined;
 
       const hasAnyAnnotationWithPrefix = Object.keys(def).some((key) =>

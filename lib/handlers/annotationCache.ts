@@ -13,7 +13,7 @@ import {
   PROCESS_RESUME,
   CUD_EVENTS,
 } from '../constants';
-import { getAnnotationPrefixes, resolveBusinessKey } from '../shared/annotations-helper';
+import { extractQualifier, getAnnotationPrefixes, resolveBusinessKey } from '../shared/annotations-helper';
 
 function expandEvent(event: string | undefined, entity: cds.entity): string[] {
   if (!event) return [];
@@ -51,10 +51,7 @@ export function findStartAnnotations(entity: cds.entity): StartAnnotationDescrip
 
     if (!id || !on) continue;
 
-    const qualifier =
-      prefix.length > PROCESS_START.length
-        ? prefix.substring(PROCESS_START.length + 1) // skip the '#'
-        : undefined;
+    const qualifier = extractQualifier(prefix, PROCESS_START);
 
     const ifAnnotation = entity[`${prefix}.if`] as { xpr: expr } | undefined;
     const inputs = entity[`${prefix}.inputs`] as InputCSNEntry[] | undefined;
@@ -102,10 +99,7 @@ export function findLifecycleAnnotations(
     const on = entity[`${prefix}.on`] as string | undefined;
     if (!on) continue;
 
-    const qualifier =
-      prefix.length > annotationBase.length
-        ? prefix.substring(annotationBase.length + 1) // skip the '#'
-        : undefined;
+    const qualifier = extractQualifier(prefix, annotationBase);
 
     const cascade = (entity[`${prefix}.cascade`] as boolean) ?? false;
     const ifAnnotation = entity[`${prefix}.if`] as { xpr: expr } | undefined;
