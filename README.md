@@ -408,6 +408,7 @@ For full type safety and build-time validation, you can import a specific SBPA p
 To import a process, you have two different options to import: First via the download of the model from you SBPA instance, or via a direct import from SBPA where you need a bound SBPA instance to your CAP Application (i.e. `cds bind`).
 
 ##### From downloaded model
+
 Go to your SBPA instance > Control Tower > Environments > Select your environment where the process is deployed > Processes and Workflows > Select your process > Click on the "Download Model" button.
 
 ```bash
