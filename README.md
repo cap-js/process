@@ -405,21 +405,30 @@ For full type safety and build-time validation, you can import a specific SBPA p
 
 #### Importing a Service
 
-To import a process, you need credentials via `cds bind` and must be logged in to Cloud Foundry.
+To import a process, you have two different options to import: First via the download of the model from you SBPA instance, or via a direct import from SBPA where you need a bound SBPA instance to your CAP Application (i.e. `cds bind`).
+
+##### From downloaded model
+Go to your SBPA instance > Control Tower > Environments > Select your environment where the process is deployed > Processes and Workflows > Select your process > Click on the "Download Model" button.
+
+```bash
+cds import --from process ~./Downloads/<your-process>.json
+```
+
+This will create a new CDS service in `./srv/external/<your-process>.cds` with the process definition that is used for the build-time validation and the typed programmatic API.
 
 ##### From SBPA (Remote Import)
 
-Import your SBPA process directly from the API:
+Import your SBPA process directly from SBPA.
 
-**Note:** For remote imports, you must have ProcessService credentials bound. `cds import --from process` will resolve the credentials.
+**Note:** For this kind of imports, you must have ProcessService credentials bound. `cds import --from process` will resolve the credentials.
 
 ```bash
 cds import --from process --name eu12.myorg.myproject.myProcess
 ```
 
-##### From Local JSON File
+This will create also a new CDS service in `./srv/external/eu12.myorg.myproject.myProcess.cds` with the process definition as well as a JSON file in `./srv/workflows/eu12.myorg.myproject.myProcess.json` with the process definition in JSON-format.
 
-If you already have a process definition JSON file, you can generate the CDS model directly from it without needing credentials. Both the SBPA API response format (previously fetched) and the raw SBPA workflow model file (downloaded from the process editor) are supported:
+In case your external services are corrupted, you can import from the created file in `./srv/workflows/` as well:
 
 ```bash
 cds import --from process ./srv/workflows/eu12.myorg.myproject.myProcess.json
