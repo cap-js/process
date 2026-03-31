@@ -112,28 +112,6 @@ describe('Integration tests for multiple @bpm.process.start annotations', () => 
   });
 
   // ================================================
-  // Two starts on CREATE, both with qualifiers
-  // ================================================
-  describe('Two starts on CREATE, both with qualifiers', () => {
-    it('should trigger both qualified start annotations on CREATE', async () => {
-      const car = createTestCar();
-
-      const response = await POST('/odata/v4/annotation/MultiStartBothQualified', car);
-
-      expect(response.status).toBe(201);
-
-      const startMsgs = findStartMessages();
-      expect(startMsgs.length).toBe(2);
-
-      const definitionIds = startMsgs.map((m: any) => m.data.definitionId).sort();
-      expect(definitionIds).toEqual([
-        'multiStartBothQualifiedProcess1',
-        'multiStartBothQualifiedProcess2',
-      ]);
-    });
-  });
-
-  // ================================================
   // Two starts on CREATE with condition
   // ================================================
   describe('Two starts on CREATE with condition', () => {

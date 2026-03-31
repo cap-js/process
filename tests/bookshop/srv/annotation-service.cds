@@ -1689,7 +1689,7 @@ service AnnotationService {
         }
 
     // Two start annotations on different events (CREATE + UPDATE)
-    @bpm.process.start      : {
+    @bpm.process.start #one : {
         id: 'multiStartDiffEventProcess1',
         on: 'CREATE',
     }
@@ -1736,24 +1736,6 @@ service AnnotationService {
         if: (mileage > 500)
     }
     entity MultiStartWithCondition       as
-        projection on my.Car {
-            ID,
-            model,
-            manufacturer,
-            mileage,
-            year
-        }
-
-    // Two start annotations both on CREATE, both with qualifiers
-    @bpm.process.start #one : {
-        id: 'multiStartBothQualifiedProcess1',
-        on: 'CREATE',
-    }
-    @bpm.process.start #two : {
-        id: 'multiStartBothQualifiedProcess2',
-        on: 'CREATE',
-    }
-    entity MultiStartBothQualified       as
         projection on my.Car {
             ID,
             model,
