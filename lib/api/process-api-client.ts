@@ -46,6 +46,10 @@ export interface JsonSchema {
   items?: JsonSchema;
   $ref?: string;
   refName?: string;
+  format?: string;
+  password?: boolean;
+  title?: string;
+  description?: string;
 }
 
 // ============ Interface ============

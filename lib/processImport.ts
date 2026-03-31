@@ -13,6 +13,7 @@ import {
 import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from './constants';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
+const CLASS_DEFINITION = 'com.sap.bpm.wfs.Model';
 
 // ============================================================================
 //  TYPES
@@ -29,10 +30,62 @@ interface SchemaMapContext {
   definitions: Record<string, csn.CsnDefinition>;
 }
 
+// --- Raw SBPA workflow JSON types ---
+
+/** Top-level structure of a raw SBPA workflow JSON file. */
+interface RawWorkflowJson {
+  contents: Record<string, RawWorkflowEntry>;
+}
+
+/** Base shape for any entry inside `contents`. */
+interface RawWorkflowEntry {
+  classDefinition?: string;
+  [key: string]: unknown;
+}
+
+/** The `com.sap.bpm.wfs.Model` entry. */
+interface RawWorkflowModelEntry extends RawWorkflowEntry {
+  classDefinition: typeof CLASS_DEFINITION;
+  projectId: string;
+  processIdentifier: string;
+  artifactId: string;
+  name: string;
+  /** UUID key pointing to the Schemas entry. */
+  schemas: string;
+}
+
+/** The `com.sap.bpm.wfs.Schemas` entry. */
+interface RawWorkflowSchemasEntry extends RawWorkflowEntry {
+  classDefinition: 'com.sap.bpm.wfs.Schemas';
+  schemas: Record<string, RawWorkflowSchemaItem>;
+}
+
+/** A single schema item inside the Schemas entry. */
+interface RawWorkflowSchemaItem {
+  schemaRef: string;
+  content: JsonSchema & RawProcessSchemaContent;
+}
+
+/**
+ * Additional structure on the process schema content (the one matching `$.{artifactId}`).
+ * Data type schemas don't have `definitions.in` / `definitions.out`.
+ */
+interface RawProcessSchemaContent {
+  definitions?: {
+    out?: JsonSchema;
+    in?: JsonSchema;
+  };
+}
+
 // ============================================================================
 //  MAIN ENTRY POINT
 // ============================================================================
 
+/**
+ * Module-level cache for data types, populated during loadProcessHeader / fetchAndSaveProcessDefinition
+ * and consumed by buildCsnModel → resolveTypeReference. Reset at the start of each importProcess call.
+ * Call order: importProcess resets → loadProcessHeader populates → buildCsnModel reads.
+ */
 let dataTypeCache = new Map<string, DataType>();
 
 export async function importProcess(
@@ -132,10 +185,193 @@ async function generateCsnModel(jsonFilePath: string): Promise<csn.CsnModel> {
   return csnModel;
 }
 
+// ============================================================================
+//  RAW SBPA WORKFLOW JSON → PROCESS HEADER CONVERSION
+// ============================================================================
+
+/**
+ * Raw SBPA workflow JSON is the format exported from the SAP Build Process Automation
+ * design-time. It uses a `{ "contents": { ... } }` structure with entries keyed by
+ * UUID, containing classDefinitions like "com.sap.bpm.wfs.Model", "com.sap.bpm.wfs.Schemas", etc.
+ *
+ * This is different from the ProcessHeader format returned by the unified API.
+ */
+
+function isRawWorkflowJson(parsed: unknown): boolean {
+  const obj = parsed as RawWorkflowJson;
+  if (!obj?.contents || typeof obj.contents !== 'object') return false;
+  for (const key in obj.contents) {
+    if (obj.contents[key]?.classDefinition === CLASS_DEFINITION) return true;
+  }
+  return false;
+}
+
+function convertWorkflowToProcessHeader(workflow: RawWorkflowJson): ProcessHeader {
+  const contents = workflow.contents;
+
+  // 1. Find the Model entry
+  let modelEntry: RawWorkflowModelEntry | undefined;
+  for (const key in contents) {
+    if (contents[key]?.classDefinition === CLASS_DEFINITION) {
+      modelEntry = contents[key] as RawWorkflowModelEntry;
+      break;
+    }
+  }
+
+  if (!modelEntry) {
+    throw new Error('Raw workflow JSON does not contain a CLASSDEFINITION entry.');
+  }
+
+  const projectId: string = modelEntry.projectId;
+  const identifier: string = modelEntry.processIdentifier;
+  const artifactId: string = modelEntry.artifactId;
+  const name: string = modelEntry.name;
+
+  // 2. Find the Schemas entry
+  const schemasUid: string = modelEntry.schemas;
+  const schemasEntry = contents[schemasUid] as RawWorkflowSchemasEntry | undefined;
+  if (!schemasEntry?.schemas) {
+    throw new Error('Raw workflow JSON does not contain a valid Schemas entry.');
+  }
+
+  // 3. Find the process schema (the one whose schemaRef matches $.{artifactId})
+  const processSchemaRef = `$.${artifactId}`;
+  let processSchemaContent: RawProcessSchemaContent | null = null;
+  const dataTypeSchemas: Array<{ schemaRef: string; content: JsonSchema }> = [];
+
+  for (const schemaKey of Object.keys(schemasEntry.schemas)) {
+    const schema = schemasEntry.schemas[schemaKey];
+    if (schema.schemaRef === processSchemaRef) {
+      processSchemaContent = schema.content;
+    } else {
+      dataTypeSchemas.push({ schemaRef: schema.schemaRef, content: schema.content });
+    }
+  }
+
+  if (!processSchemaContent) {
+    throw new Error(
+      `Raw workflow JSON does not contain a schema entry with schemaRef "${processSchemaRef}".`,
+    );
+  }
+
+  // 4. Extract inputs (definitions.out) and outputs (definitions.in) from the process schema
+  const inputs: JsonSchema = processSchemaContent?.definitions?.out ?? {
+    type: 'object',
+    properties: {},
+    required: [],
+  };
+  const outputs: JsonSchema = processSchemaContent?.definitions?.in ?? {
+    type: 'object',
+    properties: {},
+    required: [],
+  };
+
+  // 5. Build data types from non-process schemas
+  const dataTypes: DataType[] = dataTypeSchemas.map((ds) => {
+    const uid = ds.schemaRef.startsWith('$.') ? ds.schemaRef.substring(2) : ds.schemaRef;
+    const dtName = ds.content?.title ?? uid;
+    return {
+      uid,
+      name: dtName,
+      identifier: dtName,
+      type: 'datatype',
+      header: ds.content,
+    };
+  });
+
+  // 6. Build dependencies from data types
+  const dependencies = dataTypes.map((dt) => ({
+    artifactUid: dt.uid,
+    type: 'both' as const,
+  }));
+
+  // 7. Reconstruct $ref patterns in inputs/outputs for complex type properties.
+  //    In the raw format, complex types are inlined. We need to replace them with
+  //    $ref: "$.{uid}" references so buildCsnModel can resolve them via dataTypeCache.
+  for (const dt of dataTypes) {
+    restoreRefs(inputs, dt);
+    restoreRefs(outputs, dt);
+  }
+
+  return {
+    uid: artifactId,
+    name,
+    identifier,
+    type: 'bpi.process',
+    projectId,
+    header: {
+      inputs,
+      outputs,
+      processAttributes: { type: 'object', properties: {}, required: [] },
+    },
+    dependencies: dependencies.length > 0 ? dependencies : undefined,
+    dataTypes: dataTypes.length > 0 ? dataTypes : undefined,
+  };
+}
+
+/**
+ * Recursively walk properties of a schema and replace inlined complex types with
+ * $ref references when they match a known data type (by refName or title).
+ */
+function restoreRefs(schema: JsonSchema, dataType: DataType): void {
+  if (!schema?.properties) return;
+
+  for (const propName of Object.keys(schema.properties)) {
+    const prop = schema.properties[propName];
+    if (!prop) continue;
+
+    // Check if this is an array whose items match the data type (check arrays first
+    // because the array itself may also carry a refName)
+    if (prop.type === 'array' && prop.items && matchesDataType(prop.items, dataType)) {
+      schema.properties[propName] = {
+        type: 'array',
+        items: {
+          $ref: `$.${dataType.uid}`,
+          refName: dataType.name,
+        },
+        ...(prop.title ? { title: prop.title } : {}),
+        ...(prop.description !== undefined ? { description: prop.description } : {}),
+        ...(prop.refName ? { refName: prop.refName } : {}),
+      };
+      continue;
+    }
+
+    // Check if this property is a direct inline of the data type
+    if (matchesDataType(prop, dataType)) {
+      schema.properties[propName] = {
+        $ref: `$.${dataType.uid}`,
+        refName: dataType.name,
+        ...(prop.title ? { title: prop.title } : {}),
+        ...(prop.description !== undefined ? { description: prop.description } : {}),
+      };
+      continue;
+    }
+  }
+}
+
+/**
+ * Check if a schema property matches a data type by comparing refName or title.
+ */
+function matchesDataType(prop: JsonSchema, dataType: DataType): boolean {
+  if (prop.refName && prop.refName === dataType.name) return true;
+  // For inlined objects, the title on the data type content matches the data type name
+  if (prop.type === 'object' && prop.title === dataType.header?.title) return true;
+  return false;
+}
+
 function loadProcessHeader(filePath: string): ProcessHeader {
   const content = fs.readFileSync(path.resolve(filePath), 'utf-8');
-  const header = JSON.parse(content) as ProcessHeader;
+  const parsed = JSON.parse(content);
 
+  // Detect raw SBPA workflow JSON format (has "contents" with "CLASSDEFINITION")
+  if (isRawWorkflowJson(parsed)) {
+    LOG.debug('Detected raw SBPA workflow JSON format, converting to ProcessHeader...');
+    const header = convertWorkflowToProcessHeader(parsed);
+    header.dataTypes?.forEach((dt) => dataTypeCache.set(dt.uid, dt));
+    return header;
+  }
+
+  const header = parsed as ProcessHeader;
   header.dataTypes?.forEach((dt) => dataTypeCache.set(dt.uid, dt));
   return header;
 }
@@ -392,7 +628,7 @@ function mapSchemaPropertyToElement(
   // Primitives
   switch (schema.type) {
     case 'string':
-      return { type: csn.CdsBuiltinType.String, notNull };
+      return { type: mapStringFormat(schema), notNull };
     case 'boolean':
       return { type: csn.CdsBuiltinType.Boolean, notNull };
     case 'number':
@@ -445,7 +681,7 @@ function buildArrayItemsSpec(itemsSchema: JsonSchema, ctx: SchemaMapContext): cs
   // Primitives
   switch (itemsSchema.type) {
     case 'string':
-      return { type: csn.CdsBuiltinType.String };
+      return { type: mapStringFormat(itemsSchema) };
     case 'boolean':
       return { type: csn.CdsBuiltinType.Boolean };
     case 'number':
@@ -532,6 +768,27 @@ function mapDateFormatToCdsType(format?: string): csn.CdsBuiltinType {
     default:
       return csn.CdsBuiltinType.String;
   }
+}
+
+/**
+ * Map a string-typed JSON schema property to the correct CDS type,
+ * taking into account the `format` property (used in raw workflow JSON).
+ * Note: password-typed strings have no dedicated CDS type and map to String.
+ */
+function mapStringFormat(schema: JsonSchema): csn.CdsBuiltinType {
+  if (schema.format) {
+    switch (schema.format) {
+      case 'date':
+        return csn.CdsBuiltinType.Date;
+      case 'date-time':
+        return csn.CdsBuiltinType.Timestamp;
+      case 'time':
+        return csn.CdsBuiltinType.Time;
+      default:
+        return csn.CdsBuiltinType.String;
+    }
+  }
+  return csn.CdsBuiltinType.String;
 }
 
 function ensureObjectSchema(schema?: JsonSchema): JsonSchema {
