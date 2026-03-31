@@ -132,10 +132,193 @@ async function generateCsnModel(jsonFilePath: string): Promise<csn.CsnModel> {
   return csnModel;
 }
 
+// ============================================================================
+//  RAW SBPA WORKFLOW JSON → PROCESS HEADER CONVERSION
+// ============================================================================
+
+/**
+ * Raw SBPA workflow JSON is the format exported from the SAP Build Process Automation
+ * design-time. It uses a `{ "contents": { ... } }` structure with entries keyed by
+ * UUID, containing classDefinitions like "com.sap.bpm.wfs.Model", "com.sap.bpm.wfs.Schemas", etc.
+ *
+ * This is different from the ProcessHeader format returned by the unified API.
+ */
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isRawWorkflowJson(parsed: any): boolean {
+  if (!parsed?.contents || typeof parsed.contents !== 'object') return false;
+  return Object.values(parsed.contents).some(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (entry: any) => entry?.classDefinition === 'com.sap.bpm.wfs.Model',
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function convertWorkflowToProcessHeader(workflow: any): ProcessHeader {
+  const contents = workflow.contents;
+
+  // 1. Find the Model entry
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const modelEntry = Object.values(contents).find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (e: any) => e?.classDefinition === 'com.sap.bpm.wfs.Model',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) as any;
+
+  if (!modelEntry) {
+    throw new Error('Raw workflow JSON does not contain a com.sap.bpm.wfs.Model entry.');
+  }
+
+  const projectId: string = modelEntry.projectId;
+  const identifier: string = modelEntry.processIdentifier;
+  const artifactId: string = modelEntry.artifactId;
+  const name: string = modelEntry.name;
+
+  // 2. Find the Schemas entry
+  const schemasUid: string = modelEntry.schemas;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const schemasEntry = contents[schemasUid] as any;
+  if (!schemasEntry?.schemas) {
+    throw new Error('Raw workflow JSON does not contain a valid Schemas entry.');
+  }
+
+  // 3. Find the process schema (the one whose schemaRef matches $.{artifactId})
+  const processSchemaRef = `$.${artifactId}`;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let processSchemaContent: any = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dataTypeSchemas: Array<{ schemaRef: string; content: any }> = [];
+
+  for (const schemaKey of Object.keys(schemasEntry.schemas)) {
+    const schema = schemasEntry.schemas[schemaKey];
+    if (schema.schemaRef === processSchemaRef) {
+      processSchemaContent = schema.content;
+    } else {
+      dataTypeSchemas.push({ schemaRef: schema.schemaRef, content: schema.content });
+    }
+  }
+
+  // 4. Extract inputs (definitions.out) and outputs (definitions.in) from the process schema
+  const inputs: JsonSchema = processSchemaContent?.definitions?.out ?? {
+    type: 'object',
+    properties: {},
+    required: [],
+  };
+  const outputs: JsonSchema = processSchemaContent?.definitions?.in ?? {
+    type: 'object',
+    properties: {},
+    required: [],
+  };
+
+  // 5. Build data types from non-process schemas
+  const dataTypes: DataType[] = dataTypeSchemas.map((ds) => {
+    const uid = ds.schemaRef.startsWith('$.') ? ds.schemaRef.substring(2) : ds.schemaRef;
+    const dtName = ds.content?.title ?? uid;
+    return {
+      uid,
+      name: dtName,
+      identifier: dtName,
+      type: 'datatype',
+      header: ds.content as JsonSchema,
+    };
+  });
+
+  // 6. Build dependencies from data types
+  const dependencies = dataTypes.map((dt) => ({
+    artifactUid: dt.uid,
+    type: 'both' as const,
+  }));
+
+  // 7. Reconstruct $ref patterns in inputs/outputs for complex type properties.
+  //    In the raw format, complex types are inlined. We need to replace them with
+  //    $ref: "$.{uid}" references so buildCsnModel can resolve them via dataTypeCache.
+  for (const dt of dataTypes) {
+    restoreRefs(inputs, dt);
+    restoreRefs(outputs, dt);
+  }
+
+  return {
+    uid: artifactId,
+    name,
+    identifier,
+    type: 'bpi.process',
+    projectId,
+    header: {
+      inputs,
+      outputs,
+      processAttributes: { type: 'object', properties: {}, required: [] },
+    },
+    dependencies: dependencies.length > 0 ? dependencies : undefined,
+    dataTypes: dataTypes.length > 0 ? dataTypes : undefined,
+  };
+}
+
+/**
+ * Recursively walk properties of a schema and replace inlined complex types with
+ * $ref references when they match a known data type (by refName or title).
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function restoreRefs(schema: any, dataType: DataType): void {
+  if (!schema?.properties) return;
+
+  for (const propName of Object.keys(schema.properties)) {
+    const prop = schema.properties[propName];
+    if (!prop) continue;
+
+    // Check if this is an array whose items match the data type (check arrays first
+    // because the array itself may also carry a refName)
+    if (prop.type === 'array' && prop.items && matchesDataType(prop.items, dataType)) {
+      schema.properties[propName] = {
+        type: 'array',
+        items: {
+          $ref: `$.${dataType.uid}`,
+          refName: dataType.name,
+        },
+        ...(prop.title ? { title: prop.title } : {}),
+        ...(prop.description !== undefined ? { description: prop.description } : {}),
+        ...(prop.refName ? { refName: prop.refName } : {}),
+      };
+      continue;
+    }
+
+    // Check if this property is a direct inline of the data type
+    if (matchesDataType(prop, dataType)) {
+      schema.properties[propName] = {
+        $ref: `$.${dataType.uid}`,
+        refName: dataType.name,
+        ...(prop.title ? { title: prop.title } : {}),
+        ...(prop.description !== undefined ? { description: prop.description } : {}),
+      };
+      continue;
+    }
+  }
+}
+
+/**
+ * Check if a schema property matches a data type by comparing refName or title.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function matchesDataType(prop: any, dataType: DataType): boolean {
+  if (prop.refName && prop.refName === dataType.name) return true;
+  // For inlined objects, the title on the data type content matches the data type name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (prop.type === 'object' && prop.title === (dataType.header as any)?.title) return true;
+  return false;
+}
+
 function loadProcessHeader(filePath: string): ProcessHeader {
   const content = fs.readFileSync(path.resolve(filePath), 'utf-8');
-  const header = JSON.parse(content) as ProcessHeader;
+  const parsed = JSON.parse(content);
 
+  // Detect raw SBPA workflow JSON format (has "contents" with "com.sap.bpm.wfs.Model")
+  if (isRawWorkflowJson(parsed)) {
+    LOG.debug('Detected raw SBPA workflow JSON format, converting to ProcessHeader...');
+    const header = convertWorkflowToProcessHeader(parsed);
+    header.dataTypes?.forEach((dt) => dataTypeCache.set(dt.uid, dt));
+    return header;
+  }
+
+  const header = parsed as ProcessHeader;
   header.dataTypes?.forEach((dt) => dataTypeCache.set(dt.uid, dt));
   return header;
 }
@@ -392,7 +575,7 @@ function mapSchemaPropertyToElement(
   // Primitives
   switch (schema.type) {
     case 'string':
-      return { type: csn.CdsBuiltinType.String, notNull };
+      return { type: mapStringFormat(schema), notNull };
     case 'boolean':
       return { type: csn.CdsBuiltinType.Boolean, notNull };
     case 'number':
@@ -445,7 +628,7 @@ function buildArrayItemsSpec(itemsSchema: JsonSchema, ctx: SchemaMapContext): cs
   // Primitives
   switch (itemsSchema.type) {
     case 'string':
-      return { type: csn.CdsBuiltinType.String };
+      return { type: mapStringFormat(itemsSchema) };
     case 'boolean':
       return { type: csn.CdsBuiltinType.Boolean };
     case 'number':
@@ -532,6 +715,27 @@ function mapDateFormatToCdsType(format?: string): csn.CdsBuiltinType {
     default:
       return csn.CdsBuiltinType.String;
   }
+}
+
+/**
+ * Map a string-typed JSON schema property to the correct CDS type,
+ * taking into account the `format` property (used in raw workflow JSON)
+ * and the `password` flag.
+ */
+function mapStringFormat(schema: JsonSchema): csn.CdsBuiltinType {
+  if (schema.format) {
+    switch (schema.format) {
+      case 'date':
+        return csn.CdsBuiltinType.Date;
+      case 'date-time':
+        return csn.CdsBuiltinType.Timestamp;
+      case 'time':
+        return csn.CdsBuiltinType.Time;
+      default:
+        return csn.CdsBuiltinType.String;
+    }
+  }
+  return csn.CdsBuiltinType.String;
 }
 
 function ensureObjectSchema(schema?: JsonSchema): JsonSchema {
