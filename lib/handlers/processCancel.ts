@@ -1,13 +1,35 @@
-import { createProcessActionHandler } from './processActionHandler';
-import { LOG_MESSAGES } from '../constants';
+import {
+  createProcessActionAddDeletedEntityHandler,
+  createProcessActionHandler,
+} from './processActionHandler';
+import {
+  LOG_MESSAGES,
+  PROCESS_CANCEL_CASCADE,
+  PROCESS_CANCEL_IF,
+  PROCESS_CANCEL_ON,
+} from '../constants';
+
+const action = 'cancel';
 
 export const handleProcessCancel = createProcessActionHandler({
-  action: 'cancel',
+  action: action,
+  annotations: {
+    ON: PROCESS_CANCEL_ON,
+    CASCADE: PROCESS_CANCEL_CASCADE,
+    IF: PROCESS_CANCEL_IF,
+  },
   logMessages: {
     NOT_TRIGGERED: LOG_MESSAGES.PROCESS_NOT_CANCELLED,
     FETCH_FAILED: 'Failed to fetch entity for process cancellation.',
     INVALID_KEY: 'Failed to build business key for process cancellation.',
     EMPTY_KEY: 'Business key is empty for process cancellation.',
     FAILED: 'Failed to cancel process with business key',
+  },
+});
+
+export const addDeletedEntityToRequestCancel = createProcessActionAddDeletedEntityHandler({
+  action: action,
+  annotations: {
+    IF: PROCESS_CANCEL_IF,
   },
 });

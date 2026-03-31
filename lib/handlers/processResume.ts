@@ -1,13 +1,35 @@
-import { createProcessActionHandler } from './processActionHandler';
-import { LOG_MESSAGES } from '../constants';
+import {
+  createProcessActionAddDeletedEntityHandler,
+  createProcessActionHandler,
+} from './processActionHandler';
+import {
+  LOG_MESSAGES,
+  PROCESS_RESUME_CASCADE,
+  PROCESS_RESUME_IF,
+  PROCESS_RESUME_ON,
+} from '../constants';
+
+const action = 'resume';
 
 export const handleProcessResume = createProcessActionHandler({
-  action: 'resume',
+  action: action,
+  annotations: {
+    ON: PROCESS_RESUME_ON,
+    CASCADE: PROCESS_RESUME_CASCADE,
+    IF: PROCESS_RESUME_IF,
+  },
   logMessages: {
     NOT_TRIGGERED: LOG_MESSAGES.PROCESS_NOT_RESUMED,
     FETCH_FAILED: 'Failed to fetch entity for process resume.',
     INVALID_KEY: 'Failed to build business key for process resume.',
     EMPTY_KEY: 'Business key is empty for process resume.',
     FAILED: 'Failed to resume process with business key',
+  },
+});
+
+export const addDeletedEntityToRequestResume = createProcessActionAddDeletedEntityHandler({
+  action: action,
+  annotations: {
+    IF: PROCESS_RESUME_IF,
   },
 });

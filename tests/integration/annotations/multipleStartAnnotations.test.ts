@@ -112,35 +112,6 @@ describe('Integration tests for multiple @bpm.process.start annotations', () => 
   });
 
   // ================================================
-  // Two starts on CREATE with different business keys
-  // ================================================
-  describe('Two starts on CREATE with different business keys', () => {
-    it('should trigger both starts with their respective business keys', async () => {
-      const car = createTestCar();
-
-      const response = await POST('/odata/v4/annotation/MultiStartDiffBusinessKeys', car);
-
-      expect(response.status).toBe(201);
-
-      const startMsgs = findStartMessages();
-      expect(startMsgs.length).toBe(2);
-
-      // Find each start message by definitionId
-      const msg1 = startMsgs.find((m: any) => m.data.definitionId === 'multiStartBkProcess1');
-      const msg2 = startMsgs.find((m: any) => m.data.definitionId === 'multiStartBkProcess2');
-
-      expect(msg1).toBeDefined();
-      expect(msg2).toBeDefined();
-
-      // Unqualified start: @bpm.process.businessKey: (ID)
-      expect(msg1!.headers.businessKey).toBe(car.ID);
-
-      // Qualified start #two: @bpm.process.businessKey#two: (model || '-' || manufacturer)
-      expect(msg2!.headers.businessKey).toBe(`${car.model}-${car.manufacturer}`);
-    });
-  });
-
-  // ================================================
   // Two starts on CREATE, one with a condition
   // ================================================
   describe('Two starts on CREATE with condition', () => {

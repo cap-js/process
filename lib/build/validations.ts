@@ -29,6 +29,7 @@ import {
   ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION,
 } from './constants';
 import { EntityContext, ParsedInputEntry } from '../shared/input-parser';
+import { BUSINESS_KEY } from '../constants';
 
 const Plugin = cds.build?.Plugin;
 const ERROR = Plugin?.ERROR;
@@ -83,15 +84,15 @@ export function validateIfAnnotation(
     buildPlugin.pushMessage(ERROR_IF_MUST_BE_EXPRESSION(entityName, annotationIf), ERROR);
   }
 }
+
 export function validateBusinessKeyAnnotation(
   def: CsnEntity,
   entityName: string,
-  businessKeyAnnotation: `@${string}`,
   buildPlugin: ProcessValidationPlugin,
 ) {
-  const bKeyExpr = def[businessKeyAnnotation];
+  const bKeyExpr = def[BUSINESS_KEY];
   if (!bKeyExpr || !bKeyExpr['='] || (!bKeyExpr['xpr'] && !bKeyExpr['ref'])) {
-    buildPlugin.pushMessage(ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION(entityName, businessKeyAnnotation), ERROR);
+    buildPlugin.pushMessage(ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION(entityName, BUSINESS_KEY), ERROR);
   }
 }
 

@@ -20,18 +20,49 @@ import {
   SUFFIX_ID,
   SUFFIX_ON,
   SUFFIX_IF,
-  SUFFIX_CASCADE,
   SUFFIX_INPUTS,
+  PROCESS_CANCEL_CASCADE,
+  PROCESS_CANCEL_IF,
+  PROCESS_CANCEL_ON,
+  PROCESS_RESUME_CASCADE,
+  PROCESS_RESUME_IF,
+  PROCESS_RESUME_ON,
+  PROCESS_SUSPEND_CASCADE,
+  PROCESS_SUSPEND_IF,
+  PROCESS_SUSPEND_ON,
+  BUSINESS_KEY,
 } from '../constants';
 
 import { CsnDefinition, CsnEntity } from '../types/csn-extensions';
-import { extractQualifier, getAnnotationPrefixes, resolveBusinessKeyAnnotation } from '../shared/annotations-helper';
+import { getAnnotationPrefixes } from '../shared/annotations-helper';
 
-/**
- * Base annotation prefixes for lifecycle annotations (cancel, suspend, resume).
- * Each is passed to getAnnotationPrefixes() to discover qualified variants.
- */
-const LIFECYCLE_ANNOTATION_BASES = [PROCESS_CANCEL, PROCESS_SUSPEND, PROCESS_RESUME] as const;
+interface LifecycleConfig {
+  annotationOn: `@${string}`;
+  annotationCascade: `@${string}`;
+  annotationIf: `@${string}`;
+  annotationPrefix: string;
+}
+
+const LIFECYCLE_CONFIGS: LifecycleConfig[] = [
+  {
+    annotationOn: PROCESS_CANCEL_ON,
+    annotationCascade: PROCESS_CANCEL_CASCADE,
+    annotationIf: PROCESS_CANCEL_IF,
+    annotationPrefix: PROCESS_CANCEL,
+  },
+  {
+    annotationOn: PROCESS_SUSPEND_ON,
+    annotationCascade: PROCESS_SUSPEND_CASCADE,
+    annotationIf: PROCESS_SUSPEND_IF,
+    annotationPrefix: PROCESS_SUSPEND,
+  },
+  {
+    annotationOn: PROCESS_RESUME_ON,
+    annotationCascade: PROCESS_RESUME_CASCADE,
+    annotationIf: PROCESS_RESUME_IF,
+    annotationPrefix: PROCESS_RESUME,
+  },
+];
 
 const LOG = cds.log('process-build');
 
@@ -64,8 +95,15 @@ export class ProcessValidationPlugin extends BuildPluginBase {
         if (def.kind !== 'entity') continue;
 
         // Validate lifecycle annotations (cancel, suspend, resume) using configuration
-        for (const annotationBase of LIFECYCLE_ANNOTATION_BASES) {
-          this.validateProcessLifecycleAnnotations(name, def as CsnEntity, annotationBase);
+        for (const config of LIFECYCLE_CONFIGS) {
+          this.validateProcessLifecycleAnnotations(
+            name,
+            def as CsnEntity,
+            config.annotationOn,
+            config.annotationCascade,
+            config.annotationIf,
+            config.annotationPrefix,
+          );
         }
 
         this.validateStartAnnotations(
@@ -145,60 +183,48 @@ export class ProcessValidationPlugin extends BuildPluginBase {
   private validateProcessLifecycleAnnotations(
     entityName: string,
     def: CsnEntity,
-    annotationBase: string,
+    annotationOn: `@${string}`,
+    annotationCascade: `@${string}`,
+    annotationIf: `@${string}`,
+    annotationPrefix: string,
   ) {
-    const prefixes = Array.from(getAnnotationPrefixes(def, annotationBase));
+    const allowedAnnotations = [annotationOn, annotationCascade, annotationIf];
+    validateAllowedAnnotations(allowedAnnotations, def, entityName, annotationPrefix, this);
 
-    for (const prefix of prefixes) {
-      const annotationOn = `${prefix}${SUFFIX_ON}` as `@${string}`;
-      const annotationCascade = `${prefix}${SUFFIX_CASCADE}` as `@${string}`;
-      const annotationIf = `${prefix}${SUFFIX_IF}` as `@${string}`;
+    const hasOn = def[annotationOn] !== undefined;
+    const hasCascade = def[annotationCascade] !== undefined;
+    const hasIf = def[annotationIf] !== undefined;
+    const hasBusinessKey = def[BUSINESS_KEY] !== undefined;
 
-      // check for unknown annotations for this prefix
-      const allowedAnnotations = [annotationOn, annotationCascade, annotationIf];
-      validateAllowedAnnotations(allowedAnnotations, def, entityName, prefix, this);
+    const hasAnyAnnotationWithPrefix = Object.keys(def).some((key) =>
+      key.startsWith(annotationPrefix + '.'),
+    );
 
-      const hasOn = def[annotationOn] !== undefined;
-      const hasCascade = def[annotationCascade] !== undefined;
-      const hasIf = def[annotationIf] !== undefined;
+    // required fields - .on is required if any annotation with this prefix is defined
+    validateRequiredGenericAnnotations(
+      hasOn,
+      hasAnyAnnotationWithPrefix,
+      entityName,
+      annotationOn,
+      annotationPrefix,
+      hasBusinessKey,
+      this,
+    );
 
-      // Resolve business key with qualified fallback:
-      // For qualified prefix like '@bpm.process.cancel#two', extract qualifier 'two'
-      // and try '@bpm.process.businessKey#two' first, then fall back to '@bpm.process.businessKey'
-      const qualifier = extractQualifier(prefix, annotationBase);
-      const resolvedBusinessKeyAnnotation = resolveBusinessKeyAnnotation(def, qualifier);
-      const hasBusinessKey = def[resolvedBusinessKeyAnnotation] !== undefined;
+    if (hasOn) {
+      validateOnAnnotation(def, entityName, annotationOn, this);
+    }
 
-      const hasAnyAnnotationWithPrefix = Object.keys(def).some((key) =>
-        key.startsWith(prefix + '.'),
-      );
+    if (hasCascade) {
+      validateCascadeAnnotation(def, entityName, annotationCascade, this);
+    }
 
-      // required fields - .on is required if any annotation with this prefix is defined
-      validateRequiredGenericAnnotations(
-        hasOn,
-        hasAnyAnnotationWithPrefix,
-        entityName,
-        annotationOn,
-        prefix,
-        hasBusinessKey,
-        this,
-      );
+    if (hasIf) {
+      validateIfAnnotation(def, entityName, annotationIf, this);
+    }
 
-      if (hasOn) {
-        validateOnAnnotation(def, entityName, annotationOn, this);
-      }
-
-      if (hasCascade) {
-        validateCascadeAnnotation(def, entityName, annotationCascade, this);
-      }
-
-      if (hasIf) {
-        validateIfAnnotation(def, entityName, annotationIf, this);
-      }
-
-      if (hasOn && hasBusinessKey) {
-        validateBusinessKeyAnnotation(def, entityName, resolvedBusinessKeyAnnotation, this);
-      }
+    if (hasOn && hasBusinessKey) {
+      validateBusinessKeyAnnotation(def, entityName, this);
     }
   }
 }

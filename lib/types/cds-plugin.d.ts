@@ -30,9 +30,9 @@ export interface LifecycleAnnotationDescriptor {
 
 export interface EntityEventCache {
   startAnnotations: StartAnnotationDescriptor[];
-  cancelAnnotations: LifecycleAnnotationDescriptor[];
-  suspendAnnotations: LifecycleAnnotationDescriptor[];
-  resumeAnnotations: LifecycleAnnotationDescriptor[];
+  hasCancel: boolean;
+  hasSuspend: boolean;
+  hasResume: boolean;
 }
 
 declare module '@sap/cds' {
