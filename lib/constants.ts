@@ -25,17 +25,6 @@ export const BUSINESS_KEY_MAX_LENGTH = 255;
 export const BUSINESS_KEY_ALIAS = 'as businessKey' as const;
 
 /**
- * Annotation property suffixes.
- * Used to construct fully-qualified annotation keys from a prefix,
- * e.g. `${prefix}${SUFFIX_ON}` → '@bpm.process.start.on' or '@bpm.process.cancel#two.on'.
- */
-export const SUFFIX_ID = '.id' as const;
-export const SUFFIX_ON = '.on' as const;
-export const SUFFIX_IF = '.if' as const;
-export const SUFFIX_CASCADE = '.cascade' as const;
-export const SUFFIX_INPUTS = '.inputs' as const;
-
-/**
  * Process annotation base prefixes
  */
 export const PROCESS_START = '@bpm.process.start' as const;
@@ -44,8 +33,16 @@ export const PROCESS_SUSPEND = '@bpm.process.suspend' as const;
 export const PROCESS_RESUME = '@bpm.process.resume' as const;
 
 /**
+ * Annotation property suffixes.
+ */
+export const SUFFIX_ID = '.id' as const;
+export const SUFFIX_ON = '.on' as const;
+export const SUFFIX_IF = '.if' as const;
+export const SUFFIX_CASCADE = '.cascade' as const;
+export const SUFFIX_INPUTS = '.inputs' as const;
+
+/**
  * Derived full-path annotation keys (unqualified).
- * These combine the base prefix with the suffix for convenience and backward compatibility.
  */
 export const PROCESS_START_ID = `${PROCESS_START}${SUFFIX_ID}` as const;
 export const PROCESS_START_ON = `${PROCESS_START}${SUFFIX_ON}` as const;
@@ -68,10 +65,10 @@ export const PROCESS_RESUME_IF = `${PROCESS_RESUME}${SUFFIX_IF}` as const;
  * Annotation prefix for filtering
  */
 export const PROCESS_PREFIX = '@bpm.process' as const;
+
 /**
  * Log Messages
  */
-
 export const LOG_MESSAGES = {
   PROCESS_NOT_STARTED: 'Not starting process as start condition(s) are not met.',
   NO_PROCESS_INPUTS_DEFINED:

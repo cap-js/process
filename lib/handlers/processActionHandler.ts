@@ -1,5 +1,4 @@
 import cds from '@sap/cds';
-import { Results } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
@@ -7,19 +6,20 @@ import {
   ProcessLifecyclePayload,
   resolveEntityRowOrReject,
 } from './utils';
-import { buildWhereDeleteExpression, ProcessDeleteRequest } from './onDeleteUtils';
+import {
+  buildWhereDeleteExpression,
+  getPrefetchedDataForDelete,
+  ProcessDeleteRequest,
+} from './onDeleteUtils';
 import {
   formatBusinessKeyColumn,
   getBusinessKeyColumnOrReject,
 } from '../shared/businessKey-helper';
 import { LifecycleAnnotationDescriptor } from '../types/cds-plugin';
-import { PROCESS_LOGGER_PREFIX } from '../constants';
-
-const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 export type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
-type DeleteProcessMapKey = 'Cancel' | 'Suspend' | 'Resume';
+export type DeleteProcessMapKey = 'Cancel' | 'Suspend' | 'Resume';
 
 const ACTION_TO_DELETE_KEY: Record<ProcessActionType, DeleteProcessMapKey> = {
   cancel: 'Cancel',
@@ -50,15 +50,13 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
 
     // For DELETE: look up pre-fetched data by qualifier
     if (req.event === 'DELETE') {
-      const prefetchMap = (req as ProcessDeleteRequest)._Process?.[deleteKey] as
-        | Map<string, Results>
-        | undefined;
-      const prefetched = prefetchMap?.get(qualifierKey) as EntityRow | undefined;
-      if (!prefetched) {
-        LOG.debug(config.logMessages.NOT_TRIGGERED);
-        return;
-      }
-      data = prefetched;
+      data = getPrefetchedDataForDelete(
+        req as ProcessDeleteRequest,
+        deleteKey,
+        qualifierKey,
+        config.logMessages.NOT_TRIGGERED,
+      ) as EntityRow;
+      if (!data) return;
     } else {
       data = getEntityDataFromRequest(data, req.params) as EntityRow;
     }
@@ -94,12 +92,11 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
  * so we issue separate SELECTs per annotation.
  */
 export async function prefetchLifecycleDataForDelete(
-  req: cds.Request,
+  req: ProcessDeleteRequest,
   annotations: LifecycleAnnotationDescriptor[],
   action: ProcessActionType,
 ): Promise<EntityRow | void> {
   const deleteKey = ACTION_TO_DELETE_KEY[action];
-  const deleteReq = req as ProcessDeleteRequest;
 
   const resultMap = new Map<string, EntityRow>();
 
@@ -107,7 +104,7 @@ export async function prefetchLifecycleDataForDelete(
     annotations.map(async (ann) => {
       const qualifierKey = ann.qualifier ?? '';
       const conditionExpr = ann.conditionExpr ? { xpr: ann.conditionExpr } : undefined;
-      const where = buildWhereDeleteExpression(deleteReq, conditionExpr);
+      const where = buildWhereDeleteExpression(req, conditionExpr);
       if (!where) return;
 
       if (!ann.businessKey) return;

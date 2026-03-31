@@ -1,6 +1,16 @@
-import cds from '@sap/cds';
+import cds, { expr } from '@sap/cds';
 import { CsnEntity } from '../types/csn-extensions';
-import { BUSINESS_KEY } from '../constants';
+import {
+  BUSINESS_KEY,
+  PROCESS_START,
+  SUFFIX_CASCADE,
+  SUFFIX_ID,
+  SUFFIX_IF,
+  SUFFIX_INPUTS,
+  SUFFIX_ON,
+} from '../constants';
+import { LifecycleAnnotationDescriptor, StartAnnotationDescriptor } from '../types/cds-plugin';
+import { InputCSNEntry } from './input-parser';
 
 /**
  * Scans all keys on a CDS entity object and returns the unique annotation prefixes
@@ -75,4 +85,65 @@ export function resolveBusinessKey(
   const key = resolveBusinessKeyAnnotation(entity, qualifier);
   const expr = entity[key] as { '=': string } | undefined;
   return expr?.['='];
+}
+
+export function findStartAnnotations(entity: cds.entity): StartAnnotationDescriptor[] {
+  const results: StartAnnotationDescriptor[] = [];
+
+  const prefixes = getAnnotationPrefixes(entity, PROCESS_START);
+
+  for (const prefix of prefixes) {
+    const id = entity[`${prefix}${SUFFIX_ID}`] as string | undefined;
+    const on = entity[`${prefix}${SUFFIX_ON}`] as string | undefined;
+
+    if (!id || !on) continue;
+
+    const qualifier = extractQualifier(prefix, PROCESS_START);
+
+    const ifAnnotation = entity[`${prefix}${SUFFIX_IF}`] as { xpr: expr } | undefined;
+    const inputs = entity[`${prefix}${SUFFIX_INPUTS}`] as InputCSNEntry[] | undefined;
+
+    const businessKey = resolveBusinessKey(entity, qualifier);
+
+    results.push({
+      qualifier,
+      id,
+      on,
+      conditionExpr: ifAnnotation?.xpr,
+      businessKey: businessKey,
+      inputs,
+    });
+  }
+
+  return results;
+}
+
+export function findLifecycleAnnotations(
+  entity: cds.entity,
+  annotationBase: string,
+): LifecycleAnnotationDescriptor[] {
+  const results: LifecycleAnnotationDescriptor[] = [];
+
+  const prefixes = getAnnotationPrefixes(entity, annotationBase);
+
+  for (const prefix of prefixes) {
+    const on = entity[`${prefix}${SUFFIX_ON}`] as string | undefined;
+    if (!on) continue;
+
+    const qualifier = extractQualifier(prefix, annotationBase);
+
+    const cascade = (entity[`${prefix}${SUFFIX_CASCADE}`] as boolean) ?? false;
+    const ifAnnotation = entity[`${prefix}${SUFFIX_IF}`] as { xpr: expr } | undefined;
+    const businessKey = resolveBusinessKey(entity, qualifier);
+
+    results.push({
+      qualifier,
+      on,
+      cascade,
+      conditionExpr: ifAnnotation?.xpr,
+      businessKey,
+    });
+  }
+
+  return results;
 }

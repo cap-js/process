@@ -1,4 +1,9 @@
 import cds, { expr, Results } from '@sap/cds';
+import { EntityRow } from './utils';
+import { DeleteProcessMapKey } from './processActionHandler';
+import { PROCESS_LOGGER_PREFIX } from '../constants';
+
+const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 export interface ProcessDeleteRequest extends cds.Request {
   _Process?: DeleteProcessObject;
@@ -29,4 +34,19 @@ export function buildWhereDeleteExpression(
         : conditionExpr.xpr;
   }
   return where;
+}
+
+export function getPrefetchedDataForDelete(
+  req: ProcessDeleteRequest,
+  deleteKey: DeleteProcessMapKey,
+  qualifierKey: string,
+  logMsgNotTriggered: string,
+): EntityRow | undefined {
+  const prefetchMap = req._Process?.[deleteKey] as Map<string, Results> | undefined;
+  const prefetched = prefetchMap?.get(qualifierKey) as EntityRow | undefined;
+  if (!prefetched) {
+    LOG.debug(logMsgNotTriggered);
+    return undefined;
+  }
+  return prefetched;
 }
