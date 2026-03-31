@@ -14,7 +14,6 @@ import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from './constants';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 const CLASS_DEFINITION = 'com.sap.bpm.wfs.Model';
-const CLASS_SCHEMA = 'com.sap.bpm.wfs.Schemas';
 
 // ============================================================================
 //  TYPES
@@ -57,7 +56,7 @@ interface RawWorkflowModelEntry extends RawWorkflowEntry {
 
 /** The `com.sap.bpm.wfs.Schemas` entry. */
 interface RawWorkflowSchemasEntry extends RawWorkflowEntry {
-  classDefinition: typeof CLASS_SCHEMA;
+  classDefinition: 'com.sap.bpm.wfs.Schemas';
   schemas: Record<string, RawWorkflowSchemaItem>;
 }
 
