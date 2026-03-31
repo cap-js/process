@@ -167,7 +167,7 @@ function convertWorkflowToProcessHeader(workflow: any): ProcessHeader {
   const modelEntry = Object.values(contents).find(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (e: any) => e?.classDefinition === 'com.sap.bpm.wfs.Model',
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) as any;
 
   if (!modelEntry) {
