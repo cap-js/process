@@ -48,6 +48,8 @@ export interface JsonSchema {
   refName?: string;
   format?: string;
   password?: boolean;
+  title?: string;
+  description?: string;
 }
 
 // ============ Interface ============

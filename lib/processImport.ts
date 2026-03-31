@@ -29,6 +29,53 @@ interface SchemaMapContext {
   definitions: Record<string, csn.CsnDefinition>;
 }
 
+// --- Raw SBPA workflow JSON types ---
+
+/** Top-level structure of a raw SBPA workflow JSON file. */
+interface RawWorkflowJson {
+  contents: Record<string, RawWorkflowEntry>;
+}
+
+/** Base shape for any entry inside `contents`. */
+interface RawWorkflowEntry {
+  classDefinition?: string;
+  [key: string]: unknown;
+}
+
+/** The `com.sap.bpm.wfs.Model` entry. */
+interface RawWorkflowModelEntry extends RawWorkflowEntry {
+  classDefinition: 'com.sap.bpm.wfs.Model';
+  projectId: string;
+  processIdentifier: string;
+  artifactId: string;
+  name: string;
+  /** UUID key pointing to the Schemas entry. */
+  schemas: string;
+}
+
+/** The `com.sap.bpm.wfs.Schemas` entry. */
+interface RawWorkflowSchemasEntry extends RawWorkflowEntry {
+  classDefinition: 'com.sap.bpm.wfs.Schemas';
+  schemas: Record<string, RawWorkflowSchemaItem>;
+}
+
+/** A single schema item inside the Schemas entry. */
+interface RawWorkflowSchemaItem {
+  schemaRef: string;
+  content: JsonSchema & RawProcessSchemaContent;
+}
+
+/**
+ * Additional structure on the process schema content (the one matching `$.{artifactId}`).
+ * Data type schemas don't have `definitions.in` / `definitions.out`.
+ */
+interface RawProcessSchemaContent {
+  definitions?: {
+    out?: JsonSchema;
+    in?: JsonSchema;
+  };
+}
+
 // ============================================================================
 //  MAIN ENTRY POINT
 // ============================================================================
@@ -149,26 +196,25 @@ async function generateCsnModel(jsonFilePath: string): Promise<csn.CsnModel> {
  * This is different from the ProcessHeader format returned by the unified API.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isRawWorkflowJson(parsed: any): boolean {
-  if (!parsed?.contents || typeof parsed.contents !== 'object') return false;
-  return Object.values(parsed.contents).some(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (entry: any) => entry?.classDefinition === 'com.sap.bpm.wfs.Model',
+function isRawWorkflowJson(parsed: unknown): parsed is RawWorkflowJson {
+  if (!parsed || typeof parsed !== 'object') return false;
+  const obj = parsed as Record<string, unknown>;
+  if (!obj.contents || typeof obj.contents !== 'object') return false;
+  return Object.values(obj.contents as Record<string, unknown>).some(
+    (entry) =>
+      entry !== null &&
+      typeof entry === 'object' &&
+      (entry as RawWorkflowEntry).classDefinition === 'com.sap.bpm.wfs.Model',
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function convertWorkflowToProcessHeader(workflow: any): ProcessHeader {
+function convertWorkflowToProcessHeader(workflow: RawWorkflowJson): ProcessHeader {
   const contents = workflow.contents;
 
   // 1. Find the Model entry
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const modelEntry = Object.values(contents).find(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (e: any) => e?.classDefinition === 'com.sap.bpm.wfs.Model',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) as any;
+    (e): e is RawWorkflowModelEntry => e?.classDefinition === 'com.sap.bpm.wfs.Model',
+  );
 
   if (!modelEntry) {
     throw new Error('Raw workflow JSON does not contain a com.sap.bpm.wfs.Model entry.');
@@ -181,18 +227,15 @@ function convertWorkflowToProcessHeader(workflow: any): ProcessHeader {
 
   // 2. Find the Schemas entry
   const schemasUid: string = modelEntry.schemas;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const schemasEntry = contents[schemasUid] as any;
+  const schemasEntry = contents[schemasUid] as RawWorkflowSchemasEntry | undefined;
   if (!schemasEntry?.schemas) {
     throw new Error('Raw workflow JSON does not contain a valid Schemas entry.');
   }
 
   // 3. Find the process schema (the one whose schemaRef matches $.{artifactId})
   const processSchemaRef = `$.${artifactId}`;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let processSchemaContent: any = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dataTypeSchemas: Array<{ schemaRef: string; content: any }> = [];
+  let processSchemaContent: RawProcessSchemaContent | null = null;
+  const dataTypeSchemas: Array<{ schemaRef: string; content: JsonSchema }> = [];
 
   for (const schemaKey of Object.keys(schemasEntry.schemas)) {
     const schema = schemasEntry.schemas[schemaKey];
@@ -230,7 +273,7 @@ function convertWorkflowToProcessHeader(workflow: any): ProcessHeader {
       name: dtName,
       identifier: dtName,
       type: 'datatype',
-      header: ds.content as JsonSchema,
+      header: ds.content,
     };
   });
 
@@ -268,8 +311,7 @@ function convertWorkflowToProcessHeader(workflow: any): ProcessHeader {
  * Recursively walk properties of a schema and replace inlined complex types with
  * $ref references when they match a known data type (by refName or title).
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function restoreRefs(schema: any, dataType: DataType): void {
+function restoreRefs(schema: JsonSchema, dataType: DataType): void {
   if (!schema?.properties) return;
 
   for (const propName of Object.keys(schema.properties)) {
@@ -308,12 +350,10 @@ function restoreRefs(schema: any, dataType: DataType): void {
 /**
  * Check if a schema property matches a data type by comparing refName or title.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function matchesDataType(prop: any, dataType: DataType): boolean {
+function matchesDataType(prop: JsonSchema, dataType: DataType): boolean {
   if (prop.refName && prop.refName === dataType.name) return true;
   // For inlined objects, the title on the data type content matches the data type name
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (prop.type === 'object' && prop.title === (dataType.header as any)?.title) return true;
+  if (prop.type === 'object' && prop.title === dataType.header?.title) return true;
   return false;
 }
 
