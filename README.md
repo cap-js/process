@@ -419,7 +419,7 @@ cds import --from process --name eu12.myorg.myproject.myProcess
 
 ##### From Local JSON File
 
-If you already have a process definition JSON file (e.g., exported or previously fetched), you can generate the CDS model directly from it without needing credentials:
+If you already have a process definition JSON file, you can generate the CDS model directly from it without needing credentials. Both the SBPA API response format (previously fetched) and the raw SBPA workflow model file (downloaded from the process editor) are supported:
 
 ```bash
 cds import --from process ./srv/workflows/eu12.myorg.myproject.myProcess.json

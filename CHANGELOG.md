@@ -9,6 +9,7 @@
 ### Added
 
 - Reducing the context sent to the workflow API to only needed fields
+- Allowing the import of downloaded model files of processes
 
 ## Version 0.1.1 - 2026-03-27
 
