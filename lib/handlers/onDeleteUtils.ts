@@ -1,6 +1,5 @@
 import cds, { column_expr, expr, Results } from '@sap/cds';
 import { EntityRow } from './utils';
-import { DeleteProcessMapKey } from './processActionHandler';
 import { PROCESS_LOGGER_PREFIX } from '../constants';
 import { WILDCARD } from '../shared/input-parser';
 
@@ -49,21 +48,6 @@ export function buildWhereDeleteExpression(
         : conditionExpr.xpr;
   }
   return where;
-}
-
-export function getPrefetchedDataForDelete(
-  req: ProcessDeleteRequest,
-  deleteKey: DeleteProcessMapKey,
-  qualifierKey: string,
-  logMsgNotTriggered: string,
-): EntityRow | undefined {
-  const prefetchMap = req._Process?.[deleteKey] as Map<string, Results> | undefined;
-  const prefetched = prefetchMap?.get(qualifierKey) as EntityRow | undefined;
-  if (!prefetched) {
-    LOG.debug(logMsgNotTriggered);
-    return undefined;
-  }
-  return prefetched;
 }
 
 /**
