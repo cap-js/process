@@ -1,4 +1,4 @@
-import { column_expr, expr, Target } from '@sap/cds';
+import { column_expr, Target } from '@sap/cds';
 import * as csn from '../types/csn-extensions';
 import {
   emitProcessEvent,
@@ -8,14 +8,9 @@ import {
 } from './utils';
 
 import {
-  PROCESS_START_ID,
-  PROCESS_START_ON,
-  PROCESS_START_IF,
-  PROCESS_START_INPUTS,
   LOG_MESSAGES,
   PROCESS_LOGGER_PREFIX,
   PROCESS_PREFIX,
-  BUSINESS_KEY,
   BUSINESS_KEY_MAX_LENGTH,
 } from './../constants';
 import {
