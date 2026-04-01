@@ -6,12 +6,7 @@ import {
   getEntityDataFromRequest,
   resolveEntityRowOrReject,
 } from './utils';
-import {
-  LOG_MESSAGES,
-  PROCESS_LOGGER_PREFIX,
-  PROCESS_PREFIX,
-  BUSINESS_KEY_MAX_LENGTH,
-} from './../constants';
+import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, BUSINESS_KEY_MAX_LENGTH } from './../constants';
 import {
   InputCSNEntry,
   InputTreeNode,
@@ -21,11 +16,21 @@ import {
   WILDCARD,
 } from '../shared/input-parser';
 import cds from '@sap/cds';
-import { buildWhereDeleteExpression, ProcessDeleteRequest } from './onDeleteUtils';
+import {
+  buildWhereDeleteExpression,
+  getPrefetchedDataForDelete,
+  ProcessDeleteRequest,
+} from './onDeleteUtils';
 import { getBusinessKeyColumn } from '../shared/businessKey-helper';
 import { StartAnnotationDescriptor } from '../types/cds-plugin';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
+
+const PROCESS_INPUTS_FROM_DEFINITION =
+  'No inputs annotation defined. Filtering entity fields by process definition inputs.';
+const PROCESS_NOT_STARTED = 'Not starting process as start condition(s) are not met.';
+const FAILED_FETCH_BUSINESS_KEY = 'Failed to fetch business key for process start.';
+const FAILED_FETCH = 'Failed to fetch entity for process start.';
 
 // Use InputTreeNode as ProcessStartInput (same structure)
 type ProcessStartInput = InputTreeNode;
@@ -36,7 +41,7 @@ function getColumnsForDescriptor(
 ): (column_expr | string)[] {
   const inputs = parseInputToTreeFromInputs(startAnnotation.inputs, target);
   if (inputs.length === 0) {
-    LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
+    LOG.debug(PROCESS_INPUTS_FROM_DEFINITION);
     if (startAnnotation.id) {
       return resolveColumnsFromProcessDefinition(startAnnotation.id, target);
     }
@@ -68,8 +73,8 @@ async function resolveBusinessKeyValue(
       req,
       data,
       startAnnotation.conditionExpr,
-      'Failed to fetch business key for process start.',
-      LOG_MESSAGES.PROCESS_NOT_STARTED,
+      FAILED_FETCH_BUSINESS_KEY,
+      PROCESS_NOT_STARTED,
       [businessKeyColumn],
     );
     businessKeyValue = businessKeyRow?.businessKey as string | undefined;
@@ -84,14 +89,6 @@ async function resolveBusinessKeyValue(
 }
 
 /**
- * Returns the pre-fetched entity data for a given start qualifier on DELETE,
- * or undefined if the condition was not met / no data was pre-fetched.
- */
-function getDeletePrefetchedStart(req: cds.Request, qualifierKey: string): EntityRow | undefined {
-  return (req as ProcessDeleteRequest)._Process?.Start?.get(qualifierKey) as EntityRow | undefined;
-}
-
-/**
  * Returns the pre-fetched business key data for a given start qualifier on DELETE,
  * or undefined if no business key was pre-fetched.
  */
@@ -99,7 +96,7 @@ function getDeletePrefetchedBusinessKey(
   req: cds.Request,
   qualifierKey: string,
 ): EntityRow | undefined {
-  return (req as ProcessDeleteRequest)._Process?.StartBusinessKey?.get(qualifierKey) as
+  return (req as ProcessDeleteRequest)._Process?.startBusinessKey?.get(qualifierKey) as
     | EntityRow
     | undefined;
 }
@@ -113,9 +110,9 @@ export async function handleProcessStart(
 
   // For DELETE: use pre-fetched data for this qualifier; for other events: resolve from request
   if (req.event === 'DELETE') {
-    const prefetched = getDeletePrefetchedStart(req, qualifierKey);
+    const prefetched = getPrefetchedDataForDelete(req, qualifierKey, 'start');
     if (!prefetched) {
-      LOG.debug(LOG_MESSAGES.PROCESS_NOT_STARTED);
+      LOG.debug(PROCESS_NOT_STARTED);
       return;
     }
     data = prefetched;
@@ -131,8 +128,8 @@ export async function handleProcessStart(
     req,
     data,
     startAnnotation.conditionExpr,
-    'Failed to fetch entity for process start.',
-    LOG_MESSAGES.PROCESS_NOT_STARTED,
+    FAILED_FETCH,
+    PROCESS_NOT_STARTED,
     columns,
   );
   if (!row) return;
@@ -201,10 +198,10 @@ export async function prefetchStartDataForDelete(
 
   const result: Record<string, Map<string, EntityRow>> = {};
   if (startMap.size > 0) {
-    result.Start = startMap;
+    result.start = startMap;
   }
   if (businessKeyMap.size > 0) {
-    result.StartBusinessKey = businessKeyMap;
+    result.startBusinessKey = businessKeyMap;
   }
   return result;
 }
