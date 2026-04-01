@@ -24,7 +24,11 @@ import {
   SUFFIX_CASCADE,
 } from '../constants';
 import { CsnDefinition, CsnEntity } from '../types/csn-extensions';
-import { extractQualifier, getAnnotationPrefixes, resolveBusinessKeyAnnotation } from '../shared/annotations-helper';
+import {
+  extractQualifier,
+  getAnnotationPrefixes,
+  resolveBusinessKeyAnnotation,
+} from '../shared/annotations-helper';
 
 const LOG = cds.log('process-build');
 
