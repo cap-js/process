@@ -21,11 +21,10 @@ import {
   SUFFIX_ON,
   SUFFIX_IF,
   SUFFIX_INPUTS,
-  BUSINESS_KEY,
   SUFFIX_CASCADE,
 } from '../constants';
 import { CsnDefinition, CsnEntity } from '../types/csn-extensions';
-import { getAnnotationPrefixes } from '../shared/annotations-helper';
+import { getAnnotationPrefixes, resolveBusinessKeyAnnotation } from '../shared/annotations-helper';
 
 const LOG = cds.log('process-build');
 
@@ -155,7 +154,9 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       const hasOn = def[annotationOn] !== undefined;
       const hasCascade = def[annotationCascade] !== undefined;
       const hasIf = def[annotationIf] !== undefined;
-      const hasBusinessKey = def[BUSINESS_KEY] !== undefined;
+
+      const businessKeyAnnotation = resolveBusinessKeyAnnotation(def, prefix, annotationBase);
+      const hasBusinessKey = def[businessKeyAnnotation] !== undefined;
 
       // required fields - .on is required if any annotation with this prefix is defined
       validateRequiredGenericAnnotations(
@@ -180,7 +181,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       }
 
       if (hasOn && hasBusinessKey) {
-        validateBusinessKeyAnnotation(def, entityName, this);
+        validateBusinessKeyAnnotation(def, entityName, businessKeyAnnotation, this);
       }
     }
   }
