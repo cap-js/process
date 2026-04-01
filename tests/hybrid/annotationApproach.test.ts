@@ -109,7 +109,7 @@ describe('Annotation Approach Hybrid Tests', () => {
     expect(runningInstancesTwo[0]).toHaveProperty('status', 'RUNNING');
 
     // UPDATE mileage < 800 should suspend process Two
-    await PATCH(`/odata/v4/annotation-hybrid/QualifiedAnnotations('${ID}')`, { mileage: 200 });
+    await PATCH(`/odata/v4/annotation-hybrid/QualifiedAnnotations('${mock.ID}')`, { mileage: 200 });
     runningInstancesOne = await waitForInstances(mock.ID, ['RUNNING']);
     expect(runningInstancesOne.length).toBe(1);
     expect(runningInstancesOne[0]).toHaveProperty('status', 'RUNNING');
@@ -119,7 +119,7 @@ describe('Annotation Approach Hybrid Tests', () => {
     expect(suspendedInstancesTwo[0]).toHaveProperty('status', 'SUSPENDED');
 
     // UPDATE mileage >= 800 should resume process Two
-    await PATCH(`/odata/v4/annotation-hybrid/QualifiedAnnotations('${ID}')`, { mileage: 900 });
+    await PATCH(`/odata/v4/annotation-hybrid/QualifiedAnnotations('${mock.ID}')`, { mileage: 900 });
     runningInstancesOne = await waitForInstances(mock.ID, ['RUNNING']);
     expect(runningInstancesOne.length).toBe(1);
     expect(runningInstancesOne[0]).toHaveProperty('status', 'RUNNING');
@@ -129,7 +129,7 @@ describe('Annotation Approach Hybrid Tests', () => {
     expect(resumedInstancesTwo[0]).toHaveProperty('status', 'RUNNING');
 
     // DELETE should cancel both processes
-    await DELETE(`/odata/v4/annotation-hybrid/QualifiedAnnotations('${ID}')`);
+    await DELETE(`/odata/v4/annotation-hybrid/QualifiedAnnotations('${mock.ID}')`);
     const cancelledInstancesOne = await waitForInstances(mock.ID, ['CANCELED']);
     expect(cancelledInstancesOne.length).toBe(1);
     expect(cancelledInstancesOne[0]).toHaveProperty('status', 'CANCELED');
