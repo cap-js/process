@@ -1,9 +1,6 @@
 import cds, { expr, Results } from '@sap/cds';
 import { EntityRow } from './utils';
-import { PROCESS_LOGGER_PREFIX } from '../constants';
 import { ProcessActionType } from './processActionHandler';
-
-const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 export interface ProcessDeleteRequest extends cds.Request {
   _Process?: DeleteProcessObject;
@@ -18,18 +15,13 @@ type DeleteProcessObject = {
 };
 
 export function getPrefetchedDataForDelete(
-  req: ProcessDeleteRequest,
-  actionKey: ProcessActionType,
+  req: cds.Request,
   qualifierKey: string,
-  logMsgNotTriggered: string,
+  actionKey: ProcessActionType | 'start',
 ): EntityRow | undefined {
-  const prefetchMap = req._Process?.[actionKey] as Map<string, Results> | undefined;
-  const prefetched = prefetchMap?.get(qualifierKey) as EntityRow | undefined;
-  if (!prefetched) {
-    LOG.debug(logMsgNotTriggered);
-    return undefined;
-  }
-  return prefetched;
+  return (req as ProcessDeleteRequest)._Process?.[actionKey]?.get(qualifierKey) as
+    | EntityRow
+    | undefined;
 }
 
 export function buildWhereDeleteExpression(

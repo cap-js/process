@@ -22,14 +22,14 @@ export function registerAnnotationHandlers(service: cds.Service) {
     const cached = annotationCache.get(cacheKey);
 
     if (!cached) return;
-    const hasStart = cached.startAnnotations.length > 0;
+    const hasStarts = cached.startAnnotations.length > 0;
     const hasCancels = cached.cancelAnnotations.length > 0;
     const hasSuspends = cached.suspendAnnotations.length > 0;
     const hasResumes = cached.resumeAnnotations.length > 0;
 
     const results = await Promise.all(
       [
-        hasStart && prefetchStartDataForDelete(req, cached.startAnnotations),
+        hasStarts && prefetchStartDataForDelete(req, cached.startAnnotations),
         hasCancels && prefetchLifecycleDataForDelete(req, cached.cancelAnnotations, 'cancel'),
         hasSuspends && prefetchLifecycleDataForDelete(req, cached.suspendAnnotations, 'suspend'),
         hasResumes && prefetchLifecycleDataForDelete(req, cached.resumeAnnotations, 'resume'),

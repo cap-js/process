@@ -62,14 +62,13 @@ export class ProcessValidationPlugin extends BuildPluginBase {
         // Validate lifecycle annotations (cancel, suspend, resume) using configuration
         for (const annotationBase of LIFECYCLE_ANNOTATION_BASES) {
           this.validateProcessLifecycleAnnotations(name, def as CsnEntity, annotationBase);
-
-          this.validateStartAnnotations(
-            name,
-            def as CsnEntity,
-            processDefinitions,
-            model.definitions || {},
-          );
         }
+        this.validateStartAnnotations(
+          name,
+          def as CsnEntity,
+          processDefinitions,
+          model.definitions || {},
+        );
       }
       for (const message of this.messages) {
         if (message.severity === ERROR) {

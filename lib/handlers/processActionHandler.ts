@@ -16,6 +16,9 @@ import {
   getBusinessKeyColumnOrReject,
 } from '../shared/businessKey-helper';
 import { LifecycleAnnotationDescriptor } from '../types/cds-plugin';
+import { PROCESS_LOGGER_PREFIX } from '../constants';
+
+const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
 export type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
@@ -40,13 +43,12 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
 
     // For DELETE: look up pre-fetched data by qualifier
     if (req.event === 'DELETE') {
-      data = getPrefetchedDataForDelete(
-        req as ProcessDeleteRequest,
-        config.action,
-        qualifierKey,
-        config.logMessages.NOT_TRIGGERED,
-      ) as EntityRow;
-      if (!data) return;
+      const prefetched = getPrefetchedDataForDelete(req, qualifierKey, config.action);
+      if (!prefetched) {
+        LOG.debug(config.logMessages.NOT_TRIGGERED);
+        return;
+      }
+      data = prefetched;
     } else {
       data = getEntityDataFromRequest(data, req.params) as EntityRow;
     }

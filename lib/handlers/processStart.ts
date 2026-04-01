@@ -21,7 +21,11 @@ import {
   WILDCARD,
 } from '../shared/input-parser';
 import cds from '@sap/cds';
-import { buildWhereDeleteExpression, ProcessDeleteRequest } from './onDeleteUtils';
+import {
+  buildWhereDeleteExpression,
+  getPrefetchedDataForDelete,
+  ProcessDeleteRequest,
+} from './onDeleteUtils';
 import { getBusinessKeyColumn } from '../shared/businessKey-helper';
 import { StartAnnotationDescriptor } from '../types/cds-plugin';
 
@@ -84,14 +88,6 @@ async function resolveBusinessKeyValue(
 }
 
 /**
- * Returns the pre-fetched entity data for a given start qualifier on DELETE,
- * or undefined if the condition was not met / no data was pre-fetched.
- */
-function getDeletePrefetchedStart(req: cds.Request, qualifierKey: string): EntityRow | undefined {
-  return (req as ProcessDeleteRequest)._Process?.start?.get(qualifierKey) as EntityRow | undefined;
-}
-
-/**
  * Returns the pre-fetched business key data for a given start qualifier on DELETE,
  * or undefined if no business key was pre-fetched.
  */
@@ -113,7 +109,7 @@ export async function handleProcessStart(
 
   // For DELETE: use pre-fetched data for this qualifier; for other events: resolve from request
   if (req.event === 'DELETE') {
-    const prefetched = getDeletePrefetchedStart(req, qualifierKey);
+    const prefetched = getPrefetchedDataForDelete(req, qualifierKey, 'start');
     if (!prefetched) {
       LOG.debug(LOG_MESSAGES.PROCESS_NOT_STARTED);
       return;
