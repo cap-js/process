@@ -24,7 +24,7 @@ describe('Integration tests for multiple process events on DELETE', () => {
 
   afterAll(async () => {
     await (cds as any).flush();
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   });
 
   const createTestCar = ({ id, mileage = 100 }: { id?: string; mileage?: number } = {}) => ({

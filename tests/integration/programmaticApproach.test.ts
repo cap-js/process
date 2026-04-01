@@ -23,7 +23,7 @@ describe('Programmatic Approach Integration Tests', () => {
 
   afterAll(async () => {
     await (cds as any).flush();
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   });
 
   function generateID(): string {

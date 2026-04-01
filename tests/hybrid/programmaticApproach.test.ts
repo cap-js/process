@@ -99,7 +99,7 @@ describe('Programmatic Approach Hybrid Tests', () => {
 
   afterAll(async () => {
     await (cds as any).flush();
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   });
 
   describe('Process Start', () => {

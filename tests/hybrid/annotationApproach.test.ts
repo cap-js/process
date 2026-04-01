@@ -34,7 +34,7 @@ describe('Annotation Approach Hybrid Tests', () => {
 
   afterAll(async () => {
     await (cds as any).flush();
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   });
 
   it('should go through start -> suspend -> resume and end up RUNNING', async () => {
