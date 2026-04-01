@@ -140,7 +140,7 @@ export async function handleProcessStart(
   const businessKeyValue = await resolveBusinessKeyValue(req, data, startAnnotation, qualifierKey);
 
   // emit process start
-  const payload = { definitionId: startAnnotation.id!, context: row };
+  const payload = { definitionId: startAnnotation.id, context: row };
   await emitProcessEvent(
     'start',
     req,
