@@ -3,12 +3,13 @@ import { CsnEntity } from '../types/csn-extensions';
 import {
   BUSINESS_KEY,
   PROCESS_START,
+  SUFFIX_CASCADE,
   SUFFIX_ID,
   SUFFIX_IF,
   SUFFIX_INPUTS,
   SUFFIX_ON,
 } from '../constants';
-import { StartAnnotationDescriptor } from '../types/cds-plugin';
+import { LifecycleAnnotationDescriptor, StartAnnotationDescriptor } from '../types/cds-plugin';
 import { InputCSNEntry } from './input-parser';
 
 /**
@@ -64,6 +65,37 @@ export function findStartAnnotations(entity: cds.entity): StartAnnotationDescrip
       conditionExpr: ifAnnotation?.xpr,
       businessKey: businessKey,
       inputs,
+    });
+  }
+
+  return results;
+}
+
+export function findLifecycleAnnotations(
+  entity: cds.entity,
+  annotationBase: string,
+): LifecycleAnnotationDescriptor[] {
+  const results: LifecycleAnnotationDescriptor[] = [];
+
+  const prefixes = getAnnotationPrefixes(entity, annotationBase);
+
+  for (const prefix of prefixes) {
+    const on = entity[`${prefix}${SUFFIX_ON}`] as string | undefined;
+    if (!on) continue;
+
+    const qualifier = extractQualifier(prefix, annotationBase);
+
+    const cascade = (entity[`${prefix}${SUFFIX_CASCADE}`] as boolean) ?? false;
+    const ifAnnotation = entity[`${prefix}${SUFFIX_IF}`] as { xpr: expr } | undefined;
+
+    const businessKey = (entity[`${BUSINESS_KEY}`] as { '=': string } | undefined)?.['='];
+
+    results.push({
+      qualifier,
+      on,
+      cascade,
+      conditionExpr: ifAnnotation?.xpr,
+      businessKey,
     });
   }
 

@@ -1744,6 +1744,183 @@ service AnnotationService {
             year
         }
 
+        // ============================================
+    // MULTIPLE LIFECYCLE ANNOTATION TESTS
+    // Testing multiple @bpm.process.cancel/suspend/resume with qualifiers
+    // ============================================
+
+    // Two cancel annotations both on DELETE
+    @bpm.process.cancel  #one    : {
+        on     : 'DELETE',
+        cascade: true,
+    }
+    @bpm.process.cancel #two : {
+        on     : 'DELETE',
+        cascade: false,
+    }
+    @bpm.process.businessKey : (ID)
+    entity MultiCancelOnDelete           as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two cancel annotations on different events (DELETE + UPDATE)
+    @bpm.process.cancel  #one    : {
+        on     : 'DELETE',
+        cascade: true,
+    }
+    @bpm.process.cancel #two : {
+        on     : 'UPDATE',
+        cascade: false,
+    }
+    @bpm.process.businessKey : (ID)
+    entity MultiCancelDiffEvents         as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two suspend annotations both on UPDATE
+    @bpm.process.suspend  #one    : {
+        on     : 'UPDATE',
+        cascade: false,
+    }
+    @bpm.process.suspend #two : {
+        on     : 'UPDATE',
+        cascade: true,
+    }
+    @bpm.process.businessKey  : (ID)
+    entity MultiSuspendOnUpdate          as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two resume annotations both on UPDATE
+    @bpm.process.resume  #one    : {
+        on     : 'UPDATE',
+        cascade: false,
+    }
+    @bpm.process.resume #two : {
+        on     : 'UPDATE',
+        cascade: true,
+    }
+    @bpm.process.businessKey : (ID)
+    entity MultiResumeOnUpdate           as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two cancel annotations on DELETE, qualified one has an if condition
+    @bpm.process.cancel  #one    : {
+        on     : 'DELETE',
+        cascade: true,
+    }
+    @bpm.process.cancel #two : {
+        on     : 'DELETE',
+        cascade: false,
+        if     : (mileage > 500),
+    }
+    @bpm.process.businessKey : (ID)
+    entity MultiCancelWithCondition      as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two suspend annotations both on DELETE
+    @bpm.process.suspend  #one    : {
+        on     : 'DELETE',
+        cascade: false,
+    }
+    @bpm.process.suspend #two : {
+        on     : 'DELETE',
+        cascade: true,
+    }
+    @bpm.process.businessKey  : (ID)
+    entity MultiSuspendOnDelete          as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two resume annotations both on DELETE
+    @bpm.process.resume  #one    : {
+        on     : 'DELETE',
+        cascade: false,
+    }
+    @bpm.process.resume #two : {
+        on     : 'DELETE',
+        cascade: true,
+    }
+    @bpm.process.businessKey : (ID)
+    entity MultiResumeOnDelete           as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two suspend annotations on different events (DELETE + UPDATE)
+    @bpm.process.suspend  #one    : {
+        on     : 'DELETE',
+        cascade: true,
+    }
+    @bpm.process.suspend #two : {
+        on     : 'UPDATE',
+        cascade: false,
+    }
+    @bpm.process.businessKey  : (ID)
+    entity MultiSuspendDiffEvents        as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
+    // Two resume annotations on different events (DELETE + UPDATE)
+    @bpm.process.resume  #one    : {
+        on     : 'DELETE',
+        cascade: true,
+    }
+    @bpm.process.resume #two : {
+        on     : 'UPDATE',
+        cascade: false,
+    }
+    @bpm.process.businessKey : (ID)
+    entity MultiResumeDiffEvents         as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+
     // --------------------------------------------
     // Scenario 1: Basic Workflow Lifecycle
     // Start process on CREATE, Cancel on DELETE

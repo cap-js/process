@@ -14,6 +14,7 @@ CAP Plugin to interact with SAP Build Process Automation to manage processes.
   - [Starting a Process](#starting-a-process)
     - [Multiple Start Annotations](#multiple-start-annotations)
   - [Cancelling, Resuming, or Suspending a Process](#cancelling-resuming-or-suspending-a-process)
+    - [Multiple Cancel/Resume/Suspend Annotations](#multiple-cancelresumesuspend-annotations)
   - [Conditional Execution](#conditional-execution)
   - [Input Mapping](#input-mapping)
 - [Programmatic Approach](#programmatic-approach)
@@ -155,6 +156,29 @@ service MyService {
 
 }
 
+```
+
+#### Multiple Cancel/Resume/Suspend Annotations
+
+To trigger multiple cancel, resume, or suspend operations from the same entity, use CDS qualifiers (`#qualifier`) to distinguish them. Each qualified annotation is evaluated independently, so each can have its own `on`, `if`, and `cascade`.
+
+```cds
+service MyService {
+
+    @bpm.process.cancel #cancelOnDelete : {
+        on: 'DELETE',
+    }
+    @bpm.process.cancel #cancelOnUpdate : {
+        on: 'UPDATE',
+        if: (status = 'active')
+    }
+    @bpm.process.businessKey: (ID)
+    entity MyEntity {
+        key ID     : UUID;
+            status : String;
+    };
+
+}
 ```
 
 ### Conditional Execution

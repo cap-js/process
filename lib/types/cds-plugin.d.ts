@@ -12,11 +12,19 @@ export interface StartAnnotationDescriptor {
   businessKey?: string;
 }
 
+export interface LifecycleAnnotationDescriptor {
+  qualifier?: string;
+  on: string;
+  cascade: boolean;
+  conditionExpr?: expr;
+  businessKey?: string;
+}
+
 export interface EntityEventCache {
   startAnnotations: StartAnnotationDescriptor[];
-  hasCancel: boolean;
-  hasSuspend: boolean;
-  hasResume: boolean;
+  cancelAnnotations: LifecycleAnnotationDescriptor[];
+  suspendAnnotations: LifecycleAnnotationDescriptor[];
+  resumeAnnotations: LifecycleAnnotationDescriptor[];
 }
 
 declare module '@sap/cds' {
