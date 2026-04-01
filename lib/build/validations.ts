@@ -148,20 +148,18 @@ export function validateIdAnnotation(
 }
 export function validateRequiredGenericAnnotations(
   hasOn: boolean,
-  hasAnyAnnotationWithPrefix: boolean,
   entityName: string,
   annotationOn: string,
   annotationPrefix: string,
   hasBusinessKey: boolean,
   buildPlugin: ProcessValidationPlugin,
 ) {
-  // If any annotation with this prefix is defined, .on is required
-  if (hasAnyAnnotationWithPrefix && !hasOn) {
+  // .on is required
+  if (!hasOn) {
     buildPlugin.pushMessage(ERROR_ON_REQUIRED(entityName, annotationPrefix, annotationOn), ERROR);
   }
-  // If .on is defined or any annotation with this prefix is defined,
-  // businessKey must exist
-  if ((hasOn || hasAnyAnnotationWithPrefix) && !hasBusinessKey) {
+  // If .on is defined, businessKey must exist
+  if (hasOn && !hasBusinessKey) {
     buildPlugin.pushMessage(ERROR_BUSINESS_KEY_REQUIRED(entityName, annotationPrefix), ERROR);
   }
 }

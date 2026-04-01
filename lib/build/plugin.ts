@@ -157,14 +157,9 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       const hasIf = def[annotationIf] !== undefined;
       const hasBusinessKey = def[BUSINESS_KEY] !== undefined;
 
-      const hasAnyAnnotationWithPrefix = Object.keys(def).some((key) =>
-        key.startsWith(prefix + '.'),
-      );
-
       // required fields - .on is required if any annotation with this prefix is defined
       validateRequiredGenericAnnotations(
         hasOn,
-        hasAnyAnnotationWithPrefix,
         entityName,
         annotationOn,
         prefix,
