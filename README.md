@@ -412,10 +412,12 @@ To import a process, you have two different options to import: First via the dow
 Go to your SBPA instance > Control Tower > Environments > Select your environment where the process is deployed > Processes and Workflows > Select your process > Click on the "Download Model" button.
 
 ```bash
-cds import --from process ~./Downloads/<your-process>.json
+cds import --from process ~/Downloads/<your-process>.json
 ```
 
-This will create a new CDS service in `./srv/external/<your-process>.cds` with the process definition that is used for the build-time validation and the typed programmatic API.
+This will create:
+- A new CDS service in `./srv/external/{projectId}.{processIdentifier}.cds` with the process definition used for build-time validation and the typed programmatic API
+- A converted ProcessHeader JSON file in `./srv/workflows/{projectId}.{processIdentifier}.json` for future re-imports
 
 ##### From SBPA (Remote Import)
 
@@ -427,9 +429,11 @@ Import your SBPA process directly from SBPA.
 cds import --from process --name eu12.myorg.myproject.myProcess
 ```
 
-This will create also a new CDS service in `./srv/external/eu12.myorg.myproject.myProcess.cds` with the process definition as well as a JSON file in `./srv/workflows/eu12.myorg.myproject.myProcess.json` with the process definition in JSON-format.
+This will create:
+- A new CDS service in `./srv/external/eu12.myorg.myproject.myProcess.cds` with the process definition
+- A ProcessHeader JSON file in `./srv/workflows/eu12.myorg.myproject.myProcess.json` with the process definition in JSON format
 
-In case your external services are corrupted, you can import from the created file in `./srv/workflows/` as well:
+In case your external services are corrupted, you can re-import from the saved file in `./srv/workflows/`:
 
 ```bash
 cds import --from process ./srv/workflows/eu12.myorg.myproject.myProcess.json

@@ -34,7 +34,11 @@ export async function importProcess(
     options.file = filePath;
     return buildCsnModel(processHeader, dataTypeCache);
   }
-  const processHeader = loadProcessHeader(jsonFile);
+
+  const { processHeader, savedFilePath } = await loadProcessHeader(jsonFile);
+  if (savedFilePath) {
+    options.file = savedFilePath;
+  }
   return buildCsnModel(processHeader, dataTypeCache);
 }
 
@@ -114,18 +118,34 @@ async function createApiClient(): Promise<IProcessApiClient> {
 //  Load process header from file
 // ============================================================================
 
-function loadProcessHeader(filePath: string): ProcessHeader {
+async function loadProcessHeader(
+  filePath: string,
+): Promise<{ processHeader: ProcessHeader; savedFilePath?: string }> {
   const content = fs.readFileSync(path.resolve(filePath), 'utf-8');
   const parsed = JSON.parse(content);
 
   let header: ProcessHeader;
+  let savedFilePath: string | undefined;
+
   if (isRawWorkflowJson(parsed)) {
     LOG.debug('Detected raw SBPA workflow JSON format, converting to ProcessHeader...');
     header = convertWorkflowToProcessHeader(parsed);
+    LOG.debug('Converted ProcessHeader:', JSON.stringify(header, null, 2));
+
+    savedFilePath = path.join(
+      cds.root,
+      'srv',
+      'workflows',
+      `${header.projectId}.${header.identifier}.json`,
+    );
+    await fs.promises.mkdir(path.dirname(savedFilePath), { recursive: true });
+    await fs.promises.writeFile(savedFilePath, JSON.stringify(header, null, 2), 'utf8');
   } else {
     header = parsed as ProcessHeader;
+    savedFilePath = undefined;
   }
 
   header.dataTypes?.forEach((dt) => dataTypeCache.set(dt.uid, dt));
-  return header;
+
+  return { processHeader: header, savedFilePath };
 }
