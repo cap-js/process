@@ -55,6 +55,7 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
 
     // Get business key column
     const businessKeyColumn = getBusinessKeyColumnOrReject(req, descriptor.businessKey);
+    if (!businessKeyColumn) return;
 
     // fetch entity
     const row = await resolveEntityRowOrReject(
