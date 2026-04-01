@@ -14,6 +14,7 @@ const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 interface ImportOptions {
   name?: string;
   file?: string;
+  saveProcessHeader?: boolean;
 }
 
 /**
@@ -35,9 +36,12 @@ export async function importProcess(
     return buildCsnModel(processHeader, dataTypeCache);
   }
 
-  const { processHeader, savedFilePath } = await loadProcessHeader(jsonFile);
-  if (savedFilePath) {
-    options.file = savedFilePath;
+  const { processHeader, targetFilePath } = await loadProcessHeader(
+    jsonFile,
+    options.saveProcessHeader ?? false,
+  );
+  if (targetFilePath) {
+    options.file = targetFilePath;
   }
   return buildCsnModel(processHeader, dataTypeCache);
 }
@@ -120,32 +124,38 @@ async function createApiClient(): Promise<IProcessApiClient> {
 
 async function loadProcessHeader(
   filePath: string,
-): Promise<{ processHeader: ProcessHeader; savedFilePath?: string }> {
+  saveProcessHeader: boolean = false,
+): Promise<{ processHeader: ProcessHeader; targetFilePath?: string }> {
   const content = fs.readFileSync(path.resolve(filePath), 'utf-8');
   const parsed = JSON.parse(content);
 
   let header: ProcessHeader;
-  let savedFilePath: string | undefined;
+  let targetFilePath: string | undefined;
 
   if (isRawWorkflowJson(parsed)) {
     LOG.debug('Detected raw SBPA workflow JSON format, converting to ProcessHeader...');
     header = convertWorkflowToProcessHeader(parsed);
     LOG.debug('Converted ProcessHeader:', JSON.stringify(header, null, 2));
 
-    savedFilePath = path.join(
+    // Always compute the target file path (for options.file)
+    targetFilePath = path.join(
       cds.root,
       'srv',
       'workflows',
       `${header.projectId}.${header.identifier}.json`,
     );
-    await fs.promises.mkdir(path.dirname(savedFilePath), { recursive: true });
-    await fs.promises.writeFile(savedFilePath, JSON.stringify(header, null, 2), 'utf8');
+
+    // Only save if requested (CLI import)
+    if (saveProcessHeader) {
+      await fs.promises.mkdir(path.dirname(targetFilePath), { recursive: true});
+      await fs.promises.writeFile(targetFilePath, JSON.stringify(header, null, 2), 'utf8');
+    }
   } else {
     header = parsed as ProcessHeader;
-    savedFilePath = undefined;
+    targetFilePath = undefined;
   }
 
   header.dataTypes?.forEach((dt) => dataTypeCache.set(dt.uid, dt));
 
-  return { processHeader: header, savedFilePath };
+  return { processHeader: header, targetFilePath };
 }

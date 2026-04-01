@@ -17,5 +17,9 @@ export function registerProcessImport() {
   // @ts-expect-error: process does not exist on cds.import type
   cds.import.from ??= {};
   // @ts-expect-error: from does not exist on cds.import type
-  cds.import.from.process = importProcess;
+  cds.import.from.process = (jsonFile: string, options: any = {}) => {
+    // When called via CLI, always save the ProcessHeader JSON
+    options.saveProcessHeader = true;
+    return importProcess(jsonFile, options);
+  };
 }
