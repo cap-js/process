@@ -6,12 +6,7 @@ import {
   getEntityDataFromRequest,
   resolveEntityRowOrReject,
 } from './utils';
-import {
-  LOG_MESSAGES,
-  PROCESS_LOGGER_PREFIX,
-  PROCESS_PREFIX,
-  BUSINESS_KEY_MAX_LENGTH,
-} from './../constants';
+import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, BUSINESS_KEY_MAX_LENGTH } from './../constants';
 import {
   InputCSNEntry,
   InputTreeNode,
@@ -31,6 +26,12 @@ import { StartAnnotationDescriptor } from '../types/cds-plugin';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
+const PROCESS_INPUTS_FROM_DEFINITION =
+  'No inputs annotation defined. Filtering entity fields by process definition inputs.';
+const PROCESS_NOT_STARTED = 'Not starting process as start condition(s) are not met.';
+const FAILED_FETCH_BUSINESS_KEY = 'Failed to fetch business key for process start.';
+const FAILED_FETCH = 'Failed to fetch entity for process start.';
+
 // Use InputTreeNode as ProcessStartInput (same structure)
 type ProcessStartInput = InputTreeNode;
 
@@ -40,7 +41,7 @@ function getColumnsForDescriptor(
 ): (column_expr | string)[] {
   const inputs = parseInputToTreeFromInputs(startAnnotation.inputs, target);
   if (inputs.length === 0) {
-    LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
+    LOG.debug(PROCESS_INPUTS_FROM_DEFINITION);
     if (startAnnotation.id) {
       return resolveColumnsFromProcessDefinition(startAnnotation.id, target);
     }
@@ -72,8 +73,8 @@ async function resolveBusinessKeyValue(
       req,
       data,
       startAnnotation.conditionExpr,
-      'Failed to fetch business key for process start.',
-      LOG_MESSAGES.PROCESS_NOT_STARTED,
+      FAILED_FETCH_BUSINESS_KEY,
+      PROCESS_NOT_STARTED,
       [businessKeyColumn],
     );
     businessKeyValue = businessKeyRow?.businessKey as string | undefined;
@@ -111,7 +112,7 @@ export async function handleProcessStart(
   if (req.event === 'DELETE') {
     const prefetched = getPrefetchedDataForDelete(req, qualifierKey, 'start');
     if (!prefetched) {
-      LOG.debug(LOG_MESSAGES.PROCESS_NOT_STARTED);
+      LOG.debug(PROCESS_NOT_STARTED);
       return;
     }
     data = prefetched;
@@ -127,8 +128,8 @@ export async function handleProcessStart(
     req,
     data,
     startAnnotation.conditionExpr,
-    'Failed to fetch entity for process start.',
-    LOG_MESSAGES.PROCESS_NOT_STARTED,
+    FAILED_FETCH,
+    PROCESS_NOT_STARTED,
     columns,
   );
   if (!row) return;
