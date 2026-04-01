@@ -1,5 +1,5 @@
 import { CsnDefinition, CsnElement, CsnEntity } from '../types/csn-extensions';
-import { PROCESS_PREFIX, PROCESS_START_INPUTS } from '../constants';
+import { PROCESS_PREFIX } from '../constants';
 import {
   InputCSNEntry,
   InputTreeNode,
@@ -272,8 +272,11 @@ export function getProcessDefinitions(
   return processMap;
 }
 
-export function getParsedInputEntries(def: CsnEntity): ParsedInputEntry[] | undefined {
-  const inputsCSN = def[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
+export function getParsedInputEntries(
+  def: CsnEntity,
+  inputsAnnotationKey: `@${string}`,
+): ParsedInputEntry[] | undefined {
+  const inputsCSN = def[inputsAnnotationKey] as InputCSNEntry[] | undefined;
   if (!inputsCSN || inputsCSN.length === 0) {
     return undefined;
   }

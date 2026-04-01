@@ -1,8 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as csn from './csn-extensions';
+import { expr } from '@sap/cds';
+import { InputCSNEntry } from '../shared/input-parser';
+
+export interface StartAnnotationDescriptor {
+  qualifier?: string;
+  id: string;
+  on: string;
+  conditionExpr?: expr;
+  inputs?: InputCSNEntry[];
+  businessKey?: string;
+}
 
 export interface EntityEventCache {
-  hasStart: boolean;
+  startAnnotations: StartAnnotationDescriptor[];
   hasCancel: boolean;
   hasSuspend: boolean;
   hasResume: boolean;

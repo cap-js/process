@@ -1,5 +1,4 @@
-import cds from '@sap/cds';
-import { expr, Target } from '@sap/cds';
+import cds, { expr, Target } from '@sap/cds';
 import {
   emitProcessEvent,
   EntityRow,
@@ -25,6 +24,13 @@ interface ProcessActionSpec {
   businessKey: string | undefined;
 }
 
+interface ProcessActionDeleteConfig {
+  action: ProcessActionType;
+  annotations: {
+    IF: string;
+  };
+}
+
 interface ProcessActionConfig {
   action: ProcessActionType;
   annotations: {
@@ -38,12 +44,6 @@ interface ProcessActionConfig {
     INVALID_KEY: string;
     EMPTY_KEY: string;
     FAILED: string;
-  };
-}
-interface ProcessActionDeleteConfig {
-  action: ProcessActionType;
-  annotations: {
-    IF: string;
   };
 }
 
@@ -89,7 +89,6 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
     if (!row) return;
 
     // Emit process event
-
     const payload: ProcessLifecyclePayload = {
       businessKey: (row as { businessKey: string }).businessKey,
       cascade: specs.cascade,

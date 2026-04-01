@@ -7,12 +7,11 @@ import {
   handleProcessSuspend,
   buildAnnotationCache,
   EntityRow,
+  prefetchStartDataForDelete,
+  ProcessDeleteRequest,
   addDeletedEntityToRequestCancel,
-  addDeletedEntityToRequestStart,
-  addDeletedEntityToRequestStartBusinessKey,
   addDeletedEntityToRequestResume,
   addDeletedEntityToRequestSuspend,
-  ProcessDeleteRequest,
 } from '../handlers';
 
 export function registerAnnotationHandlers(service: cds.Service) {
@@ -25,10 +24,11 @@ export function registerAnnotationHandlers(service: cds.Service) {
     const cached = annotationCache.get(cacheKey);
 
     if (!cached) return;
+    const hasStart = cached.startAnnotations.length > 0;
+
     const results = await Promise.all(
       [
-        cached.hasStart && addDeletedEntityToRequestStart(req),
-        cached.hasStart && addDeletedEntityToRequestStartBusinessKey(req),
+        hasStart && prefetchStartDataForDelete(req, cached.startAnnotations),
         cached.hasCancel && addDeletedEntityToRequestCancel(req),
         cached.hasResume && addDeletedEntityToRequestResume(req),
         cached.hasSuspend && addDeletedEntityToRequestSuspend(req),
@@ -58,9 +58,10 @@ async function dispatchProcessHandlers(
   req: cds.Request,
   data: EntityRow,
 ) {
-  if (cached.hasStart) {
-    await handleProcessStart(req, data);
-  }
+  await Promise.all(
+    cached.startAnnotations.map((startAnn) => handleProcessStart(req, data, startAnn)),
+  );
+
   if (cached.hasCancel) {
     await handleProcessCancel(req, data);
   }

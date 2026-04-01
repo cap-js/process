@@ -1,6 +1,6 @@
 import cds, { column_expr, expr, Results } from '@sap/cds';
-import { PROCESS_LOGGER_PREFIX } from '../constants';
 import { EntityRow } from './utils';
+import { PROCESS_LOGGER_PREFIX } from '../constants';
 import { WILDCARD } from '../shared/input-parser';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
@@ -24,14 +24,14 @@ export interface ProcessDeleteRequest extends cds.Request {
 }
 
 type DeleteProcessObject = {
-  Start?: Results;
-  StartBusinessKey?: Results;
+  Start?: Map<string, Results>;
+  StartBusinessKey?: Map<string, Results>;
   Cancel?: Results;
   Suspend?: Results;
   Resume?: Results;
 };
 
-function buildWhereDeleteExpression(
+export function buildWhereDeleteExpression(
   req: ProcessDeleteRequest,
   conditionExpr: { xpr: expr } | undefined,
 ): unknown {
