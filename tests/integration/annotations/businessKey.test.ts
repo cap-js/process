@@ -25,6 +25,7 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await (cds as any).flush();
+  await new Promise(resolve => setTimeout(resolve, 5000));
 });
 
 describe('Integration tests for Business Key Length Validation on processStart', () => {

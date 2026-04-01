@@ -97,6 +97,11 @@ describe('Programmatic Approach Hybrid Tests', () => {
     return res.data;
   }
 
+  afterAll(async () => {
+    await (cds as any).flush();
+    await new Promise(resolve => setTimeout(resolve, 5000));
+  });
+
   describe('Process Start', () => {
     it('should start a process and verify it is RUNNING on SBPA', async () => {
       const ID = generateID();

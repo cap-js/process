@@ -24,6 +24,7 @@ describe('Integration tests for Process Annotation Combinations', () => {
 
   afterAll(async () => {
     await (cds as any).flush();
+    await new Promise(resolve => setTimeout(resolve, 5000));
   });
 
   // Helper function to create a test car entity

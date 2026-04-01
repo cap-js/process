@@ -24,6 +24,7 @@ describe('Integration tests for Process Annotations on Draft-Enabled Entities', 
 
   afterAll(async () => {
     await (cds as any).flush();
+    await new Promise(resolve => setTimeout(resolve, 5000));
   });
 
   const createTestCar = ({ id, mileage = 100 }: { id?: string; mileage?: number } = {}) => ({

@@ -24,6 +24,7 @@ describe('Integration tests for START annotation with inputs array', () => {
 
   afterAll(async () => {
     await (cds as any).flush();
+    await new Promise(resolve => setTimeout(resolve, 5000));
   });
 
   // Helper to get the start message context
