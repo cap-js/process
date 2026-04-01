@@ -70,14 +70,14 @@ export class ProcessValidationPlugin extends BuildPluginBase {
           model.definitions || {},
         );
       }
-      for (const message of this.messages) {
-        if (message.severity === ERROR) {
-          throw new cds.build.BuildError(`Process annotation validation failed.`);
-        }
-      }
-
-      LOG.debug('All process annotations validated successfully.');
     }
+    for (const message of this.messages) {
+      if (message.severity === ERROR) {
+        throw new cds.build.BuildError(`Process annotation validation failed.`);
+      }
+    }
+
+    LOG.debug('All process annotations validated successfully.');
   }
   private validateStartAnnotations(
     entityName: string,
