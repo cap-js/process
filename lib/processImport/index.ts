@@ -147,7 +147,7 @@ async function loadProcessHeader(
 
     // Only save if requested (CLI import)
     if (saveProcessHeader) {
-      await fs.promises.mkdir(path.dirname(targetFilePath), { recursive: true});
+      await fs.promises.mkdir(path.dirname(targetFilePath), { recursive: true });
       await fs.promises.writeFile(targetFilePath, JSON.stringify(header, null, 2), 'utf8');
     }
   } else {

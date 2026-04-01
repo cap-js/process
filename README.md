@@ -416,6 +416,7 @@ cds import --from process ~/Downloads/<your-process>.json
 ```
 
 This will create:
+
 - A new CDS service in `./srv/external/{projectId}.{processIdentifier}.cds` with the process definition used for build-time validation and the typed programmatic API
 - A converted ProcessHeader JSON file in `./srv/workflows/{projectId}.{processIdentifier}.json` for future re-imports
 
@@ -430,6 +431,7 @@ cds import --from process --name eu12.myorg.myproject.myProcess
 ```
 
 This will create:
+
 - A new CDS service in `./srv/external/eu12.myorg.myproject.myProcess.cds` with the process definition
 - A ProcessHeader JSON file in `./srv/workflows/eu12.myorg.myproject.myProcess.json` with the process definition in JSON format
 

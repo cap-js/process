@@ -1,194 +1,187 @@
 {
-    "contents": {
-        "dffc57a3-8926-4f40-bd3c-06d0a6b044f2": {
-            "classDefinition": "com.sap.bpm.wfs.Model",
-            "id": "eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Simple_Inputs",
-            "subject": "ImportProcess_Simple_Inputs",
-            "businessKey": "",
-            "customAttributes": [],
-            "propagateChildErrors": false,
-            "processIdentifier": "importProcess_Simple_Inputs",
-            "artifactId": "0fc541c5-5266-458e-801a-9fe7fbfc32e5",
-            "name": "ImportProcess_Simple_Inputs",
-            "events": {
-                "615d8e80-273a-4761-a68d-d30d18a9df86": {
-                    "name": "StartEvent"
-                },
-                "15e4b060-a1e9-494c-8963-9f0730b149f5": {
-                    "name": "EndEvent"
-                }
-            },
-            "sequenceFlows": {
-                "d03d0d14-638e-407c-a266-f33ad71cebda": {
-                    "name": "sequenceFlow"
-                }
-            },
-            "schemas": "1305aa5f-fa54-4b92-8602-459d311780e8",
-            "technicalDeploymentId": "dd8daef0-23f3-4411-9c80-96d6f513db98",
-            "projectId": "eu12.cdsmunich.capprocesspluginhybridtest",
-            "projectVersion": "1.0.11"
-        },
+  "contents": {
+    "dffc57a3-8926-4f40-bd3c-06d0a6b044f2": {
+      "classDefinition": "com.sap.bpm.wfs.Model",
+      "id": "eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Simple_Inputs",
+      "subject": "ImportProcess_Simple_Inputs",
+      "businessKey": "",
+      "customAttributes": [],
+      "propagateChildErrors": false,
+      "processIdentifier": "importProcess_Simple_Inputs",
+      "artifactId": "0fc541c5-5266-458e-801a-9fe7fbfc32e5",
+      "name": "ImportProcess_Simple_Inputs",
+      "events": {
         "615d8e80-273a-4761-a68d-d30d18a9df86": {
-            "classDefinition": "com.sap.bpm.wfs.StartEvent",
-            "mappings": {
-                "out": {
-                    "['custom']": {
-                        "expression": {
-                            "type": "ObjectExpression",
-                            "properties": []
-                        },
-                        "type": "expression"
-                    },
-                    "['startEvent']": {
-                        "expression": {
-                            "type": "CallExpression",
-                            "callee": {
-                                "type": "Identifier",
-                                "name": "SAP_SAFE_PARSE"
-                            },
-                            "arguments": [
-                                {
-                                    "type": "Identifier",
-                                    "name": "output"
-                                },
-                                {
-                                    "type": "ArrayExpression",
-                                    "elements": []
-                                }
-                            ]
-                        },
-                        "type": "expression"
-                    }
-                }
-            },
-            "interfaces": {
-                "out": {
-                    "schema": "pbsYfOXZVsx0Cr6VrMDMaOE",
-                    "definition": "#/definitions/out"
-                }
-            },
-            "id": "startEvent",
-            "name": "StartEvent"
+          "name": "StartEvent"
         },
         "15e4b060-a1e9-494c-8963-9f0730b149f5": {
-            "classDefinition": "com.sap.bpm.wfs.EndEvent",
-            "id": "endEvent_1",
-            "name": "EndEvent"
-        },
-        "d03d0d14-638e-407c-a266-f33ad71cebda": {
-            "classDefinition": "com.sap.bpm.wfs.SequenceFlow",
-            "id": "pbtnevEtrats",
-            "name": "sequenceFlow",
-            "sourceRef": "615d8e80-273a-4761-a68d-d30d18a9df86",
-            "targetRef": "15e4b060-a1e9-494c-8963-9f0730b149f5"
-        },
-        "1305aa5f-fa54-4b92-8602-459d311780e8": {
-            "classDefinition": "com.sap.bpm.wfs.Schemas",
-            "schemas": {
-                "pbsYfOXZVsx0Cr6VrMDMaOE": {
-                    "origin": "local",
-                    "version": "1.0.0",
-                    "schemaRef": "$.0fc541c5-5266-458e-801a-9fe7fbfc32e5",
-                    "content": {
-                        "definitions": {
-                            "out": {
-                                "title": "inputs",
-                                "type": "object",
-                                "$schema": "http://json-schema.org/draft-07/schema#",
-                                "definitions": {
-                                    "date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "title": "date"
-                                    },
-                                    "dateTime": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "title": "dateTime"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "password": true,
-                                        "title": "password"
-                                    },
-                                    "time": {
-                                        "type": "string",
-                                        "format": "time",
-                                        "title": "time"
-                                    },
-                                    "documentFolder": {
-                                        "type": "string",
-                                        "format": "document-folder",
-                                        "title": "documentFolder"
-                                    }
-                                },
-                                "properties": {
-                                    "string": {
-                                        "type": "string",
-                                        "title": "String",
-                                        "description": ""
-                                    },
-                                    "number": {
-                                        "type": "number",
-                                        "title": "Number",
-                                        "description": ""
-                                    },
-                                    "_boolean": {
-                                        "type": "boolean",
-                                        "title": "Boolean",
-                                        "description": ""
-                                    },
-                                    "date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "title": "Date",
-                                        "description": ""
-                                    },
-                                    "datetime": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "title": "DateTime",
-                                        "description": ""
-                                    },
-                                    "documentfolder": {
-                                        "type": "string",
-                                        "format": "document-folder",
-                                        "title": "DocumentFolder",
-                                        "description": ""
-                                    }
-                                },
-                                "required": [
-                                    "string",
-                                    "number",
-                                    "_boolean",
-                                    "date",
-                                    "datetime",
-                                    "documentfolder"
-                                ]
-                            },
-                            "in": {
-                                "$schema": "http://json-schema.org/draft-07/schema#",
-                                "title": "outputs",
-                                "type": "object",
-                                "properties": {}
-                            }
-                        },
-                        "title": "pbsYfOXZVsx0Cr6VrMDMaOE"
-                    }
-                }
-            }
-        },
-        "59fad70f-9b00-4f7d-aa81-849c413aa848": {
-            "classDefinition": "com.sap.bpm.wfs.Translation",
-            "bundles": {
-                "": {
-                    "endEvent_1.name": "EndEvent",
-                    "workflow.name": "ImportProcess_Simple_Inputs",
-                    "workflow.subject": "ImportProcess_Simple_Inputs",
-                    "pbtnevEtrats.name": "sequenceFlow",
-                    "startEvent.name": "StartEvent"
-                }
-            }
+          "name": "EndEvent"
         }
+      },
+      "sequenceFlows": {
+        "d03d0d14-638e-407c-a266-f33ad71cebda": {
+          "name": "sequenceFlow"
+        }
+      },
+      "schemas": "1305aa5f-fa54-4b92-8602-459d311780e8",
+      "technicalDeploymentId": "dd8daef0-23f3-4411-9c80-96d6f513db98",
+      "projectId": "eu12.cdsmunich.capprocesspluginhybridtest",
+      "projectVersion": "1.0.11"
+    },
+    "615d8e80-273a-4761-a68d-d30d18a9df86": {
+      "classDefinition": "com.sap.bpm.wfs.StartEvent",
+      "mappings": {
+        "out": {
+          "['custom']": {
+            "expression": {
+              "type": "ObjectExpression",
+              "properties": []
+            },
+            "type": "expression"
+          },
+          "['startEvent']": {
+            "expression": {
+              "type": "CallExpression",
+              "callee": {
+                "type": "Identifier",
+                "name": "SAP_SAFE_PARSE"
+              },
+              "arguments": [
+                {
+                  "type": "Identifier",
+                  "name": "output"
+                },
+                {
+                  "type": "ArrayExpression",
+                  "elements": []
+                }
+              ]
+            },
+            "type": "expression"
+          }
+        }
+      },
+      "interfaces": {
+        "out": {
+          "schema": "pbsYfOXZVsx0Cr6VrMDMaOE",
+          "definition": "#/definitions/out"
+        }
+      },
+      "id": "startEvent",
+      "name": "StartEvent"
+    },
+    "15e4b060-a1e9-494c-8963-9f0730b149f5": {
+      "classDefinition": "com.sap.bpm.wfs.EndEvent",
+      "id": "endEvent_1",
+      "name": "EndEvent"
+    },
+    "d03d0d14-638e-407c-a266-f33ad71cebda": {
+      "classDefinition": "com.sap.bpm.wfs.SequenceFlow",
+      "id": "pbtnevEtrats",
+      "name": "sequenceFlow",
+      "sourceRef": "615d8e80-273a-4761-a68d-d30d18a9df86",
+      "targetRef": "15e4b060-a1e9-494c-8963-9f0730b149f5"
+    },
+    "1305aa5f-fa54-4b92-8602-459d311780e8": {
+      "classDefinition": "com.sap.bpm.wfs.Schemas",
+      "schemas": {
+        "pbsYfOXZVsx0Cr6VrMDMaOE": {
+          "origin": "local",
+          "version": "1.0.0",
+          "schemaRef": "$.0fc541c5-5266-458e-801a-9fe7fbfc32e5",
+          "content": {
+            "definitions": {
+              "out": {
+                "title": "inputs",
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "definitions": {
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "title": "date"
+                  },
+                  "dateTime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "title": "dateTime"
+                  },
+                  "password": {
+                    "type": "string",
+                    "password": true,
+                    "title": "password"
+                  },
+                  "time": {
+                    "type": "string",
+                    "format": "time",
+                    "title": "time"
+                  },
+                  "documentFolder": {
+                    "type": "string",
+                    "format": "document-folder",
+                    "title": "documentFolder"
+                  }
+                },
+                "properties": {
+                  "string": {
+                    "type": "string",
+                    "title": "String",
+                    "description": ""
+                  },
+                  "number": {
+                    "type": "number",
+                    "title": "Number",
+                    "description": ""
+                  },
+                  "_boolean": {
+                    "type": "boolean",
+                    "title": "Boolean",
+                    "description": ""
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "title": "Date",
+                    "description": ""
+                  },
+                  "datetime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "title": "DateTime",
+                    "description": ""
+                  },
+                  "documentfolder": {
+                    "type": "string",
+                    "format": "document-folder",
+                    "title": "DocumentFolder",
+                    "description": ""
+                  }
+                },
+                "required": ["string", "number", "_boolean", "date", "datetime", "documentfolder"]
+              },
+              "in": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "title": "outputs",
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "title": "pbsYfOXZVsx0Cr6VrMDMaOE"
+          }
+        }
+      }
+    },
+    "59fad70f-9b00-4f7d-aa81-849c413aa848": {
+      "classDefinition": "com.sap.bpm.wfs.Translation",
+      "bundles": {
+        "": {
+          "endEvent_1.name": "EndEvent",
+          "workflow.name": "ImportProcess_Simple_Inputs",
+          "workflow.subject": "ImportProcess_Simple_Inputs",
+          "pbtnevEtrats.name": "sequenceFlow",
+          "startEvent.name": "StartEvent"
+        }
+      }
     }
+  }
 }
