@@ -8,7 +8,6 @@ import {
 } from './utils';
 import {
   buildWhereDeleteExpression,
-  createAddDeletedEntityHandler,
   getPrefetchedDataForDelete,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
@@ -16,23 +15,9 @@ import {
   formatBusinessKeyColumn,
   getBusinessKeyColumnOrReject,
 } from '../shared/businessKey-helper';
-import { BUSINESS_KEY } from '../constants';
 import { LifecycleAnnotationDescriptor } from '../types/cds-plugin';
 
-export type DeleteProcessMapKey = 'Cancel' | 'Suspend' | 'Resume';
-
-const ACTION_TO_DELETE_KEY: Record<ProcessActionType, DeleteProcessMapKey> = {
-  cancel: 'Cancel',
-  suspend: 'Suspend',
-  resume: 'Resume',
-};
-type ProcessActionType = 'cancel' | 'resume' | 'suspend';
-interface ProcessActionDeleteConfig {
-  action: ProcessActionType;
-  annotations: {
-    IF: string;
-  };
-}
+export type ProcessActionType = 'cancel' | 'resume' | 'suspend';
 
 interface ProcessActionConfig {
   action: ProcessActionType;
@@ -46,8 +31,6 @@ interface ProcessActionConfig {
 }
 
 export function createProcessActionHandler(config: ProcessActionConfig) {
-  const deleteKey = ACTION_TO_DELETE_KEY[config.action];
-
   return async function handleProcessAction(
     req: cds.Request,
     data: EntityRow,
@@ -59,7 +42,7 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
     if (req.event === 'DELETE') {
       data = getPrefetchedDataForDelete(
         req as ProcessDeleteRequest,
-        deleteKey,
+        config.action,
         qualifierKey,
         config.logMessages.NOT_TRIGGERED,
       ) as EntityRow;
@@ -91,23 +74,11 @@ export function createProcessActionHandler(config: ProcessActionConfig) {
   };
 }
 
-export function createProcessActionAddDeletedEntityHandler(config: ProcessActionDeleteConfig) {
-  return createAddDeletedEntityHandler({
-    action: config.action,
-    ifAnnotation: config.annotations.IF,
-    getColumns: (req) => [
-      getBusinessKeyColumnOrReject(req, (req.target as cds.entity)[BUSINESS_KEY]?.['=']),
-    ],
-  });
-}
-
 export async function prefetchLifecycleDataForDelete(
   req: ProcessDeleteRequest,
   annotations: LifecycleAnnotationDescriptor[],
   action: ProcessActionType,
 ): Promise<EntityRow | void> {
-  const deleteKey = ACTION_TO_DELETE_KEY[action];
-
   const resultMap = new Map<string, EntityRow>();
 
   await Promise.all(
@@ -128,6 +99,6 @@ export async function prefetchLifecycleDataForDelete(
   );
 
   if (resultMap.size > 0) {
-    return { [deleteKey]: resultMap };
+    return { [action]: resultMap };
   }
 }

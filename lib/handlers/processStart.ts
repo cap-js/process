@@ -88,7 +88,7 @@ async function resolveBusinessKeyValue(
  * or undefined if the condition was not met / no data was pre-fetched.
  */
 function getDeletePrefetchedStart(req: cds.Request, qualifierKey: string): EntityRow | undefined {
-  return (req as ProcessDeleteRequest)._Process?.Start?.get(qualifierKey) as EntityRow | undefined;
+  return (req as ProcessDeleteRequest)._Process?.start?.get(qualifierKey) as EntityRow | undefined;
 }
 
 /**
@@ -99,7 +99,7 @@ function getDeletePrefetchedBusinessKey(
   req: cds.Request,
   qualifierKey: string,
 ): EntityRow | undefined {
-  return (req as ProcessDeleteRequest)._Process?.StartBusinessKey?.get(qualifierKey) as
+  return (req as ProcessDeleteRequest)._Process?.startBusinessKey?.get(qualifierKey) as
     | EntityRow
     | undefined;
 }
@@ -201,10 +201,10 @@ export async function prefetchStartDataForDelete(
 
   const result: Record<string, Map<string, EntityRow>> = {};
   if (startMap.size > 0) {
-    result.Start = startMap;
+    result.start = startMap;
   }
   if (businessKeyMap.size > 0) {
-    result.StartBusinessKey = businessKeyMap;
+    result.startBusinessKey = businessKeyMap;
   }
   return result;
 }
