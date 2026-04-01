@@ -18,39 +18,23 @@ import { InputCSNEntry } from './input-parser';
  * Returns undefined if the prefix has no qualifier (equals the base) or if the
  * separator is not the expected '#' character.
  */
-function extractQualifier(prefix: string, annotationBase: string): string | undefined {
+export function extractQualifier(prefix: string, annotationBase: string): string | undefined {
   if (prefix.length <= annotationBase.length) return undefined;
   const remainder = prefix.substring(annotationBase.length);
   return remainder.startsWith('#') ? remainder.substring(1) : undefined;
 }
 
 /**
- * Resolves the business key expression for a given qualifier.
- * First tries the qualified annotation (e.g. '@bpm.process.businessKey#one'),
- * then falls back to the unqualified '@bpm.process.businessKey'.
- */
-function resolveBusinessKey(entity: cds.entity, qualifier: string | undefined): string | undefined {
-  if (qualifier) {
-    const qualifiedKey = `${BUSINESS_KEY}#${qualifier}`;
-    const qualified = (entity[qualifiedKey] as { '=': string } | undefined)?.['='];
-    if (qualified) return qualified;
-  }
-  return (entity[`${BUSINESS_KEY}`] as { '=': string } | undefined)?.['='];
-}
-
-/**
- * Resolves the business key annotation key for a given annotation prefix.
- * First checks for a qualified businessKey matching the qualifier of the prefix
- * (e.g. '@bpm.process.businessKey#one' for prefix '@bpm.process.cancel#one'),
+ * Resolves the business key annotation key for a given qualifier.
+ * First checks for a qualified businessKey matching the qualifier
+ * (e.g. '@bpm.process.businessKey#one' for qualifier 'one'),
  * then falls back to the unqualified '@bpm.process.businessKey'.
  * Returns the annotation key that exists on the entity, or the unqualified key if neither exists.
  */
 export function resolveBusinessKeyAnnotation(
   entity: cds.entity | CsnEntity,
-  prefix: string,
-  annotationBase: string,
+  qualifier: string | undefined,
 ): `@${string}` {
-  const qualifier = extractQualifier(prefix, annotationBase);
   if (qualifier) {
     const qualifiedKey: `@${string}` = `${BUSINESS_KEY}#${qualifier}`;
     if ((entity as CsnEntity)[qualifiedKey] !== undefined) return qualifiedKey;
@@ -90,7 +74,8 @@ export function findStartAnnotations(entity: cds.entity): StartAnnotationDescrip
     const ifAnnotation = entity[`${prefix}${SUFFIX_IF}`] as { xpr: expr } | undefined;
     const inputs = entity[`${prefix}${SUFFIX_INPUTS}`] as InputCSNEntry[] | undefined;
 
-    const businessKey = resolveBusinessKey(entity, qualifier);
+    const businessKeyAnnotation = resolveBusinessKeyAnnotation(entity, qualifier);
+    const businessKey = (entity[businessKeyAnnotation] as { '=': string } | undefined)?.['='];
 
     results.push({
       qualifier,
@@ -122,7 +107,8 @@ export function findLifecycleAnnotations(
     const cascade = (entity[`${prefix}${SUFFIX_CASCADE}`] as boolean) ?? false;
     const ifAnnotation = entity[`${prefix}${SUFFIX_IF}`] as { xpr: expr } | undefined;
 
-    const businessKey = resolveBusinessKey(entity, qualifier);
+    const businessKeyAnnotation = resolveBusinessKeyAnnotation(entity, qualifier);
+    const businessKey = (entity[businessKeyAnnotation] as { '=': string } | undefined)?.['='];
 
     results.push({
       qualifier,

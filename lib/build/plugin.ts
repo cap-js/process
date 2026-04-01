@@ -24,7 +24,7 @@ import {
   SUFFIX_CASCADE,
 } from '../constants';
 import { CsnDefinition, CsnEntity } from '../types/csn-extensions';
-import { getAnnotationPrefixes, resolveBusinessKeyAnnotation } from '../shared/annotations-helper';
+import { extractQualifier, getAnnotationPrefixes, resolveBusinessKeyAnnotation } from '../shared/annotations-helper';
 
 const LOG = cds.log('process-build');
 
@@ -155,7 +155,8 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       const hasCascade = def[annotationCascade] !== undefined;
       const hasIf = def[annotationIf] !== undefined;
 
-      const businessKeyAnnotation = resolveBusinessKeyAnnotation(def, prefix, annotationBase);
+      const qualifier = extractQualifier(prefix, annotationBase);
+      const businessKeyAnnotation = resolveBusinessKeyAnnotation(def, qualifier);
       const hasBusinessKey = def[businessKeyAnnotation] !== undefined;
 
       // required fields - .on is required if any annotation with this prefix is defined
