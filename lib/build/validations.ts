@@ -1,7 +1,7 @@
 import cds from '@sap/cds';
 import { ProcessValidationPlugin } from './plugin';
 import { CsnDefinition, CsnElement, CsnEntity } from '../types/csn-extensions';
-import { BUSINESS_KEY, PROCESS_START_ID, PROCESS_START_ON } from '../constants';
+import { BUSINESS_KEY } from '../constants';
 import {
   createCsnEntityContext,
   ElementType,
@@ -110,17 +110,19 @@ export function validateRequiredStartAnnotations(
   hasOn: boolean,
   hasId: boolean,
   entityName: string,
+  annotationOn: string,
+  annotationId: string,
   buildPlugin: ProcessValidationPlugin,
 ) {
   if (hasOn && !hasId) {
     buildPlugin.pushMessage(
-      ERROR_START_ON_REQUIRES_ID(entityName, PROCESS_START_ON, PROCESS_START_ID),
+      ERROR_START_ON_REQUIRES_ID(entityName, annotationOn, annotationId),
       ERROR,
     );
   }
   if (hasId && !hasOn) {
     buildPlugin.pushMessage(
-      ERROR_START_ID_REQUIRES_ON(entityName, PROCESS_START_ID, PROCESS_START_ON),
+      ERROR_START_ID_REQUIRES_ON(entityName, annotationId, annotationOn),
       ERROR,
     );
   }
@@ -129,36 +131,35 @@ export function validateRequiredStartAnnotations(
 export function validateIdAnnotation(
   def: CsnEntity,
   entityName: string,
+  annotationId: `@${string}`,
   processDef: CsnDefinition | undefined,
   buildPlugin: ProcessValidationPlugin,
 ) {
-  if (typeof def[PROCESS_START_ID] !== 'string') {
-    buildPlugin.pushMessage(ERROR_START_ID_MUST_BE_STRING(entityName, PROCESS_START_ID), ERROR);
+  if (typeof def[annotationId] !== 'string') {
+    buildPlugin.pushMessage(ERROR_START_ID_MUST_BE_STRING(entityName, annotationId), ERROR);
   }
 
   if (!processDef) {
     buildPlugin.pushMessage(
-      WARNING_NO_PROCESS_DEFINITION(entityName, PROCESS_START_ID, def[PROCESS_START_ID]),
+      WARNING_NO_PROCESS_DEFINITION(entityName, annotationId, def[annotationId]),
       WARNING,
     );
   }
 }
 export function validateRequiredGenericAnnotations(
   hasOn: boolean,
-  hasAnyAnnotationWithPrefix: boolean,
   entityName: string,
   annotationOn: string,
   annotationPrefix: string,
   hasBusinessKey: boolean,
   buildPlugin: ProcessValidationPlugin,
 ) {
-  // If any annotation with this prefix is defined, .on is required
-  if (hasAnyAnnotationWithPrefix && !hasOn) {
+  // .on is required
+  if (!hasOn) {
     buildPlugin.pushMessage(ERROR_ON_REQUIRED(entityName, annotationPrefix, annotationOn), ERROR);
   }
-  // If .on is defined or any annotation with this prefix is defined,
-  // businessKey must exist
-  if ((hasOn || hasAnyAnnotationWithPrefix) && !hasBusinessKey) {
+  // If .on is defined, businessKey must exist
+  if (hasOn && !hasBusinessKey) {
     buildPlugin.pushMessage(ERROR_BUSINESS_KEY_REQUIRED(entityName, annotationPrefix), ERROR);
   }
 }
@@ -169,8 +170,10 @@ export function validateInputTypes(
   def: CsnDefinition,
   processDef: CsnDefinition,
   allDefinitions: Record<string, CsnDefinition> | undefined,
+  inputsAnnotationKey: `@${string}`,
+  idAnnotationKey: `@${string}`,
 ) {
-  const parsedEntries = getParsedInputEntries(def as CsnEntity);
+  const parsedEntries = getParsedInputEntries(def as CsnEntity, inputsAnnotationKey);
   const elements = (def as CsnEntity).elements ?? {};
   const entityContext = createCsnEntityContext(
     elements as Record<string, CsnElement>,
@@ -196,7 +199,7 @@ export function validateInputTypes(
     entityName,
     entityAttributes,
     processDefInputs,
-    def[PROCESS_START_ID],
+    (def as CsnEntity)[idAnnotationKey],
   );
 }
 

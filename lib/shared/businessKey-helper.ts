@@ -3,7 +3,7 @@ import { BUSINESS_KEY_ALIAS, PROCESS_LOGGER_PREFIX } from '../constants';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
-function formatBusinessKeyColumn(businessKey: string) {
+export function formatBusinessKeyColumn(businessKey: string) {
   return `${businessKey} ${BUSINESS_KEY_ALIAS}`;
 }
 

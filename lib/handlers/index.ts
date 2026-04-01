@@ -1,12 +1,7 @@
-export {
-  handleProcessStart,
-  getColumnsForProcessStart,
-  addDeletedEntityToRequestStart,
-  addDeletedEntityToRequestStartBusinessKey,
-} from './processStart';
-export { handleProcessCancel, addDeletedEntityToRequestCancel } from './processCancel';
-export { handleProcessSuspend, addDeletedEntityToRequestSuspend } from './processSuspend';
-export { handleProcessResume, addDeletedEntityToRequestResume } from './processResume';
+export { handleProcessStart, prefetchStartDataForDelete } from './processStart';
+export { handleProcessCancel } from './processCancel';
+export { handleProcessSuspend } from './processSuspend';
+export { handleProcessResume } from './processResume';
 export { createProcessActionHandler } from './processActionHandler';
 export { registerProcessServiceHandlers } from './processService';
 export { buildAnnotationCache } from './annotationCache';

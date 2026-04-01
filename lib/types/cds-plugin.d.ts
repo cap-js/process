@@ -1,11 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as csn from './csn-extensions';
+import { expr } from '@sap/cds';
+import { InputCSNEntry } from '../shared/input-parser';
+
+export interface StartAnnotationDescriptor {
+  qualifier?: string;
+  id: string;
+  on: string;
+  conditionExpr?: expr;
+  inputs?: InputCSNEntry[];
+  businessKey?: string;
+}
+
+export interface LifecycleAnnotationDescriptor {
+  qualifier?: string;
+  on: string;
+  cascade: boolean;
+  conditionExpr?: expr;
+  businessKey?: string;
+}
 
 export interface EntityEventCache {
-  hasStart: boolean;
-  hasCancel: boolean;
-  hasSuspend: boolean;
-  hasResume: boolean;
+  startAnnotations: StartAnnotationDescriptor[];
+  cancelAnnotations: LifecycleAnnotationDescriptor[];
+  suspendAnnotations: LifecycleAnnotationDescriptor[];
+  resumeAnnotations: LifecycleAnnotationDescriptor[];
 }
 
 declare module '@sap/cds' {

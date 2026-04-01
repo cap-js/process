@@ -12,7 +12,9 @@ CAP Plugin to interact with SAP Build Process Automation to manage processes.
   - [Importing Processes as a Service](#importing-processes-as-a-service)
 - [Annotations](#annotations)
   - [Starting a Process](#starting-a-process)
+    - [Multiple Start Annotations](#multiple-start-annotations)
   - [Cancelling, Resuming, or Suspending a Process](#cancelling-resuming-or-suspending-a-process)
+    - [Multiple Cancel/Resume/Suspend Annotations](#multiple-cancelresumesuspend-annotations)
   - [Conditional Execution](#conditional-execution)
   - [Input Mapping](#input-mapping)
 - [Programmatic Approach](#programmatic-approach)
@@ -100,6 +102,34 @@ service MyService {
 
 > See [Input Mapping](#input-mapping) below for detailed examples on controlling which entity fields are passed as process context.
 
+#### Multiple Start Annotations
+
+To start multiple processes from the same entity, use CDS qualifiers (`#qualifier`) to distinguish them. Each qualified annotation is evaluated independently, so each can have its own `id`, `on`, `if`, and `inputs`.
+
+```cds
+service MyService {
+
+    @bpm.process.start #orderProcess : {
+        id: 'orderProcess',
+        on: 'CREATE',
+    }
+    @bpm.process.start #notificationProcess : {
+        id: 'notificationProcess',
+        on: 'CREATE',
+        if: (field3 > 10)
+    }
+    entity MyEntity {
+        key ID     : UUID;
+            field1 : String;
+            field2 : String;
+            field3 : Integer;
+    };
+
+}
+```
+
+Both processes are started when a `CREATE` event occurs on the entity, but `notificationProcess`is only stated if field3 is > 10. You can also combine qualifiers with different events or conditions.
+
 ### Cancelling, Resuming, or Suspending a Process
 
 - `@bpm.process.<cancel|resume|suspend>` -- Cancel/Suspend/Resume any processes with the given businessKey
@@ -126,6 +156,29 @@ service MyService {
 
 }
 
+```
+
+#### Multiple Cancel/Resume/Suspend Annotations
+
+To trigger multiple cancel, resume, or suspend operations from the same entity, use CDS qualifiers (`#qualifier`) to distinguish them. Each qualified annotation is evaluated independently, so each can have its own `on`, `if`, and `cascade`.
+
+```cds
+service MyService {
+
+    @bpm.process.cancel #cancelOnDelete : {
+        on: 'DELETE',
+    }
+    @bpm.process.cancel #cancelOnUpdate : {
+        on: 'UPDATE',
+        if: (status = 'active')
+    }
+    @bpm.process.businessKey: (ID)
+    entity MyEntity {
+        key ID     : UUID;
+            status : String;
+    };
+
+}
 ```
 
 ### Conditional Execution

@@ -1,4 +1,4 @@
-import { column_expr, expr, Target } from '@sap/cds';
+import { column_expr, Target } from '@sap/cds';
 import * as csn from '../types/csn-extensions';
 import {
   emitProcessEvent,
@@ -6,17 +6,7 @@ import {
   getEntityDataFromRequest,
   resolveEntityRowOrReject,
 } from './utils';
-import {
-  PROCESS_START_ID,
-  PROCESS_START_ON,
-  PROCESS_START_IF,
-  PROCESS_START_INPUTS,
-  LOG_MESSAGES,
-  PROCESS_LOGGER_PREFIX,
-  PROCESS_PREFIX,
-  BUSINESS_KEY,
-  BUSINESS_KEY_MAX_LENGTH,
-} from './../constants';
+import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, BUSINESS_KEY_MAX_LENGTH } from './../constants';
 import {
   InputCSNEntry,
   InputTreeNode,
@@ -25,145 +15,195 @@ import {
   EntityContext,
   WILDCARD,
 } from '../shared/input-parser';
-
 import cds from '@sap/cds';
 import {
-  createAddDeletedEntityHandler,
-  isDeleteWithoutProcess,
-  PROCESS_EVENT_MAP,
+  buildWhereDeleteExpression,
+  getPrefetchedDataForDelete,
   ProcessDeleteRequest,
 } from './onDeleteUtils';
 import { getBusinessKeyColumn } from '../shared/businessKey-helper';
+import { StartAnnotationDescriptor } from '../types/cds-plugin';
+
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
+
+const PROCESS_INPUTS_FROM_DEFINITION =
+  'No inputs annotation defined. Filtering entity fields by process definition inputs.';
+const PROCESS_NOT_STARTED = 'Not starting process as start condition(s) are not met.';
+const FAILED_FETCH_BUSINESS_KEY = 'Failed to fetch business key for process start.';
+const FAILED_FETCH = 'Failed to fetch entity for process start.';
 
 // Use InputTreeNode as ProcessStartInput (same structure)
 type ProcessStartInput = InputTreeNode;
 
-export type ProcessStartSpec = {
-  id?: string;
-  on?: string;
-  inputs: ProcessStartInput[];
-  conditionExpr: expr | undefined;
-};
-
-export function getColumnsForProcessStart(target: Target): (column_expr | string)[] {
-  const startSpecs = initStartSpecs(target);
-  startSpecs.inputs = parseInputToTree(target);
-  if (startSpecs.inputs.length === 0) {
-    LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
-    return resolveColumnsFromProcessDefinition(startSpecs.id!, target);
+function getColumnsForDescriptor(
+  startAnnotation: StartAnnotationDescriptor,
+  target: Target,
+): (column_expr | string)[] {
+  const inputs = parseInputToTreeFromInputs(startAnnotation.inputs, target);
+  if (inputs.length === 0) {
+    LOG.debug(PROCESS_INPUTS_FROM_DEFINITION);
+    if (startAnnotation.id) {
+      return resolveColumnsFromProcessDefinition(startAnnotation.id, target);
+    }
+    return [WILDCARD];
   }
-
-  return convertToColumnsExpr(startSpecs.inputs);
+  return convertToColumnsExpr(inputs);
 }
 
-export async function handleProcessStart(req: cds.Request, data: EntityRow): Promise<void> {
-  if (isDeleteWithoutProcess(req, LOG_MESSAGES.PROCESS_NOT_STARTED, 'start')) return;
+/**
+ * Resolves business key value for process start
+ * rejects if business key value exceeds maximum length
+ *
+ */
+async function resolveBusinessKeyValue(
+  req: cds.Request,
+  data: EntityRow,
+  startAnnotation: StartAnnotationDescriptor,
+  qualifierKey: string,
+): Promise<string | undefined> {
+  const businessKeyColumn = getBusinessKeyColumn(startAnnotation.businessKey);
+  if (!businessKeyColumn) return undefined;
 
-  const target = req.target as Target;
-  const processEventKey = PROCESS_EVENT_MAP['start'];
-  data = ((req as ProcessDeleteRequest)._Process?.[processEventKey] ??
-    getEntityDataFromRequest(data, req.params)) as EntityRow;
-
-  const startSpecs = initStartSpecs(target);
-  startSpecs.inputs = parseInputToTree(target);
-
-  // if startSpecs.input = [] --> no input annotation defined, resolve from process definition
-  let columns: (column_expr | string)[];
-  if (startSpecs.inputs.length === 0) {
-    if (startSpecs.id) {
-      columns = resolveColumnsFromProcessDefinition(startSpecs.id, target);
-    } else {
-      columns = [WILDCARD];
-    }
-    LOG.debug(LOG_MESSAGES.PROCESS_INPUTS_FROM_DEFINITION);
+  let businessKeyValue: string | undefined;
+  if (req.event === 'DELETE') {
+    const businessKeyData = getDeletePrefetchedBusinessKey(req, qualifierKey);
+    businessKeyValue = businessKeyData?.businessKey as string | undefined;
   } else {
-    columns = convertToColumnsExpr(startSpecs.inputs);
+    const businessKeyRow = await resolveEntityRowOrReject(
+      req,
+      data,
+      startAnnotation.conditionExpr,
+      FAILED_FETCH_BUSINESS_KEY,
+      PROCESS_NOT_STARTED,
+      [businessKeyColumn],
+    );
+    businessKeyValue = businessKeyRow?.businessKey as string | undefined;
   }
 
-  const businessKeyColumn = getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
+  if (businessKeyValue && businessKeyValue.length > BUSINESS_KEY_MAX_LENGTH) {
+    const msg = `Business key value exceeds maximum length of ${BUSINESS_KEY_MAX_LENGTH} characters. Process start will fail.`;
+    LOG.error(msg);
+    return req.reject({ status: 400, message: msg });
+  }
+  return businessKeyValue;
+}
+
+/**
+ * Returns the pre-fetched business key data for a given start qualifier on DELETE,
+ * or undefined if no business key was pre-fetched.
+ */
+function getDeletePrefetchedBusinessKey(
+  req: cds.Request,
+  qualifierKey: string,
+): EntityRow | undefined {
+  return (req as ProcessDeleteRequest)._Process?.startBusinessKey?.get(qualifierKey) as
+    | EntityRow
+    | undefined;
+}
+
+export async function handleProcessStart(
+  req: cds.Request,
+  data: EntityRow,
+  startAnnotation: StartAnnotationDescriptor,
+): Promise<void> {
+  const qualifierKey = startAnnotation.qualifier ?? '';
+
+  // For DELETE: use pre-fetched data for this qualifier; for other events: resolve from request
+  if (req.event === 'DELETE') {
+    const prefetched = getPrefetchedDataForDelete(req, qualifierKey, 'start');
+    if (!prefetched) {
+      LOG.debug(PROCESS_NOT_STARTED);
+      return;
+    }
+    data = prefetched;
+  } else {
+    data = getEntityDataFromRequest(data, req.params) as EntityRow;
+  }
+
+  const target = req.target as Target;
+  const columns = getColumnsForDescriptor(startAnnotation, target);
 
   // fetch entity data (without businessKey to avoid alias collision)
   const row = await resolveEntityRowOrReject(
     req,
     data,
-    startSpecs.conditionExpr,
-    'Failed to fetch entity for process start.',
-    LOG_MESSAGES.PROCESS_NOT_STARTED,
+    startAnnotation.conditionExpr,
+    FAILED_FETCH,
+    PROCESS_NOT_STARTED,
     columns,
   );
   if (!row) return;
 
-  let businessKeyValue: string | undefined;
-  if (businessKeyColumn) {
-    if (req.event === 'DELETE') {
-      const businessKeyData = (req as ProcessDeleteRequest)._Process?.[
-        PROCESS_EVENT_MAP['startBusinessKey']
-      ] as EntityRow | undefined;
-      businessKeyValue = businessKeyData?.businessKey as string | undefined;
-    } else {
-      const businessKeyRow = await resolveEntityRowOrReject(
-        req,
-        data,
-        startSpecs.conditionExpr,
-        'Failed to fetch business key for process start.',
-        LOG_MESSAGES.PROCESS_NOT_STARTED,
-        [businessKeyColumn],
-      );
-      businessKeyValue = businessKeyRow?.businessKey as string | undefined;
-    }
-
-    if (businessKeyValue && businessKeyValue.length > BUSINESS_KEY_MAX_LENGTH) {
-      const msg = `Business key value exceeds maximum length of ${BUSINESS_KEY_MAX_LENGTH} characters. Process start will fail.`;
-      LOG.error(msg);
-      return req.reject({ status: 400, message: msg });
-    }
-  }
+  const businessKeyValue = await resolveBusinessKeyValue(req, data, startAnnotation, qualifierKey);
 
   // emit process start
-  const payload = { definitionId: startSpecs.id!, context: row };
+  const payload = { definitionId: startAnnotation.id, context: row };
   await emitProcessEvent(
     'start',
     req,
     payload,
-    `Failed to start process with definition ID ${startSpecs.id!}.`,
+    `Failed to start process with definition ID ${startAnnotation.id!}.`,
     businessKeyValue,
   );
 }
 
 /**
- * Fetches and attaches entity data to the request for DELETE operations
+ * Pre-fetches entity data and business key for all start annotations before DELETE.
+ * Returns a partial _Process object with Maps keyed by qualifier ('' for unqualified).
  */
-export const addDeletedEntityToRequestStart = createAddDeletedEntityHandler({
-  action: 'start',
-  ifAnnotation: PROCESS_START_IF,
-  getColumns: (req) => getColumnsForProcessStart(req.target as Target),
-});
+export async function prefetchStartDataForDelete(
+  req: cds.Request,
+  startAnnotations: StartAnnotationDescriptor[],
+): Promise<Record<string, Map<string, EntityRow>>> {
+  const target = req.target as Target;
+  const deleteReq = req as ProcessDeleteRequest;
 
-/**
- * Fetches and attaches businessKey data separately for DELETE operations
- * to avoid alias collision with entity fields named "businessKey"
- */
-export const addDeletedEntityToRequestStartBusinessKey = createAddDeletedEntityHandler({
-  action: 'startBusinessKey',
-  ifAnnotation: PROCESS_START_IF,
-  getColumns: (req) => {
-    const target = req.target as Target;
-    const businessKeyCol = getBusinessKeyColumn((target[BUSINESS_KEY] as { '=': string })?.['=']);
-    return businessKeyCol ? [businessKeyCol] : [];
-  },
-});
+  const startMap = new Map<string, EntityRow>();
+  const businessKeyMap = new Map<string, EntityRow>();
 
-function initStartSpecs(target: Target): ProcessStartSpec {
-  const startSpecs: ProcessStartSpec = {
-    id: target[PROCESS_START_ID] as string,
-    on: target[PROCESS_START_ON] as string,
-    inputs: [],
-    conditionExpr: target[PROCESS_START_IF]
-      ? ((target[PROCESS_START_IF] as unknown as { xpr: expr }).xpr as expr)
-      : undefined,
-  };
-  return startSpecs;
+  await Promise.all(
+    startAnnotations.map(async (ann) => {
+      const qualifierKey = ann.qualifier ?? '';
+      const conditionExpr = ann.conditionExpr ? { xpr: ann.conditionExpr } : undefined;
+      const where = buildWhereDeleteExpression(deleteReq, conditionExpr);
+      if (!where) return;
+
+      // Fetch entity data columns for this annotation
+      const columns = getColumnsForDescriptor(ann, target);
+      const selectColumns = columns.length > 0 ? columns : [WILDCARD];
+      const entity = await SELECT.one.from(req.subject).columns(selectColumns).where(where);
+      if (entity) {
+        if (startMap.has(qualifierKey)) {
+          LOG.warn(
+            `Duplicate start annotation qualifier '${qualifierKey}' detected; the previous prefetch will be overwritten.`,
+          );
+        }
+
+        startMap.set(qualifierKey, entity);
+      }
+
+      // Fetch business key separately (to avoid alias collision)
+      const businessKeyColumn = getBusinessKeyColumn(ann.businessKey);
+      if (businessKeyColumn) {
+        const bkEntity = await SELECT.one
+          .from(req.subject)
+          .columns([businessKeyColumn])
+          .where(where);
+        if (bkEntity) {
+          businessKeyMap.set(qualifierKey, bkEntity);
+        }
+      }
+    }),
+  );
+
+  const result: Record<string, Map<string, EntityRow>> = {};
+  if (startMap.size > 0) {
+    result.start = startMap;
+  }
+  if (businessKeyMap.size > 0) {
+    result.startBusinessKey = businessKeyMap;
+  }
+  return result;
 }
 
 /**
@@ -188,8 +228,14 @@ function createRuntimeEntityContext(entity: cds.entity): EntityContext {
   };
 }
 
-function parseInputToTree(target: Target): ProcessStartInput[] {
-  const inputsCSN = target[PROCESS_START_INPUTS] as InputCSNEntry[] | undefined;
+/**
+ * Parses inputs from a raw InputCSNEntry array (from the annotation descriptor)
+ * and builds the input tree against the entity context.
+ */
+function parseInputToTreeFromInputs(
+  inputsCSN: InputCSNEntry[] | undefined,
+  target: Target,
+): ProcessStartInput[] {
   const parsedEntries = parseInputsArray(inputsCSN);
   const runtimeContext = createRuntimeEntityContext(target as cds.entity);
   return buildInputTree(parsedEntries, runtimeContext);

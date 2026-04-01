@@ -7,13 +7,10 @@ import {
   handleProcessSuspend,
   buildAnnotationCache,
   EntityRow,
-  addDeletedEntityToRequestCancel,
-  addDeletedEntityToRequestStart,
-  addDeletedEntityToRequestStartBusinessKey,
-  addDeletedEntityToRequestResume,
-  addDeletedEntityToRequestSuspend,
+  prefetchStartDataForDelete,
   ProcessDeleteRequest,
 } from '../handlers';
+import { prefetchLifecycleDataForDelete } from './processActionHandler';
 
 export function registerAnnotationHandlers(service: cds.Service) {
   if (service instanceof cds.ApplicationService == false) return;
@@ -25,13 +22,17 @@ export function registerAnnotationHandlers(service: cds.Service) {
     const cached = annotationCache.get(cacheKey);
 
     if (!cached) return;
+    const hasStarts = cached.startAnnotations.length > 0;
+    const hasCancels = cached.cancelAnnotations.length > 0;
+    const hasSuspends = cached.suspendAnnotations.length > 0;
+    const hasResumes = cached.resumeAnnotations.length > 0;
+
     const results = await Promise.all(
       [
-        cached.hasStart && addDeletedEntityToRequestStart(req),
-        cached.hasStart && addDeletedEntityToRequestStartBusinessKey(req),
-        cached.hasCancel && addDeletedEntityToRequestCancel(req),
-        cached.hasResume && addDeletedEntityToRequestResume(req),
-        cached.hasSuspend && addDeletedEntityToRequestSuspend(req),
+        hasStarts && prefetchStartDataForDelete(req, cached.startAnnotations),
+        hasCancels && prefetchLifecycleDataForDelete(req, cached.cancelAnnotations, 'cancel'),
+        hasSuspends && prefetchLifecycleDataForDelete(req, cached.suspendAnnotations, 'suspend'),
+        hasResumes && prefetchLifecycleDataForDelete(req, cached.resumeAnnotations, 'resume'),
       ].filter(Boolean),
     );
     (req as ProcessDeleteRequest)._Process = Object.assign({}, ...results);
@@ -58,16 +59,19 @@ async function dispatchProcessHandlers(
   req: cds.Request,
   data: EntityRow,
 ) {
-  if (cached.hasStart) {
-    await handleProcessStart(req, data);
-  }
-  if (cached.hasCancel) {
-    await handleProcessCancel(req, data);
-  }
-  if (cached.hasSuspend) {
-    await handleProcessSuspend(req, data);
-  }
-  if (cached.hasResume) {
-    await handleProcessResume(req, data);
-  }
+  await Promise.all(
+    cached.startAnnotations.map((startAnn) => handleProcessStart(req, data, startAnn)),
+  );
+
+  await Promise.all(
+    cached.cancelAnnotations.map((cancelAnn) => handleProcessCancel(req, data, cancelAnn)),
+  );
+
+  await Promise.all(
+    cached.suspendAnnotations.map((suspendAnn) => handleProcessSuspend(req, data, suspendAnn)),
+  );
+
+  await Promise.all(
+    cached.resumeAnnotations.map((resumeAnn) => handleProcessResume(req, data, resumeAnn)),
+  );
 }
