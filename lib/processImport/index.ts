@@ -105,10 +105,26 @@ async function createApiClient(): Promise<IProcessApiClient> {
         Object.assign(process.env, resolved);
         cdsDk.env = cds.env.for('cds');
       } else if (hasBindings) {
-        // Bindings exist but resolution returned nothing (e.g., not logged in to CF)
-        resolveError = new Error(
-          'Cloud binding resolution failed. Ensure you are logged in to Cloud Foundry (cf login).',
+        // Bindings exist but resolution returned nothing - resolve directly to get the actual error
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const processBinding = Object.entries(cds.env.requires || {}).find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ([, s]: [string, any]) => s?.binding && !s.binding.resolved,
         );
+        if (processBinding) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const [name, service] = processBinding as [string, any];
+          try {
+            const bindType = service.binding.type || 'cf';
+            const cfResolver = resolve(`@sap/cds-dk/lib/bind/${bindType}`);
+            await cfResolver.resolve(name, service.binding);
+          } catch (e) {
+            resolveError = e;
+          }
+        }
+        if (!resolveError) {
+          resolveError = new Error('Cloud binding resolution returned no credentials.');
+        }
       }
       credentials = getServiceCredentials(PROCESS_SERVICE);
     } catch (e) {
