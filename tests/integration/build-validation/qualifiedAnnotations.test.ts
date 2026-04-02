@@ -160,6 +160,33 @@ describe('Build Validation: Qualified lifecycle annotations', () => {
         expect(result.buildSucceeded).toBe(true);
       });
 
+      it('should PASS with qualified annotation using matching qualified businessKey', async () => {
+        const cdsSource = wrapEntity(`
+          ${annotationBase} #special: { on: 'UPDATE' }
+          @bpm.process.businessKey #special: (name)
+          entity QualifiedBizKey${label} { key ID: UUID; name: String; }
+        `);
+
+        const result = await validateModel(cdsSource);
+
+        expect(result.errors).toHaveLength(0);
+        expect(result.buildSucceeded).toBe(true);
+      });
+
+      it('should PASS with qualified annotation falling back to unqualified businessKey', async () => {
+        // No #myq qualified businessKey, so falls back to unqualified
+        const cdsSource = wrapEntity(`
+          ${annotationBase} #myq: { on: 'UPDATE' }
+          @bpm.process.businessKey: (ID)
+          entity FallbackBizKey${label} { key ID: UUID; }
+        `);
+
+        const result = await validateModel(cdsSource);
+
+        expect(result.errors).toHaveLength(0);
+        expect(result.buildSucceeded).toBe(true);
+      });
+
       it('should PASS with mixed unqualified and qualified annotations', async () => {
         const cdsSource = wrapEntity(`
           ${annotationBase}: { on: 'DELETE' }

@@ -168,6 +168,37 @@ describe('Integration tests for multiple lifecycle annotations (cancel/suspend/r
       });
     });
   });
+  // ================================================
+  // Two cancels on DELETE with different business keys
+  // ================================================
+  describe('Two cancels on DELETE with different business keys', () => {
+    it('should trigger both cancels with their respective business keys', async () => {
+      const car = createTestCar();
+
+      await POST('/odata/v4/annotation/MultiCancelDiffBusinessKeys', car);
+      foundMessages = [];
+
+      const response = await DELETE(
+        `/odata/v4/annotation/MultiCancelDiffBusinessKeys('${car.ID}')`,
+      );
+
+      expect(response.status).toBe(204);
+
+      const cancelMsgs = findCancelMessages();
+      expect(cancelMsgs.length).toBe(2);
+
+      // Unqualified cancel: @bpm.process.businessKey: (ID), cascade: true
+      const msg1 = cancelMsgs.find((m: any) => m.data.cascade === true);
+      // Qualified cancel #two: @bpm.process.businessKey#two: (model || '-' || manufacturer), cascade: false
+      const msg2 = cancelMsgs.find((m: any) => m.data.cascade === false);
+
+      expect(msg1).toBeDefined();
+      expect(msg2).toBeDefined();
+
+      expect(msg1!.data.businessKey).toBe(car.ID);
+      expect(msg2!.data.businessKey).toBe(`${car.model}-${car.manufacturer}`);
+    });
+  });
 
   // ================================================
   // Two cancels on DELETE with condition
