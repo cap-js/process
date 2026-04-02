@@ -25,6 +25,8 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await (cds as any).flush();
+  // Wait for background jobs spawned by outbox processing to complete before Jest teardown
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 });
 
 describe('Integration tests for Business Key Length Validation on processStart', () => {

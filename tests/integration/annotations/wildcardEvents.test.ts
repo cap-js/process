@@ -24,6 +24,8 @@ describe('Integration tests for Process Annotations with Wildcard Event (*)', ()
 
   afterAll(async () => {
     await (cds as any).flush();
+    // Wait for background jobs spawned by outbox processing to complete before Jest teardown
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   });
 
   // Helper function to create a test car entity
