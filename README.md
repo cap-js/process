@@ -702,6 +702,8 @@ Validation occurs during `cds build` and produces **errors** (hard failures that
 
 - Unknown annotations under `@bpm.process.start.*` trigger a warning listing allowed annotations
 - If no imported process definition is found for the given `id`, a warning is issued as input validation is skipped
+- If `@bpm.process.businessKey` is not defined on an entity with a valid start annotation (`id` and `on`), a warning is issued and the business key length check is skipped
+- If `@bpm.process.businessKey` is defined but is not a valid CDS expression, a warning is issued and the business key length check is skipped
 
 #### Input Validation (when process definition is found)
 

@@ -10,6 +10,7 @@ import {
   validateRequiredStartAnnotations,
   validateIfAnnotation,
   validateBusinessKeyAnnotation,
+  validateBusinessKeyForProcessStart,
 } from './index';
 import {
   PROCESS_START,
@@ -104,6 +105,9 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       const hasOn = def[annotationOn] !== undefined;
       const hasIf = def[annotationIf] !== undefined;
 
+      const qualifier = extractQualifier(prefix, PROCESS_START);
+      const businessKeyAnnotation = resolveBusinessKeyAnnotation(def, qualifier);
+
       // required fields
       validateRequiredStartAnnotations(hasOn, hasId, entityName, annotationOn, annotationId, this);
 
@@ -119,6 +123,10 @@ export class ProcessValidationPlugin extends BuildPluginBase {
 
       if (hasIf) {
         validateIfAnnotation(def, entityName, annotationIf, this);
+      }
+
+      if (hasId && hasOn) {
+        validateBusinessKeyForProcessStart(def, entityName, businessKeyAnnotation, this);
       }
 
       if (hasId && hasOn && processDef) {

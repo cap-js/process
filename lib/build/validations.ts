@@ -27,6 +27,8 @@ import {
   WARNING_NO_PROCESS_DEFINITION,
   WARNING_INPUT_PATH_NOT_IN_ENTITY,
   ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION,
+  WARNING_BUSINESS_KEY_MUST_BE_EXPRESSION,
+  WARNING_BUSINESS_KEY_NOT_FOUND,
 } from './constants';
 import { EntityContext, ParsedInputEntry } from '../shared/input-parser';
 
@@ -83,6 +85,29 @@ export function validateIfAnnotation(
     buildPlugin.pushMessage(ERROR_IF_MUST_BE_EXPRESSION(entityName, annotationIf), ERROR);
   }
 }
+export function validateBusinessKeyForProcessStart(
+  def: CsnEntity,
+  entityName: string,
+  businessKeyAnnotation: `@${string}`,
+  buildPlugin: ProcessValidationPlugin,
+) {
+  const bKeyExpr = def[businessKeyAnnotation];
+  if (!bKeyExpr) {
+    buildPlugin.pushMessage(
+      WARNING_BUSINESS_KEY_NOT_FOUND(entityName, businessKeyAnnotation),
+      WARNING,
+    );
+    return;
+  }
+  if (!bKeyExpr['='] || (!bKeyExpr['xpr'] && !bKeyExpr['ref'])) {
+    buildPlugin.pushMessage(
+      WARNING_BUSINESS_KEY_MUST_BE_EXPRESSION(entityName, businessKeyAnnotation),
+      WARNING,
+    );
+    return;
+  }
+}
+
 export function validateBusinessKeyAnnotation(
   def: CsnEntity,
   entityName: string,
