@@ -89,19 +89,55 @@ describe('Annotation Approach Hybrid Tests', () => {
 
   it('should start two processes on create', async () => {
     const ID = generateID();
-
-    // CREATE triggers start
-    await POST('/odata/v4/annotation-hybrid/TwoProcessStarts', {
+    // model name should be unique to avoid conflicts with other tests since process Two uses model as businessKey
+    const mockModel = `${ID}-Test Model`;
+    const mock = {
       ID,
-      model: 'Test Model',
+      model: mockModel,
       manufacturer: 'Test Manufacturer',
       mileage: 100,
       year: 2020,
-    });
+    };
 
-    const runningInstances = await waitForInstances(ID, ['RUNNING']);
-    expect(runningInstances.length).toBe(2);
-    expect(runningInstances[0]).toHaveProperty('status', 'RUNNING');
-    expect(runningInstances[1]).toHaveProperty('status', 'RUNNING');
+    // CREATE triggers start
+    await POST('/odata/v4/annotation-hybrid/QualifiedAnnotations', mock);
+
+    let runningInstancesOne = await waitForInstances(mock.ID, ['RUNNING']);
+    expect(runningInstancesOne.length).toBe(1);
+    expect(runningInstancesOne[0]).toHaveProperty('status', 'RUNNING');
+
+    const runningInstancesTwo = await waitForInstances(mock.model, ['RUNNING']);
+    expect(runningInstancesTwo.length).toBe(1);
+    expect(runningInstancesTwo[0]).toHaveProperty('status', 'RUNNING');
+
+    // UPDATE mileage < 800 should suspend process Two
+    await PATCH(`/odata/v4/annotation-hybrid/QualifiedAnnotations('${mock.ID}')`, { mileage: 200 });
+    runningInstancesOne = await waitForInstances(mock.ID, ['RUNNING']);
+    expect(runningInstancesOne.length).toBe(1);
+    expect(runningInstancesOne[0]).toHaveProperty('status', 'RUNNING');
+
+    const suspendedInstancesTwo = await waitForInstances(mock.model, ['SUSPENDED']);
+    expect(suspendedInstancesTwo.length).toBe(1);
+    expect(suspendedInstancesTwo[0]).toHaveProperty('status', 'SUSPENDED');
+
+    // UPDATE mileage >= 800 should resume process Two
+    await PATCH(`/odata/v4/annotation-hybrid/QualifiedAnnotations('${mock.ID}')`, { mileage: 900 });
+    runningInstancesOne = await waitForInstances(mock.ID, ['RUNNING']);
+    expect(runningInstancesOne.length).toBe(1);
+    expect(runningInstancesOne[0]).toHaveProperty('status', 'RUNNING');
+
+    const resumedInstancesTwo = await waitForInstances(mock.model, ['RUNNING']);
+    expect(resumedInstancesTwo.length).toBe(1);
+    expect(resumedInstancesTwo[0]).toHaveProperty('status', 'RUNNING');
+
+    // DELETE should cancel both processes
+    await DELETE(`/odata/v4/annotation-hybrid/QualifiedAnnotations('${mock.ID}')`);
+    const cancelledInstancesOne = await waitForInstances(mock.ID, ['CANCELED']);
+    expect(cancelledInstancesOne.length).toBe(1);
+    expect(cancelledInstancesOne[0]).toHaveProperty('status', 'CANCELED');
+
+    const cancelledInstancesTwo = await waitForInstances(mock.model, ['CANCELED']);
+    expect(cancelledInstancesTwo.length).toBe(1);
+    expect(cancelledInstancesTwo[0]).toHaveProperty('status', 'CANCELED');
   });
 });

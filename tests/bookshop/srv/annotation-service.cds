@@ -1725,6 +1725,25 @@ service AnnotationService {
             year
         }
 
+    // Two start annotations on CREATE with different qualified business keys
+    @bpm.process.start  #one    : {
+        id: 'multiStartBkProcess1',
+        on: 'CREATE',
+    }
+    @bpm.process.start #two     : {
+        id: 'multiStartBkProcess2',
+        on: 'CREATE',
+    }
+    @bpm.process.businessKey #one   : (ID)
+    @bpm.process.businessKey #two: (model || '-' || manufacturer)
+    entity MultiStartDiffBusinessKeys    as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
     // Two start annotations on CREATE, qualified one has an if condition
     @bpm.process.start      : {
         id: 'multiStartIfProcess1',
@@ -1825,6 +1844,26 @@ service AnnotationService {
             year
         }
 
+    // Two cancel annotations on DELETE with different qualified business keys
+    @bpm.process.cancel  #one        : {
+        on     : 'DELETE',
+        cascade: true,
+    }
+    @bpm.process.cancel #two     : {
+        on     : 'DELETE',
+        cascade: false,
+    }
+    @bpm.process.businessKey #one : (ID)
+    @bpm.process.businessKey #two : (model || '-' || manufacturer)
+    entity MultiCancelDiffBusinessKeys   as
+        projection on my.Car {
+            ID,
+            model,
+            manufacturer,
+            mileage,
+            year
+        }
+        
     // Two cancel annotations on DELETE, qualified one has an if condition
     @bpm.process.cancel  #one    : {
         on     : 'DELETE',

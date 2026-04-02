@@ -32,19 +32,37 @@ service AnnotationHybridService {
   }
 
   // Two process starts on create
+  // Process one: cancel on delete, with business Key = ID
+  // Process two: suspend/resume on update, with business key = model
   @bpm.process.start #one      : {
       id: 'eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process',
       on: 'CREATE'
   }
+  @bpm.process.cancel #one: {
+    on: 'DELETE'
+  }
+  // need to set model as input field "id" because process is designed to use input id as businessKey
   @bpm.process.start #two      : {
       id: 'eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process_Two',
       on: 'CREATE',
       inputs: [
-        { path: $self.ID, as: 'id'}
+        { path: $self.model, as: 'id'}
       ]
   }
-  @bpm.process.businessKey: (ID)
-  entity TwoProcessStarts {
+  @bpm.process.suspend #two: {
+    on: 'UPDATE',
+    if: (mileage < 800)
+  }
+  @bpm.process.resume #two: {
+    on: 'UPDATE',
+    if: (mileage >= 800)
+  }
+  @bpm.process.cancel #two: {
+    on: 'DELETE'
+  }
+  @bpm.process.businessKey #one: (ID)
+  @bpm.process.businessKey #two: (model)
+  entity QualifiedAnnotations {
     key ID           : UUID @mandatory;
           model        : String(100);
           manufacturer : String(100);
@@ -52,7 +70,7 @@ service AnnotationHybridService {
           year         : Integer;
   }
 
-  action getInstancesByBusinessKey(ID: UUID,
+  action getInstancesByBusinessKey(ID: String,
                                    status: many String) returns many ProcessInstance;
 
 }
