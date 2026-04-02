@@ -15,6 +15,7 @@ CAP Plugin to interact with SAP Build Process Automation to manage processes.
     - [Multiple Start Annotations](#multiple-start-annotations)
   - [Cancelling, Resuming, or Suspending a Process](#cancelling-resuming-or-suspending-a-process)
     - [Multiple Cancel/Resume/Suspend Annotations](#multiple-cancelresumesuspend-annotations)
+    - [Multiple Business Key Annotations](#multiple-business-key-annotations)
   - [Conditional Execution](#conditional-execution)
   - [Input Mapping](#input-mapping)
 - [Programmatic Approach](#programmatic-approach)
@@ -135,7 +136,7 @@ Both processes are started when a `CREATE` event occurs on the entity, but `noti
 - `@bpm.process.<cancel|resume|suspend>` -- Cancel/Suspend/Resume any processes with the given businessKey
   - `@bpm.process.<cancel|resume|suspend>.on`
   - `@bpm.process.<cancel|resume|suspend>.cascade` -- Boolean (optional, defaults to false)
-- For cancelling, resuming, or suspending, it is required to have a business key expression annotated on the entity using `@bpm.process.businessKey`. If no business key is annotated, the request will be rejected.
+- For cancelling, resuming, or suspending, it is required to have a business key expression annotated on the entity using `@bpm.process.businessKey`. If no business key is annotated, the request will be rejected. When using qualified annotations, a qualified business key (e.g. `@bpm.process.businessKey #one`) is resolved first; if not found, the unqualified `@bpm.process.businessKey` is used as a fallback.
   - Example: `@bpm.process.businessKey: (id || '-' || name)`
 
 Example:
@@ -180,6 +181,52 @@ service MyService {
 
 }
 ```
+
+#### Multiple Business Key Annotations
+
+When using multiple qualified annotations on the same entity, you can define different business key expressions per qualifier using `@bpm.process.businessKey #qualifier`. Each qualified process annotation first looks for a business key with a matching qualifier. If none is found, the unqualified `@bpm.process.businessKey` is used as a fallback.
+
+```cds
+service MyService {
+
+    @bpm.process.cancel #cancelByName : {
+        on: 'DELETE',
+    }
+    @bpm.process.cancel #cancelById : {
+        on: 'UPDATE',
+    }
+    @bpm.process.businessKey #cancelByName : (name)
+    @bpm.process.businessKey #cancelById   : (ID)
+    entity MyEntity {
+        key ID     : UUID;
+            name   : String;
+    };
+
+}
+```
+
+In this example, `@bpm.process.cancel #cancelByName` uses `name` as business key, while `@bpm.process.cancel #cancelById` uses `ID`.
+
+You can also mix qualified and unqualified business keys. Qualified annotations without a matching qualified business key fall back to the unqualified one:
+
+```cds
+service MyService {
+
+    @bpm.process.cancel #one : { on: 'DELETE' }
+    @bpm.process.cancel #two : { on: 'UPDATE' }
+    @bpm.process.businessKey #one : (name)
+    @bpm.process.businessKey      : (ID)
+    entity MyEntity {
+        key ID     : UUID;
+            name   : String;
+    };
+
+}
+```
+
+Here, `#one` uses `name` as its business key, while `#two` falls back to the unqualified `@bpm.process.businessKey` and uses `ID`.
+
+This also applies to `@bpm.process.start`, `@bpm.process.suspend`, and `@bpm.process.resume` annotations.
 
 ### Conditional Execution
 
@@ -661,6 +708,8 @@ Validation occurs during `cds build` and produces **errors** (hard failures that
 
 - Unknown annotations under `@bpm.process.start.*` trigger a warning listing allowed annotations
 - If no imported process definition is found for the given `id`, a warning is issued as input validation is skipped
+- If `@bpm.process.businessKey` is not defined on an entity with a valid start annotation (`id` and `on`), a warning is issued and the business key length check is skipped
+- If `@bpm.process.businessKey` is defined but is not a valid CDS expression, a warning is issued and the business key length check is skipped
 
 #### Input Validation (when process definition is found)
 
@@ -686,7 +735,7 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
   - A bound action defined on the entity
 - `@bpm.process.<cancel|suspend|resume>.cascade` is optional (defaults to false); if provided, must be a boolean
 - `@bpm.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
-- If any annotation with `@bpm.process.<cancel|suspend|resume>` is defined, a valid business key expression must be defined using `@bpm.process.businessKey`.
+- If any annotation with `@bpm.process.<cancel|suspend|resume>` is defined, a valid business key expression must be defined using `@bpm.process.businessKey`. When using qualified annotations (e.g. `@bpm.process.cancel #one`), the validation first checks for a matching qualified business key (`@bpm.process.businessKey #one`), then falls back to the unqualified `@bpm.process.businessKey`.
   - Example: `@bpm.process.businessKey: (id || '-' || name)` would concatenate `id` and `name` with a `-` separator as a business key.
   - The business key definition must match the one configured in the SBPA Process Builder.
 

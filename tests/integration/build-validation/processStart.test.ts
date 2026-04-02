@@ -1,4 +1,9 @@
-import { PROCESS_START, PROCESS_START_ID, PROCESS_START_INPUTS } from '../../../lib/constants';
+import {
+  BUSINESS_KEY,
+  PROCESS_START,
+  PROCESS_START_ID,
+  PROCESS_START_INPUTS,
+} from '../../../lib/constants';
 import { validateModel, withProcessDefinition, wrapEntity } from './helpers';
 
 // Tests additional annotation validation specific for start annotation
@@ -799,6 +804,49 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       expect(result.warnings.some((w) => w.msg.includes('does not exist on the entity'))).toBe(
         false,
       );
+    });
+  });
+
+  describe('BusinessKey annotation for process start', () => {
+    it('should WARN when businessKey annotation is missing on process start entity', async () => {
+      const cdsSource = wrapEntity(`
+                ${PROCESS_START}: { id: 'someProcess', on: 'CREATE' }
+                entity NoBusinessKeyEntity { key ID: UUID; }
+            `);
+
+      const result = await validateModel(cdsSource);
+
+      expect(result.warnings.length).toBeGreaterThan(0);
+      expect(
+        result.warnings.some(
+          (w) =>
+            w.msg.includes(BUSINESS_KEY) &&
+            w.msg.includes('not found for process start') &&
+            w.msg.includes('Length check will be skipped'),
+        ),
+      ).toBe(true);
+      expect(result.buildSucceeded).toBe(true);
+    });
+
+    it('should WARN when businessKey annotation is not a valid expression', async () => {
+      const cdsSource = wrapEntity(`
+                ${PROCESS_START}: { id: 'someProcess', on: 'CREATE' }
+                ${BUSINESS_KEY}: 'notAnExpression'
+                entity InvalidBusinessKeyEntity { key ID: UUID; }
+            `);
+
+      const result = await validateModel(cdsSource);
+
+      expect(result.warnings.length).toBeGreaterThan(0);
+      expect(
+        result.warnings.some(
+          (w) =>
+            w.msg.includes(BUSINESS_KEY) &&
+            w.msg.includes('must be a valid expression') &&
+            w.msg.includes('Length check will be skipped'),
+        ),
+      ).toBe(true);
+      expect(result.buildSucceeded).toBe(true);
     });
   });
 });

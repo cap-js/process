@@ -10,6 +10,7 @@ import {
   validateRequiredStartAnnotations,
   validateIfAnnotation,
   validateBusinessKeyAnnotation,
+  validateBusinessKeyForProcessStart,
 } from './index';
 import {
   PROCESS_START,
@@ -21,11 +22,14 @@ import {
   SUFFIX_ON,
   SUFFIX_IF,
   SUFFIX_INPUTS,
-  BUSINESS_KEY,
   SUFFIX_CASCADE,
 } from '../constants';
 import { CsnDefinition, CsnEntity } from '../types/csn-extensions';
-import { getAnnotationPrefixes } from '../shared/annotations-helper';
+import {
+  extractQualifier,
+  getAnnotationPrefixes,
+  resolveBusinessKeyAnnotation,
+} from '../shared/annotations-helper';
 
 const LOG = cds.log('process-build');
 
@@ -101,6 +105,9 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       const hasOn = def[annotationOn] !== undefined;
       const hasIf = def[annotationIf] !== undefined;
 
+      const qualifier = extractQualifier(prefix, PROCESS_START);
+      const businessKeyAnnotation = resolveBusinessKeyAnnotation(def, qualifier);
+
       // required fields
       validateRequiredStartAnnotations(hasOn, hasId, entityName, annotationOn, annotationId, this);
 
@@ -116,6 +123,10 @@ export class ProcessValidationPlugin extends BuildPluginBase {
 
       if (hasIf) {
         validateIfAnnotation(def, entityName, annotationIf, this);
+      }
+
+      if (hasId && hasOn) {
+        validateBusinessKeyForProcessStart(def, entityName, businessKeyAnnotation, this);
       }
 
       if (hasId && hasOn && processDef) {
@@ -155,7 +166,10 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       const hasOn = def[annotationOn] !== undefined;
       const hasCascade = def[annotationCascade] !== undefined;
       const hasIf = def[annotationIf] !== undefined;
-      const hasBusinessKey = def[BUSINESS_KEY] !== undefined;
+
+      const qualifier = extractQualifier(prefix, annotationBase);
+      const businessKeyAnnotation = resolveBusinessKeyAnnotation(def, qualifier);
+      const hasBusinessKey = def[businessKeyAnnotation] !== undefined;
 
       // required fields - .on is required if any annotation with this prefix is defined
       validateRequiredGenericAnnotations(
@@ -180,7 +194,7 @@ export class ProcessValidationPlugin extends BuildPluginBase {
       }
 
       if (hasOn && hasBusinessKey) {
-        validateBusinessKeyAnnotation(def, entityName, this);
+        validateBusinessKeyAnnotation(def, entityName, businessKeyAnnotation, this);
       }
     }
   }

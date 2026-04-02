@@ -12,6 +12,7 @@
 - Allowing the import of downloaded process models
 - Support for multiple start annotations on the same entity using qualifier
 - Support for multiple resume, cancel, and suspend annotations on the same entity using qualifier
+- Support for multiple businessKey annotations on the same entity using qualifier
 
 ## Version 0.1.1 - 2026-03-27
 
