@@ -61,7 +61,7 @@ service AnnotationHybridService {
     on: 'DELETE'
   }
   @bpm.process.businessKey #one: (ID)
-  @bpm.process.businessKey: (model)
+  @bpm.process.businessKey #two: (model)
   entity QualifiedAnnotations {
     key ID           : UUID @mandatory;
           model        : String(100);

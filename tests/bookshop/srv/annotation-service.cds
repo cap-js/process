@@ -1734,8 +1734,8 @@ service AnnotationService {
         id: 'multiStartBkProcess2',
         on: 'CREATE',
     }
-    @bpm.process.businessKey    : (ID)
-    @bpm.process.businessKey#two: (model || '-' || manufacturer)
+    @bpm.process.businessKey #one   : (ID)
+    @bpm.process.businessKey #two: (model || '-' || manufacturer)
     entity MultiStartDiffBusinessKeys    as
         projection on my.Car {
             ID,
@@ -1845,7 +1845,7 @@ service AnnotationService {
         }
 
     // Two cancel annotations on DELETE with different qualified business keys
-    @bpm.process.cancel          : {
+    @bpm.process.cancel  #one        : {
         on     : 'DELETE',
         cascade: true,
     }
@@ -1853,8 +1853,8 @@ service AnnotationService {
         on     : 'DELETE',
         cascade: false,
     }
-    @bpm.process.businessKey     : (ID)
-    @bpm.process.businessKey#two : (model || '-' || manufacturer)
+    @bpm.process.businessKey #one : (ID)
+    @bpm.process.businessKey #two : (model || '-' || manufacturer)
     entity MultiCancelDiffBusinessKeys   as
         projection on my.Car {
             ID,
