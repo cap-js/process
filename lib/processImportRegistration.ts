@@ -1,6 +1,12 @@
 import cds from '@sap/cds';
 import { importProcess } from './processImport';
 
+interface ImportOptions {
+  name?: string;
+  file?: string;
+  saveProcessHeader?: boolean;
+}
+
 export function registerProcessImport() {
   // @ts-expect-error: import does not exist on cds type
   cds.import ??= {};
@@ -17,5 +23,9 @@ export function registerProcessImport() {
   // @ts-expect-error: process does not exist on cds.import type
   cds.import.from ??= {};
   // @ts-expect-error: from does not exist on cds.import type
-  cds.import.from.process = importProcess;
+  cds.import.from.process = (jsonFile: string, options: ImportOptions = {}) => {
+    // When called via CLI, always save the ProcessHeader JSON
+    options.saveProcessHeader = true;
+    return importProcess(jsonFile, options);
+  };
 }
