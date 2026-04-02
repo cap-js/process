@@ -41,11 +41,12 @@ service AnnotationHybridService {
   @bpm.process.cancel #one: {
     on: 'DELETE'
   }
+  // need to set model as input field "id" because process is designed to use input id as businessKey
   @bpm.process.start #two      : {
       id: 'eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process_Two',
       on: 'CREATE',
       inputs: [
-        { path: $self.ID, as: 'id'}
+        { path: $self.model, as: 'id'}
       ]
   }
   @bpm.process.suspend #two: {
