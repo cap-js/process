@@ -24,6 +24,8 @@ describe('Integration tests for multiple process events on DELETE', () => {
 
   afterAll(async () => {
     await (cds as any).flush();
+    // Wait for background jobs spawned by outbox processing to complete before Jest teardown
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   });
 
   const createTestCar = ({ id, mileage = 100 }: { id?: string; mileage?: number } = {}) => ({

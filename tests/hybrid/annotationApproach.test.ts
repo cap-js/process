@@ -32,6 +32,12 @@ describe('Annotation Approach Hybrid Tests', () => {
     );
   }
 
+  afterAll(async () => {
+    await (cds as any).flush();
+    // Wait for background jobs spawned by outbox processing to complete before Jest teardown
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+  });
+
   it('should go through start -> suspend -> resume and end up RUNNING', async () => {
     const ID = generateID();
 
