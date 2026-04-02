@@ -1,10 +1,9 @@
 {
   "uid": "0fc541c5-5266-458e-801a-9fe7fbfc32e5",
   "name": "ImportProcess_Simple_Inputs",
-  "description": "",
+  "identifier": "importProcess_Simple_Inputs",
   "type": "bpi.process",
-  "createdAt": "2026-03-18T10:22:42.550371Z",
-  "updatedAt": "2026-03-18T10:25:09.164955Z",
+  "projectId": "eu12.cdsmunich.capprocesspluginhybridtest",
   "header": {
     "inputs": {
       "title": "inputs",
@@ -13,23 +12,28 @@
       "definitions": {
         "date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "title": "date"
         },
         "dateTime": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "title": "dateTime"
         },
         "password": {
           "type": "string",
-          "password": true
+          "password": true,
+          "title": "password"
         },
         "time": {
           "type": "string",
-          "format": "time"
+          "format": "time",
+          "title": "time"
         },
         "documentFolder": {
           "type": "string",
-          "format": "document-folder"
+          "format": "document-folder",
+          "title": "documentFolder"
         }
       },
       "properties": {
@@ -49,17 +53,20 @@
           "description": ""
         },
         "date": {
-          "$ref": "#/definitions/date",
+          "type": "string",
+          "format": "date",
           "title": "Date",
           "description": ""
         },
         "datetime": {
-          "$ref": "#/definitions/dateTime",
+          "type": "string",
+          "format": "date-time",
           "title": "DateTime",
           "description": ""
         },
         "documentfolder": {
-          "$ref": "#/definitions/documentFolder",
+          "type": "string",
+          "format": "document-folder",
           "title": "DocumentFolder",
           "description": ""
         }
@@ -80,14 +87,9 @@
       "properties": {}
     },
     "processAttributes": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "processAttributes",
       "type": "object",
       "properties": {},
       "required": []
     }
-  },
-  "identifier": "importProcess_Simple_Inputs",
-  "valid": true,
-  "projectId": "eu12.cdsmunich.capprocesspluginhybridtest"
+  }
 }
