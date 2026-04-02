@@ -70,7 +70,7 @@ service AnnotationHybridService {
           year         : Integer;
   }
 
-  action getInstancesByBusinessKey(ID: UUID,
+  action getInstancesByBusinessKey(ID: String,
                                    status: many String) returns many ProcessInstance;
 
 }

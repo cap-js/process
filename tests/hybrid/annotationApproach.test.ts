@@ -89,9 +89,11 @@ describe('Annotation Approach Hybrid Tests', () => {
 
   it('should start two processes on create', async () => {
     const ID = generateID();
+    // model name should be unique to avoid conflicts with other tests since process Two uses model as businessKey
+    const mockModel = `${ID}-Test Model`;
     const mock = {
       ID,
-      model: 'Test Model',
+      model: mockModel,
       manufacturer: 'Test Manufacturer',
       mileage: 100,
       year: 2020,
