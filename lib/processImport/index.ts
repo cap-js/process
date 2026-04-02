@@ -82,6 +82,7 @@ async function fetchAndSaveProcessDefinition(processName: string): Promise<Fetch
 async function createApiClient(): Promise<IProcessApiClient> {
   let credentials = getServiceCredentials(PROCESS_SERVICE);
 
+  let resolveError: unknown;
   if (!credentials) {
     // Try to resolve cloud bindings automatically (same as cds bind --exec does)
     // REVISIT: once merged in core
@@ -92,18 +93,51 @@ async function createApiClient(): Promise<IProcessApiClient> {
       const { env: bindingEnv } = resolve('@sap/cds-dk/lib/bind/shared');
       process.env.CDS_ENV ??= 'hybrid';
       cdsDk.env = cds.env.for('cds');
-      Object.assign(process.env, await bindingEnv());
-      cdsDk.env = cds.env.for('cds');
+
+      // Check if there are configured bindings before attempting resolution
+      const hasBindings = Object.values(cds.env.requires || {}).some(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (s: any) => s?.binding && !s.binding.resolved,
+      );
+
+      const resolved = await bindingEnv();
+      if (resolved) {
+        Object.assign(process.env, resolved);
+        cdsDk.env = cds.env.for('cds');
+      } else if (hasBindings) {
+        // Bindings exist but resolution returned nothing - resolve directly to get the actual error
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const processBinding = Object.entries(cds.env.requires || {}).find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ([, s]: [string, any]) => s?.binding && !s.binding.resolved,
+        );
+        if (processBinding) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const [name, service] = processBinding as [string, any];
+          try {
+            const bindType = service.binding.type || 'cf';
+            const cfResolver = resolve(`@sap/cds-dk/lib/bind/${bindType}`);
+            await cfResolver.resolve(name, service.binding);
+          } catch (e) {
+            resolveError = e;
+          }
+        }
+        if (!resolveError) {
+          resolveError = new Error('Cloud binding resolution returned no credentials.');
+        }
+      }
       credentials = getServiceCredentials(PROCESS_SERVICE);
     } catch (e) {
-      LOG.debug('Auto-resolve bindings failed:', e);
+      resolveError = e;
     }
   }
 
   if (!credentials) {
-    throw new Error(
-      'No ProcessService credentials found. Ensure you have bound a process service instance (e.g., via cds bind process -2 <instance>).',
-    );
+    const baseMsg = 'No ProcessService credentials found.';
+    const hint = resolveError
+      ? `${resolveError instanceof Error ? resolveError.message : resolveError}`
+      : 'Ensure you have bound a process service instance (e.g., via cds bind ProcessService -2 <instance>).';
+    throw new Error(`${baseMsg} ${hint}`);
   }
 
   const apiUrl = credentials.endpoints?.api;
