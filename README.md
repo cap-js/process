@@ -66,7 +66,7 @@ The plugin allows you to import existing SBPA processes as CDS services. To do s
 Imported processes ensure type safety and enable build-time validation.
 
 ```
-cds import --from process --name <Process_ID>
+cds import --from process --name <process_definition_id>
 ```
 
 ## Annotations
