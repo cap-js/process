@@ -64,7 +64,7 @@ You can have a look at the sample in [Status management](./tests/sample/status-m
 
 ### Binding against SAP Build Process Automation Instance
 
-To connect to a real SAP Build Process Automation instance, login to Cloud Foundry:
+Make sure you have created a service instance according to the [documentation](https://help.sap.com/docs/build-process-automation/sap-build-process-automation/create-service-instance). To connect to a real SAP Build Process Automation instance, login to Cloud Foundry:
 
 ```
 cf login --sso
@@ -75,6 +75,9 @@ Bind to a ProcessService instance:
 ```
 cds bind ProcessService -2 <service-instance>
 ```
+
+>[!WARNING]
+> Currently, it is only possible to invoke processes deployed to the environment `Public`. Other environments are not yet supported. Make sure to deploy your processes to the `Public` environment in SAP Build Process Automation.
 
 ### Importing Processes as a Service
 
