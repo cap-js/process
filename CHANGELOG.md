@@ -4,6 +4,12 @@
 - The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - This project adheres to [Semantic Versioning](https://semver.org/).
 
+## Version 0.2.1 - 2026-04-20
+
+### Fixed
+
+- Resolving of `impl` for `ProcessService`
+
 ## Version 0.2.0 - 2026-04-02
 
 ### Added
