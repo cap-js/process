@@ -4,11 +4,9 @@
 
 CAP Plugin to interact with SAP Build Process Automation to manage processes.
 
-## Table of Contents
-
 - [Setup](#setup)
   - [Quickstart](#quickstart)
-  - [Binding against SBPA Instance](#binding-against-sbpa-instance)
+  - [Binding against SAP Build Process Automation Instance](#binding-against-sap-build-process-automation-instance)
   - [Importing Processes as a Service](#importing-processes-as-a-service)
 - [Annotations](#annotations)
   - [Starting a Process](#starting-a-process)
@@ -18,15 +16,33 @@ CAP Plugin to interact with SAP Build Process Automation to manage processes.
     - [Multiple Business Key Annotations](#multiple-business-key-annotations)
   - [Conditional Execution](#conditional-execution)
   - [Input Mapping](#input-mapping)
+    - [No `inputs` Array (Default Behavior)](#no-inputs-array-default-behavior)
+    - [Simple Field Selection](#simple-field-selection)
+    - [Wildcard: All Scalar Fields (`$self`)](#wildcard-all-scalar-fields-self)
+    - [Field Aliasing](#field-aliasing)
+    - [Compositions and Associations](#compositions-and-associations)
+    - [Deep Paths (Cyclic Relationships)](#deep-paths-cyclic-relationships)
 - [Programmatic Approach](#programmatic-approach)
   - [Specific Process Services](#specific-process-services)
+    - [Importing a Service](#importing-a-service)
+      - [From downloaded model](#from-downloaded-model)
+      - [From SAP Build Process Automation (Remote Import)](#from-sap-build-process-automation-remote-import)
+    - [What Gets Generated](#what-gets-generated)
+    - [Starting a Process](#starting-a-process)
+    - [Suspending, Resuming, and Cancelling a Process](#suspending-resuming-and-cancelling-a-process)
+    - [Querying Process Instances](#querying-process-instances)
+    - [Limitations](#limitations)
   - [Generic ProcessService](#generic-processservice)
+    - [Service Definition](#service-definition)
+    - [Usage](#usage)
 - [Build-Time Validation](#build-time-validation)
   - [Process Start](#process-start)
+    - [Required Annotations (Errors)](#required-annotations-errors)
+    - [Warnings](#warnings)
+    - [Input Validation (when process definition is found)](#input-validation-when-process-definition-is-found)
   - [Process Cancel/Suspend/Resume](#process-cancelsuspendresume)
-- [Running the Sample](#running-the-sample)
-  - [Running the Bookshop Example](#running-the-bookshop-example)
-  - [Troubleshooting](#troubleshooting)
+    - [Required Annotations (Errors) for Cancel/Suspend/Resume](#required-annotations-errors-for-cancelsuspendresume)
+    - [Warnings for Cancel/Suspend/Resume](#warnings-for-cancelsuspendresume)
 - [Support, Feedback, Contributing](#support-feedback-contributing)
 - [Security / Disclosure](#security--disclosure)
 - [Code of Conduct](#code-of-conduct)
@@ -42,13 +58,13 @@ To add the plugin to your CAP Node.js application, run:
 npm add @cap-js/process
 ```
 
-That's it — the annotation and programmatic approaches against the generic ProcessService work without any bindings against SBPA. No process import is required to get started.
+That's it — the annotation and programmatic approaches against the generic ProcessService work without any bindings against SAP Build Process Automation. No process import is required to get started.
 
 You can have a look at the sample in [Status management](./tests/sample/status-management/README.md), or you can jump directly to the documentation of either [Annotations](#annotations) or the [Programmatic Approach](#programmatic-approach).
 
-### Binding against SBPA Instance
+### Binding against SAP Build Process Automation Instance
 
-To connect to a real SBPA instance, login to Cloud Foundry:
+Make sure you have created a service instance according to the [documentation](https://help.sap.com/docs/build-process-automation/sap-build-process-automation/create-service-instance). To connect to a real SAP Build Process Automation instance, login to Cloud Foundry:
 
 ```
 cf login --sso
@@ -57,12 +73,15 @@ cf login --sso
 Bind to a ProcessService instance:
 
 ```
-cds bind ProcessService -2 <sbpa-service-instance>
+cds bind ProcessService -2 <service-instance>
 ```
+
+> [!INFO]]
+> By default, the plugin looks for process definitions in the `Public` environment of SAP Build Process Automation. If you want to use a different environment, create your service instance with the `environmentId` parameter, as explained [here](https://help.sap.com/docs/build-process-automation/sap-build-process-automation/create-service-instance).
 
 ### Importing Processes as a Service
 
-The plugin allows you to import existing SBPA processes as CDS services. To do so, you first need to bind against an existing SBPA instance.
+The plugin allows you to import existing SAP Build Process Automation processes as CDS services. To do so, you first need to bind against an existing SAP Build Process Automation instance.
 Imported processes ensure type safety and enable build-time validation.
 
 ```
@@ -76,7 +95,7 @@ cds import --from process --name <process_definition_id>
 - `@bpm.process.start.id` -- definition ID for deployed process
 - `@bpm.process.start.on` -- event on which the process should be started (CRUD operation or custom bound action)
 - `@bpm.process.start.inputs` -- Array of input mappings that control which entity fields are passed as process context (optional)
-- If a `businessKey` is annotated on the entity using `@bpm.process.businessKey`, it will be evaluated at process start. If the length of the business key exceeds SBPA's character limit of 255, the request will be rejected, as process start will fail in that case.
+- If a `businessKey` is annotated on the entity using `@bpm.process.businessKey`, it will be evaluated at process start. If the length of the business key exceeds SAP Build Process Automation's character limit of 255, the request will be rejected, as process start will fail in that case.
 
 ```cds
 service MyService {
@@ -111,11 +130,11 @@ To start multiple processes from the same entity, use CDS qualifiers (`#qualifie
 service MyService {
 
     @bpm.process.start #orderProcess : {
-        id: 'orderProcess',
+        id: 'eu12.myorg.myproject.orderProcess',
         on: 'CREATE',
     }
     @bpm.process.start #notificationProcess : {
-        id: 'notificationProcess',
+        id: 'eu12.myorg.myproject.notificationProcess',
         on: 'CREATE',
         if: (field3 > 10)
     }
@@ -240,7 +259,7 @@ Examples:
 ```cds
 // Only start the process if the order status is 'approved'
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'UPDATE',
     if: (status = 'approved')
 }
@@ -262,7 +281,7 @@ When `inputs` is not specified, **all direct attributes** of the entity are fetc
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE'
 }
 entity Orders {
@@ -281,7 +300,7 @@ Use `$self.fieldName` to include specific fields.
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
@@ -302,7 +321,7 @@ Use `$self` alone (without a field name) to include **all scalar fields** of the
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self,         // All scalar fields: ID, status, shipmentDate, totalValue
@@ -327,7 +346,7 @@ Use `{ path: $self.fieldName, as: 'TargetName' }` to rename fields for the proce
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
@@ -349,7 +368,7 @@ When you include a composition without specifying any nested fields (e.g., `$sel
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
@@ -377,7 +396,7 @@ When you specify nested field paths like `$self.items.ID` or `$self.items.produc
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
@@ -404,7 +423,7 @@ entity OrderItems {
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
@@ -431,7 +450,7 @@ You can combine wildcard expansion (`$self` or `$self.items`) with specific fiel
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self,                                // All scalar fields: ID, status, total
@@ -468,7 +487,7 @@ For entities with cyclic relationships, explicit deep paths let you control exac
 
 ```cds
 @bpm.process.start: {
-    id: 'shipmentProcess',
+    id: 'eu12.myorg.myproject.shipmentProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
@@ -490,26 +509,26 @@ entity ShipmentItems {
 
 ## Programmatic Approach
 
-The plugin provides two ways to interact with SBPA processes programmatically:
+The plugin provides two ways to interact with SAP Build Process Automation processes programmatically:
 
 1. **Specific ProcessService** -- Provides a process specific abstraction on the process as a CAP service.
-2. **Generic ProcessService** -- Provides a generic abstraction on the [SBPA workflow api](https://api.sap.com/api/SPA_Workflow_Runtime/overview) as a CAP service.
+2. **Generic ProcessService** -- Provides a generic abstraction on the [SAP Build Process Automation workflow api](https://api.sap.com/api/SPA_Workflow_Runtime/overview) as a CAP service.
 
-The approaches work only in hybrid mode (against a real SBPA instance), and in production. For getAttributes and getOutputs, it is currently not possible to get the real attributes as in a running process.
+The approaches work only in hybrid mode (against a real SAP Build Process Automation instance), and in production. For getAttributes and getOutputs, it is currently not possible to get the real attributes as in a running process.
 For the lifecycle operations, the generic ProcessService allows you to set a business key in the header, which can then be used to execute the lifecycle operations in the local environment.
 The specific ProcessService does not work locally in the current state of the plugin.
 
 ### Specific Process Services
 
-For full type safety and build-time validation, you can import a specific SBPA process. This generates a typed CDS service with input/output types derived from the process definition.
+For full type safety and build-time validation, you can import a specific SAP Build Process Automation process. This generates a typed CDS service with input/output types derived from the process definition.
 
 #### Importing a Service
 
-To import a process, you have two different options to import: First via the download of the model from you SBPA instance, or via a direct import from SBPA where you need a bound SBPA instance to your CAP Application (i.e. `cds bind`).
+To import a process, you have two different options to import: First via the download of the model from your SAP Build Process Automation instance, or via a direct import from SAP Build Process Automation where you need a bound SAP Build Process Automation instance to your CAP Application (i.e. `cds bind`).
 
 ##### From downloaded model
 
-Go to your SBPA instance > Control Tower > Environments > Select your environment where the process is deployed > Processes and Workflows > Select your process > Click on the "Download Model" button.
+Go to your SAP Build Process Automation instance > Control Tower > Environments > Select your environment where the process is deployed > Processes and Workflows > Select your process > Click on the "Download Model" button.
 
 ```bash
 cds import --from process ~/Downloads/<your-process>.json
@@ -520,9 +539,9 @@ This will create:
 - A new CDS service in `./srv/external/{projectId}.{processIdentifier}.cds` with the process definition used for build-time validation and the typed programmatic API
 - A converted ProcessHeader JSON file in `./srv/workflows/{projectId}.{processIdentifier}.json` for future re-imports
 
-##### From SBPA (Remote Import)
+##### From SAP Build Process Automation (Remote Import)
 
-Import your SBPA process directly from SBPA.
+Import your SAP Build Process Automation process directly from SAP Build Process Automation.
 
 **Note:** For this kind of imports, you must have ProcessService credentials bound. `cds import --from process` will resolve the credentials.
 
@@ -617,7 +636,7 @@ If no status filter is provided, all statuses except `CANCELLED` are returned.
 ### Generic ProcessService
 
 The generic `ProcessService` is a built-in CDS service that ships with the plugin. It provides low-level events and functions for managing workflow instances without requiring any process imports. This is useful for quick prototyping, dynamic process management, or cases where type safety is not needed.
-The generic `ProcessService` allows setting the business key to mimic the behavior of the real SBPA workflow. The business key in the header is only used when the application runs locally, so to avoid issues, the business key should be built the same way as in the actual process.
+The generic `ProcessService` allows setting the business key to mimic the behavior of the real SAP Build Process Automation workflow. The business key in the header is only used when the application runs locally, so to avoid issues, the business key should be built the same way as in the actual process.
 
 #### Service Definition
 
@@ -728,7 +747,7 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
 
 ### Process Cancel/Suspend/Resume
 
-#### Required Annotations (Errors)
+#### Required Annotations (Errors) for Cancel/Suspend/Resume
 
 - `@bpm.process.<cancel|suspend|resume>.on` is required for cancel/suspend/resume operations and must be a string representing either:
   - A CRUD operation: `CREATE`, `READ`, `UPDATE`, or `DELETE`
@@ -737,9 +756,9 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
 - `@bpm.process.<cancel|suspend|resume>.if` must be a valid CDS expression (if present)
 - If any annotation with `@bpm.process.<cancel|suspend|resume>` is defined, a valid business key expression must be defined using `@bpm.process.businessKey`. When using qualified annotations (e.g. `@bpm.process.cancel #one`), the validation first checks for a matching qualified business key (`@bpm.process.businessKey #one`), then falls back to the unqualified `@bpm.process.businessKey`.
   - Example: `@bpm.process.businessKey: (id || '-' || name)` would concatenate `id` and `name` with a `-` separator as a business key.
-  - The business key definition must match the one configured in the SBPA Process Builder.
+  - The business key definition must match the one configured in the SAP Build Process Automation Process Builder.
 
-#### Warnings
+#### Warnings for Cancel/Suspend/Resume
 
 - Unknown annotations under `@bpm.process.<cancel|suspend|resume>.*` trigger a warning listing allowed annotations
 
