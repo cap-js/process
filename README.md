@@ -41,10 +41,10 @@ CAP Plugin to interact with SAP Build Process Automation to manage processes.
     - [Warnings](#warnings)
     - [Input Validation (when process definition is found)](#input-validation-when-process-definition-is-found)
   - [Process Cancel/Suspend/Resume](#process-cancelsuspendresume)
-    - [Required Annotations (Errors)](#required-annotations-errors)
-    - [Warnings](#warnings)
+    - [Required Annotations (Errors) for Cancel/Suspend/Resume](#required-annotations-errors-for-cancelsuspendresume)
+    - [Warnings for Cancel/Suspend/Resume](#warnings-for-cancelsuspendresume)
 - [Support, Feedback, Contributing](#support-feedback-contributing)
-- [Security / Disclosure](#security-disclosure)
+- [Security / Disclosure](#security--disclosure)
 - [Code of Conduct](#code-of-conduct)
 - [Licensing](#licensing)
 
@@ -747,7 +747,7 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
 
 ### Process Cancel/Suspend/Resume
 
-#### Required Annotations (Errors)
+#### Required Annotations (Errors) for Cancel/Suspend/Resume
 
 - `@bpm.process.<cancel|suspend|resume>.on` is required for cancel/suspend/resume operations and must be a string representing either:
   - A CRUD operation: `CREATE`, `READ`, `UPDATE`, or `DELETE`
@@ -758,7 +758,7 @@ When both `@bpm.process.start.id` and `@bpm.process.start.on` are present and th
   - Example: `@bpm.process.businessKey: (id || '-' || name)` would concatenate `id` and `name` with a `-` separator as a business key.
   - The business key definition must match the one configured in the SAP Build Process Automation Process Builder.
 
-#### Warnings
+#### Warnings for Cancel/Suspend/Resume
 
 - Unknown annotations under `@bpm.process.<cancel|suspend|resume>.*` trigger a warning listing allowed annotations
 
