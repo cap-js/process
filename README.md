@@ -76,7 +76,7 @@ Bind to a ProcessService instance:
 cds bind ProcessService -2 <service-instance>
 ```
 
->[!WARNING]
+> [!WARNING]
 > Currently, it is only possible to invoke processes deployed to the environment `Public`. Other environments are not yet supported. Make sure to deploy your processes to the `Public` environment in SAP Build Process Automation.
 
 ### Importing Processes as a Service
