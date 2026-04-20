@@ -1,6 +1,6 @@
 {
   "name": "@cap-js/process",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "CAP Plugin to interact with SAP Build Process Automation to manage processes.",
   "main": "cds-plugin.js",
   "files": [
