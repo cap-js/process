@@ -77,10 +77,12 @@
       "kinds": {
         "local-process-service": {
           "model": "@cap-js/process/srv/localProcessService",
+          "impl": "@cap-js/process/srv/localProcessService",
           "outbox": true
         },
         "deployed-process-service": {
           "model": "@cap-js/process/srv/BTPProcessService",
+          "impl": "@cap-js/process/srv/BTPProcessService",
           "outbox": true,
           "vcap": {
             "tag": "process"
