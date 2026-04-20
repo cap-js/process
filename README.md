@@ -130,11 +130,11 @@ To start multiple processes from the same entity, use CDS qualifiers (`#qualifie
 service MyService {
 
     @bpm.process.start #orderProcess : {
-        id: 'orderProcess',
+        id: 'eu12.myorg.myproject.orderProcess',
         on: 'CREATE',
     }
     @bpm.process.start #notificationProcess : {
-        id: 'notificationProcess',
+        id: 'eu12.myorg.myproject.notificationProcess',
         on: 'CREATE',
         if: (field3 > 10)
     }
@@ -259,7 +259,7 @@ Examples:
 ```cds
 // Only start the process if the order status is 'approved'
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'UPDATE',
     if: (status = 'approved')
 }
@@ -281,7 +281,7 @@ When `inputs` is not specified, **all direct attributes** of the entity are fetc
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE'
 }
 entity Orders {
@@ -300,7 +300,7 @@ Use `$self.fieldName` to include specific fields.
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
@@ -321,7 +321,7 @@ Use `$self` alone (without a field name) to include **all scalar fields** of the
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self,         // All scalar fields: ID, status, shipmentDate, totalValue
@@ -346,7 +346,7 @@ Use `{ path: $self.fieldName, as: 'TargetName' }` to rename fields for the proce
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
@@ -368,7 +368,7 @@ When you include a composition without specifying any nested fields (e.g., `$sel
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
@@ -396,7 +396,7 @@ When you specify nested field paths like `$self.items.ID` or `$self.items.produc
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
@@ -423,7 +423,7 @@ entity OrderItems {
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
@@ -450,7 +450,7 @@ You can combine wildcard expansion (`$self` or `$self.items`) with specific fiel
 
 ```cds
 @bpm.process.start: {
-    id: 'orderProcess',
+    id: 'eu12.myorg.myproject.orderProcess',
     on: 'CREATE',
     inputs: [
         $self,                                // All scalar fields: ID, status, total
@@ -487,7 +487,7 @@ For entities with cyclic relationships, explicit deep paths let you control exac
 
 ```cds
 @bpm.process.start: {
-    id: 'shipmentProcess',
+    id: 'eu12.myorg.myproject.shipmentProcess',
     on: 'CREATE',
     inputs: [
         $self.ID,
