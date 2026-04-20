@@ -76,7 +76,7 @@ Bind to a ProcessService instance:
 cds bind ProcessService -2 <service-instance>
 ```
 
-> [!WARNING]
+> [!INFO]]
 > By default, the plugin looks for process definitions in the `Public` environment of SAP Build Process Automation. If you want to use a different environment, create your service instance with the `environmentId` parameter, as explained [here](https://help.sap.com/docs/build-process-automation/sap-build-process-automation/create-service-instance).
 
 ### Importing Processes as a Service
