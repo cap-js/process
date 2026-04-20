@@ -524,7 +524,7 @@ For full type safety and build-time validation, you can import a specific SAP Bu
 
 #### Importing a Service
 
-To import a process, you have two different options to import: First via the download of the model from you SAP Build Process Automation instance, or via a direct import from SAP Build Process Automation where you need a bound SAP Build Process Automation instance to your CAP Application (i.e. `cds bind`).
+To import a process, you have two different options to import: First via the download of the model from your SAP Build Process Automation instance, or via a direct import from SAP Build Process Automation where you need a bound SAP Build Process Automation instance to your CAP Application (i.e. `cds bind`).
 
 ##### From downloaded model
 
