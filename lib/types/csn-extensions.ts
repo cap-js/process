@@ -22,7 +22,7 @@ export enum CdsBuiltinType {
   UInt32 = 'cds.UInt32',
   Integer64 = 'cds.Integer64',
   Decimal = 'cds.Decimal',
-  DecimalFloat = 'cds.DecimalFloat',
+  DecimalFloat = 'cds.Double',
   Double = 'cds.Double',
   Date = 'cds.Date',
   Time = 'cds.Time',

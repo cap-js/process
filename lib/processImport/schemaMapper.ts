@@ -61,7 +61,7 @@ function resolvePrimitiveOrRef(
     case 'boolean':
       return csn.CdsBuiltinType.Boolean;
     case 'number':
-      return csn.CdsBuiltinType.DecimalFloat;
+      return csn.CdsBuiltinType.Double;
     case 'integer':
       return csn.CdsBuiltinType.Integer;
     default:
