@@ -11,7 +11,7 @@
   ],
   "devDependencies": {
     "@cap-js/sqlite": "^2.1.1",
-    "cds-plugin-ui5": "^0.13.0"
+    "cds-plugin-ui5": "^0.17.0"
   },
   "dependencies": {
     "@cap-js/process": "file:../../../",
