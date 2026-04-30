@@ -1,4 +1,4 @@
-/* checksum : 7e054e53e107a7f5c8375eb51a454e7f */
+/* checksum : bb9fb1b6c7b7cfb1678dd363f77435ae */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
@@ -7,7 +7,7 @@ namespace eu12.cdsmunich.capprocesspluginhybridtest;
 service ImportProcess_Simple_InputsService {
   type ProcessInputs {
     string : String not null;
-    number : DecimalFloat not null;
+    number : Double not null;
     _boolean : Boolean not null;
     date : Date not null;
     datetime : Timestamp not null;

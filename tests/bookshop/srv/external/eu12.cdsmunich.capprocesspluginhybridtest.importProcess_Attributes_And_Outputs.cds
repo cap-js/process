@@ -1,4 +1,4 @@
-/* checksum : b2be28c9da2617d511526b2f68e5e6b0 */
+/* checksum : 8a1749afc0e7bf9550b461d58d5f2106 */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
@@ -33,7 +33,7 @@ service ImportProcess_Attributes_And_OutputsService {
 
   type ProcessInputs {
     stringattribute : String not null;
-    intattribute : DecimalFloat not null;
+    intattribute : Double not null;
     complexe : ProcessInputs_complexe_Array not null;
     optionalcomplexe : ImportProcess_Complex_DataType;
   };
