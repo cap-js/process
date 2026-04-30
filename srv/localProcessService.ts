@@ -24,6 +24,7 @@ class ProcessService extends cds.ApplicationService {
         businessKey,
         context,
       });
+      LOG.info('Process started successfully', definitionId);
       return;
     });
 
