@@ -100,10 +100,7 @@
           "description": ""
         }
       },
-      "required": [
-        "isapproved",
-        "finalstatus"
-      ]
+      "required": ["isapproved", "finalstatus"]
     },
     "processAttributes": {
       "$schema": "http://json-schema.org/draft-07/schema#",

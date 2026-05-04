@@ -54,9 +54,7 @@
           "description": ""
         }
       },
-      "required": [
-        "authorname"
-      ]
+      "required": ["authorname"]
     },
     "outputs": {
       "title": "outputs",
@@ -96,10 +94,7 @@
           "description": ""
         }
       },
-      "required": [
-        "isverified",
-        "verificationstatus"
-      ]
+      "required": ["isverified", "verificationstatus"]
     },
     "processAttributes": {
       "$schema": "http://json-schema.org/draft-07/schema#",
