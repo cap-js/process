@@ -817,9 +817,7 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
       const result = await validateModel(cdsSource);
 
       expect(
-        result.warnings.some(
-          (w) => w.msg.includes(BUSINESS_KEY) && w.msg.includes('not found for process start'),
-        ),
+        result.warnings.some((w) => w.msg.includes(BUSINESS_KEY)),
       ).toBe(false);
       expect(result.buildSucceeded).toBe(true);
     });
