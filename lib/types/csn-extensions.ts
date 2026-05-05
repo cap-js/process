@@ -23,6 +23,7 @@ export enum CdsBuiltinType {
   Integer64 = 'cds.Integer64',
   Decimal = 'cds.Decimal',
   DecimalFloat = 'cds.Double',
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   Double = 'cds.Double',
   Date = 'cds.Date',
   Time = 'cds.Time',
