@@ -1,4 +1,4 @@
-/* checksum : 5d4deaa24aac52f7afcf274a034ff450 */
+/* checksum : 672c9171d8b5797ae70a8e84f1307371 */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
@@ -30,12 +30,15 @@ service Programmatic_Output_ProcessService {
   type ProcessAttributes : many ProcessAttribute;
 
   type ProcessInstance {
+    id : String;
     definitionId : String;
     definitionVersion : String;
-    id : String;
     status : String;
-    startedAt : String;
+    startedAt : Timestamp;
+    completedAt : Timestamp;
     startedBy : String;
+    subject : String;
+    businessKey : String;
   };
 
   type ProcessInstances : many ProcessInstance;
@@ -52,9 +55,27 @@ service Programmatic_Output_ProcessService {
     processInstanceId : String not null
   ) returns ProcessOutputs;
 
-  function getInstancesByBusinessKey(
-    businessKey : String not null,
-    status : many String
+  function getInstances(
+    id : String,
+    businessKey : String,
+    status : many String,
+    definitionId : String,
+    definitionVersion : String,
+    startedAt : Timestamp,
+    startedFrom : Timestamp,
+    startedUpTo : Timestamp,
+    completedAt : Timestamp,
+    completedFrom : Timestamp,
+    completedUpTo : Timestamp,
+    startedBy : String,
+    subject : String,
+    containsText : String,
+    rootInstanceId : String,
+    parentInstanceId : String,
+    top : Integer,
+    skip : Integer,
+    orderBy : String,
+    inlinecount : String
   ) returns ProcessInstances;
 
   action suspend(

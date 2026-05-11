@@ -55,9 +55,15 @@ service BookApprovalProcessService {
     processInstanceId : String not null
   ) returns ProcessOutputs;
 
-  function getInstancesByBusinessKey(
-    businessKey : String not null,
-    status : many String
+  function getInstances(
+    businessKey : String,
+    status : many String,
+    definitionId : String,
+    definitionVersion : String,
+    startedAt : String,
+    completedAt : String,
+    startedBy : String,
+    subject : String
   ) returns ProcessInstances;
 
   action suspend(
