@@ -19,6 +19,34 @@ export interface WorkflowInstance {
   businessKey?: string;
   status: WorkflowStatus;
   definitionId?: string;
+  definitionVersion?: string;
+  startedAt?: string;
+  completedAt?: string;
+  startedBy?: string;
+  subject?: string;
+}
+
+export interface GetInstancesParams {
+  id?: string | null;
+  businessKey?: string | null;
+  status?: WorkflowStatus[];
+  definitionId?: string | null;
+  definitionVersion?: string | null;
+  startedAt?: string | null;
+  startedFrom?: string | null;
+  startedUpTo?: string | null;
+  completedAt?: string | null;
+  completedFrom?: string | null;
+  completedUpTo?: string | null;
+  startedBy?: string | null;
+  subject?: string | null;
+  containsText?: string | null;
+  rootInstanceId?: string | null;
+  parentInstanceId?: string | null;
+  orderBy?: string | null;
+  top?: number | null;
+  skip?: number | null;
+  inlinecount?: string | null;
 }
 
 export interface StartWorkflowResult {

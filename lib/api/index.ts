@@ -18,6 +18,7 @@ export {
   IWorkflowInstanceClient,
   WorkflowInstance,
   WorkflowStatus,
+  GetInstancesParams,
   StartWorkflowResult,
   UpdateStatusResult,
   createWorkflowInstanceClient,

@@ -1,6 +1,6 @@
 import cds from '@sap/cds';
 import { localWorkflowStore } from '../lib/api/local-workflow-store';
-import { WorkflowStatus } from '../lib/api/workflow-client';
+import { WorkflowStatus, GetInstancesParams } from '../lib/api/workflow-client';
 import { PROCESS_LOGGER_PREFIX } from '../lib';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
@@ -127,33 +127,19 @@ class ProcessService extends cds.ApplicationService {
       return;
     });
 
-    this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
-      const { businessKey } = req.data;
-      let { status } = req.data;
-      LOG.info('Getting instances for', businessKey);
+    this.on('getInstances', async (req: cds.Request) => {
+      const params = req.data as GetInstancesParams;
+      LOG.info('Getting instances');
 
       LOG.debug(
         `==============================================================\n` +
-          `Get instances by businessKey: ${businessKey}\n` +
+          `Get instances\n` +
           `==============================================================`,
       );
 
-      if (!businessKey) {
-        return req.reject({ status: 400, message: 'Missing required parameter: businessKey' });
-      }
+      const instances = localWorkflowStore.getInstancesByBusinessKey(params.businessKey ?? '', params.status);
 
-      if (!status) {
-        status = [
-          WorkflowStatus.RUNNING,
-          WorkflowStatus.SUSPENDED,
-          WorkflowStatus.COMPLETED,
-          WorkflowStatus.ERRONEOUS,
-        ];
-      }
-
-      const instances = localWorkflowStore.getInstancesByBusinessKey(businessKey, status);
-
-      LOG.debug(`Found ${instances.length} workflow instance(s) for businessKey: ${businessKey}`);
+      LOG.debug(`Found ${instances.length} workflow instance(s)`);
       return instances;
     });
 
