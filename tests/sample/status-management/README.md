@@ -182,7 +182,10 @@ this.after('CREATE', Authors, async (author, req) => {
 this.after('DELETE', Authors, async (author, req) => {
   if (!author.ID) return;
 
-  const instances = await authorProcess.getInstances({ businessKey: author.ID, status: ['RUNNING'] });
+  const instances = await authorProcess.getInstances({
+    businessKey: author.ID,
+    status: ['RUNNING'],
+  });
   if (instances.length > 0) {
     await authorProcess.cancel({ businessKey: author.ID, cascade: true });
   }

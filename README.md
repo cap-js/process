@@ -30,7 +30,7 @@ CAP Plugin to interact with SAP Build Process Automation to manage processes.
     - [What Gets Generated](#what-gets-generated)
     - [Starting a Process](#starting-a-process)
     - [Suspending, Resuming, and Cancelling a Process](#suspending-resuming-and-cancelling-a-process)
-    - [Querying Process Instances](#querying-process-instances)    - [Limitations](#limitations)
+    - [Querying Process Instances](#querying-process-instances) - [Limitations](#limitations)
   - [Generic ProcessService](#generic-processservice)
     - [Service Definition](#service-definition)
     - [Usage](#usage)
@@ -635,26 +635,26 @@ const outputs = await processService.getOutputs({
 
 All parameters are optional. Supported filter parameters:
 
-| Parameter          | Type            | Description                                              |
-| ------------------ | --------------- | -------------------------------------------------------- |
-| `id`               | `String`        | Filter by workflow instance ID                           |
-| `businessKey`      | `String`        | Filter by business key                                   |
-| `status`           | `Array<String>` | Filter by status (`RUNNING`, `SUSPENDED`, `CANCELED`, `ERRONEOUS`, `COMPLETED`) |
-| `definitionId`     | `String`        | Filter by process definition ID                          |
-| `definitionVersion`| `String`        | Filter by process definition version                     |
-| `startedFrom`      | `Timestamp`     | Filter instances started on or after this date           |
-| `startedUpTo`      | `Timestamp`     | Filter instances started on or before this date          |
-| `completedFrom`    | `Timestamp`     | Filter instances completed on or after this date         |
-| `completedUpTo`    | `Timestamp`     | Filter instances completed on or before this date        |
-| `startedBy`        | `String`        | Filter by the user who started the instance              |
-| `subject`          | `String`        | Filter by subject                                        |
-| `containsText`     | `String`        | Full-text search across instance fields                  |
-| `rootInstanceId`   | `String`        | Filter by root instance ID                               |
-| `parentInstanceId` | `String`        | Filter by parent instance ID                             |
-| `orderBy`          | `String`        | Sort order (e.g. `startedAt desc`, `businessKey asc`)    |
-| `top`              | `Integer`       | Maximum number of results to return                      |
-| `skip`             | `Integer`       | Number of results to skip (for pagination)               |
-| `inlinecount`      | `String`        | Set to `allpages` to include total count in response     |
+| Parameter           | Type            | Description                                                                     |
+| ------------------- | --------------- | ------------------------------------------------------------------------------- |
+| `id`                | `String`        | Filter by workflow instance ID                                                  |
+| `businessKey`       | `String`        | Filter by business key                                                          |
+| `status`            | `Array<String>` | Filter by status (`RUNNING`, `SUSPENDED`, `CANCELED`, `ERRONEOUS`, `COMPLETED`) |
+| `definitionId`      | `String`        | Filter by process definition ID                                                 |
+| `definitionVersion` | `String`        | Filter by process definition version                                            |
+| `startedFrom`       | `Timestamp`     | Filter instances started on or after this date                                  |
+| `startedUpTo`       | `Timestamp`     | Filter instances started on or before this date                                 |
+| `completedFrom`     | `Timestamp`     | Filter instances completed on or after this date                                |
+| `completedUpTo`     | `Timestamp`     | Filter instances completed on or before this date                               |
+| `startedBy`         | `String`        | Filter by the user who started the instance                                     |
+| `subject`           | `String`        | Filter by subject                                                               |
+| `containsText`      | `String`        | Full-text search across instance fields                                         |
+| `rootInstanceId`    | `String`        | Filter by root instance ID                                                      |
+| `parentInstanceId`  | `String`        | Filter by parent instance ID                                                    |
+| `orderBy`           | `String`        | Sort order (e.g. `startedAt desc`, `businessKey asc`)                           |
+| `top`               | `Integer`       | Maximum number of results to return                                             |
+| `skip`              | `Integer`       | Number of results to skip (for pagination)                                      |
+| `inlinecount`       | `String`        | Set to `allpages` to include total count in response                            |
 
 #### Limitations
 
@@ -670,15 +670,15 @@ The generic `ProcessService` allows setting the business key to mimic the behavi
 
 The generic `ProcessService` defines the following events and functions:
 
-| Operation       | Type     | Description                                                       |
-| --------------- | -------- | ----------------------------------------------------------------- |
-| `start`         | event    | Start a workflow instance with a `definitionId` and `context`     |
-| `cancel`        | event    | Cancel all running/suspended instances matching a `businessKey`   |
-| `suspend`       | event    | Suspend all running instances matching a `businessKey`            |
-| `resume`        | event    | Resume all suspended instances matching a `businessKey`           |
-| `getAttributes` | function | Retrieve attributes for a specific process instance               |
-| `getOutputs`    | function | Retrieve outputs for a specific process instance                  |
-| `getInstances`  | function | Query process instances with flexible filter parameters           |
+| Operation       | Type     | Description                                                     |
+| --------------- | -------- | --------------------------------------------------------------- |
+| `start`         | event    | Start a workflow instance with a `definitionId` and `context`   |
+| `cancel`        | event    | Cancel all running/suspended instances matching a `businessKey` |
+| `suspend`       | event    | Suspend all running instances matching a `businessKey`          |
+| `resume`        | event    | Resume all suspended instances matching a `businessKey`         |
+| `getAttributes` | function | Retrieve attributes for a specific process instance             |
+| `getOutputs`    | function | Retrieve outputs for a specific process instance                |
+| `getInstances`  | function | Query process instances with flexible filter parameters         |
 
 #### Usage
 
