@@ -34,10 +34,12 @@ class ProgrammaticService extends cds.ApplicationService {
     });
 
     this.on('getInstances', async (req: cds.Request) => {
-      const { ID, status } = req.data;
+      const { ID, status, top, skip } = req.data;
       const instances = await programmaticLifecycleProcess.getInstances({
         businessKey: ID,
         status: status,
+        top: top,
+        skip: skip,
       });
       return instances;
     });

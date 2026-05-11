@@ -107,10 +107,7 @@ function registerCancelHandler(service: cds.Service, definitionId: string): void
   });
 }
 
-function registerGetInstancesHandler(
-  service: cds.Service,
-  definitionId: string,
-): void {
+function registerGetInstancesHandler(service: cds.Service, definitionId: string): void {
   service.on('getInstances', async (req) => {
     LOG.debug(`Getting instances for process: ${definitionId}`);
 

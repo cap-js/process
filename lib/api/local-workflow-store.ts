@@ -80,9 +80,17 @@ export class LocalWorkflowStore {
   getInstances(params: GetInstancesParams): LocalWorkflowInstance[] {
     const specialKeys = new Set([
       ...INSTANCES_PARAMS_SKIP_KEYS,
-      'startedFrom', 'startedUpTo', 'completedFrom', 'completedUpTo',
-      'containsText', 'rootInstanceId', 'parentInstanceId',
-      'skip', 'top', 'orderBy', 'inlinecount',
+      'startedFrom',
+      'startedUpTo',
+      'completedFrom',
+      'completedUpTo',
+      'containsText',
+      'rootInstanceId',
+      'parentInstanceId',
+      'skip',
+      'top',
+      'orderBy',
+      'inlinecount',
     ]);
 
     let filtered = [...this.instances];
@@ -123,8 +131,10 @@ export class LocalWorkflowStore {
       );
     }
 
-    if (params.rootInstanceId != null) filtered = filtered.filter((i) => i.id === params.rootInstanceId);
-    if (params.parentInstanceId != null) filtered = filtered.filter((i) => i.id === params.parentInstanceId);
+    if (params.rootInstanceId != null)
+      filtered = filtered.filter((i) => i.id === params.rootInstanceId);
+    if (params.parentInstanceId != null)
+      filtered = filtered.filter((i) => i.id === params.parentInstanceId);
 
     const skip = params.skip ?? 0;
     const top = params.top ?? filtered.length;

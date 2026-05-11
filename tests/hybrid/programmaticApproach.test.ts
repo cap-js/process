@@ -364,4 +364,42 @@ describe('Programmatic Approach Hybrid Tests', () => {
       expect(outputs).toHaveProperty('optional_datetime');
     });
   });
+
+  describe('getInstances – query params against SBPA', () => {
+    it('should filter instances by definitionId', async () => {
+      const ID = generateID();
+      await startProcess(ID);
+      await waitForInstances(ID, ['RUNNING']);
+
+      const res = await POST('/odata/v4/programmatic/genericGetInstances', {
+        businessKey: ID,
+        definitionId: 'eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process',
+        status: ['RUNNING'],
+      });
+      const instances = res.data?.value ?? res.data ?? [];
+
+      expect(instances.length).toBe(1);
+      expect(instances[0]).toHaveProperty(
+        'definitionId',
+        'eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process',
+      );
+    });
+
+    it('should respect top=1 and return only one instance', async () => {
+      const idA = generateID();
+      const idB = generateID();
+      await startProcess(idA);
+      await startProcess(idB);
+      await waitForInstances(idA, ['RUNNING']);
+      await waitForInstances(idB, ['RUNNING']);
+
+      const res = await POST('/odata/v4/programmatic/genericGetInstances', {
+        status: ['RUNNING'],
+        top: 1,
+      });
+      const instances = res.data?.value ?? res.data ?? [];
+
+      expect(instances.length).toBe(1);
+    });
+  });
 });

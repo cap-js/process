@@ -30,7 +30,9 @@ service ProgrammaticService {
   action getOutputs(instanceId: String) returns ProcessOutputs;
 
   action getInstances(ID: UUID,
-                      status: many String) returns many ProcessInstance;
+                      status: many String,
+                      top: Integer,
+                      skip: Integer) returns many ProcessInstance;
 
   action startForGetOutputs(ID: UUID,
                             mandatory_datetime: Timestamp,

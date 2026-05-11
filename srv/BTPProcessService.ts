@@ -1,6 +1,11 @@
 import cds from '@sap/cds';
 import { getServiceCredentials, CachingTokenProvider, createXsuaaTokenProvider } from '../lib/auth';
-import { IWorkflowInstanceClient, createWorkflowInstanceClient, WorkflowStatus, GetInstancesParams } from '../lib/api';
+import {
+  IWorkflowInstanceClient,
+  createWorkflowInstanceClient,
+  WorkflowStatus,
+  GetInstancesParams,
+} from '../lib/api';
 import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from '../lib';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
