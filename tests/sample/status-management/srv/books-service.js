@@ -25,11 +25,11 @@ module.exports = class BooksService extends cds.ApplicationService {
             return;
           }
 
-          const instances = await bookProcess.getInstancesByBusinessKey(bookID, [
+          const instances = await bookProcess.getInstances({ businessKey: bookID, status: [
             'RUNNING',
             'COMPLETED',
             'CANCELED',
-          ]);
+          ] });
 
           if (instances[0]?.id && instances[0]?.status) {
             const { id, status } = instances[0];

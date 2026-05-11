@@ -20,7 +20,7 @@ describe('Programmatic Approach Hybrid Tests', () => {
   }
 
   async function getInstances(ID: string, status?: string[]): Promise<any[]> {
-    const res = await POST('/odata/v4/programmatic/getInstancesByBusinessKey', { ID, status });
+    const res = await POST('/odata/v4/programmatic/getInstances', { ID, status });
     return res.data?.value ?? res.data ?? [];
   }
 

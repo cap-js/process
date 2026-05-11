@@ -29,8 +29,8 @@ service ProgrammaticService {
 
   action getOutputs(instanceId: String) returns ProcessOutputs;
 
-  action getInstancesByBusinessKey(ID: UUID,
-                                  status: many String) returns many ProcessInstance;
+  action getInstances(ID: UUID,
+                      status: many String) returns many ProcessInstance;
 
   action startForGetOutputs(ID: UUID,
                             mandatory_datetime: Timestamp,
@@ -46,8 +46,8 @@ service ProgrammaticService {
   action genericCancel(businessKey: String, cascade: Boolean);
   action genericSuspend(businessKey: String, cascade: Boolean);
   action genericResume(businessKey: String, cascade: Boolean);
-  action genericGetInstancesByBusinessKey(businessKey: String,
-                                          status: many String) returns many ProcessInstance;
+  action genericGetInstances(businessKey: String,
+                              status: many String) returns many ProcessInstance;
   action genericGetAttributes(processInstanceId: String) returns many ProcessAttribute;
   action genericGetOutputs(processInstanceId: String) returns ProcessOutputs;
 }

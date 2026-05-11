@@ -33,9 +33,9 @@ class ProgrammaticService extends cds.ApplicationService {
       await programmaticLifecycleProcess.cancel({ businessKey: ID });
     });
 
-    this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
+    this.on('getInstances', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const instances = await programmaticLifecycleProcess.getInstancesByBusinessKey({
+      const instances = await programmaticLifecycleProcess.getInstances({
         businessKey: ID,
         status: status,
       });
@@ -44,7 +44,7 @@ class ProgrammaticService extends cds.ApplicationService {
 
     this.on('getAttributes', async (req: cds.Request) => {
       const { ID } = req.data;
-      const processInstances = await programmaticLifecycleProcess.getInstancesByBusinessKey({
+      const processInstances = await programmaticLifecycleProcess.getInstances({
         businessKey: ID,
       });
       const allAttributes = [];
@@ -74,7 +74,7 @@ class ProgrammaticService extends cds.ApplicationService {
 
     this.on('getInstanceIDForGetOutputs', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const processInstances = await programmaticOutputProcess.getInstancesByBusinessKey({
+      const processInstances = await programmaticOutputProcess.getInstances({
         businessKey: ID,
         status: status,
       });
@@ -127,9 +127,9 @@ class ProgrammaticService extends cds.ApplicationService {
       await queuedProcessService.emit('resume', { businessKey, cascade: cascade ?? false });
     });
 
-    this.on('genericGetInstancesByBusinessKey', async (req: cds.Request) => {
+    this.on('genericGetInstances', async (req: cds.Request) => {
       const { businessKey, status } = req.data;
-      const result = await processService.send('getInstancesByBusinessKey', {
+      const result = await processService.send('getInstances', {
         businessKey,
         status,
       });

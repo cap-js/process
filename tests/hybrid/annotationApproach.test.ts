@@ -12,7 +12,7 @@ describe('Annotation Approach Hybrid Tests', () => {
   }
 
   async function getInstances(ID: string, status?: string[]): Promise<any[]> {
-    const res = await POST('/odata/v4/annotation-hybrid/getInstancesByBusinessKey', { ID, status });
+    const res = await POST('/odata/v4/annotation-hybrid/getInstances', { ID, status });
     return res.data?.value ?? res.data ?? [];
   }
 
