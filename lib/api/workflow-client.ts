@@ -175,10 +175,11 @@ export async function getInstances(
   }
 
   for (const s of params.status ?? []) {
-    queryParts.push(`status=${s}`);
+    queryParts.push(`status=${encodeURIComponent(s)}`);
   }
 
-  const queryUrl = `${serviceUrl}${BASE_PATH}/v1/workflow-instances?${queryParts.join('&')}`;
+  const queryString = queryParts.join('&');
+  const queryUrl = `${serviceUrl}${BASE_PATH}/v1/workflow-instances${queryString ? '?' + queryString : ''}`;
   LOG.debug('Invoking url: ' + queryUrl);
 
   const res = await fetch(queryUrl, {

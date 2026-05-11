@@ -37,8 +37,11 @@ service BookApprovalProcessService {
     definitionVersion : String;
     id : String;
     status : String;
-    startedAt : String;
+    startedAt : Timestamp;
+    completedAt : Timestamp;
     startedBy : String;
+    subject : String;
+    businessKey : String;
   };
 
   type ProcessInstances : many ProcessInstance;
@@ -56,14 +59,26 @@ service BookApprovalProcessService {
   ) returns ProcessOutputs;
 
   function getInstances(
+    id : String,
     businessKey : String,
     status : many String,
     definitionId : String,
     definitionVersion : String,
-    startedAt : String,
-    completedAt : String,
+    startedAt : Timestamp,
+    startedFrom : Timestamp,
+    startedUpTo : Timestamp,
+    completedAt : Timestamp,
+    completedFrom : Timestamp,
+    completedUpTo : Timestamp,
     startedBy : String,
-    subject : String
+    subject : String,
+    containsText : String,
+    rootInstanceId : String,
+    parentInstanceId : String,
+    top : Integer,
+    skip : Integer,
+    orderBy : String,
+    inlinecount : String
   ) returns ProcessInstances;
 
   action suspend(

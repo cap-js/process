@@ -20,12 +20,19 @@ describe('getInstances – URL building', () => {
 
   it('builds URL with no params', async () => {
     await getInstances(SERVICE_URL, JWT, {});
-    expect(capturedUrl()).toBe(`${BASE}?`);
+    expect(capturedUrl()).toBe(BASE);
   });
 
   it('filters by businessKey', async () => {
     await getInstances(SERVICE_URL, JWT, { businessKey: 'my-key' });
     expect(capturedUrl()).toContain('businessKey=my-key');
+  });
+
+  it('encodes status values', async () => {
+    await getInstances(SERVICE_URL, JWT, { status: [WorkflowStatus.RUNNING] });
+    expect(capturedUrl()).toContain('status=RUNNING');
+    // verify it's encoded (no raw spaces or special chars)
+    expect(capturedUrl()).not.toContain('status= ');
   });
 
   it('filters by single status', async () => {
@@ -64,7 +71,7 @@ describe('getInstances – URL building', () => {
 
   it('skips null and undefined params', async () => {
     await getInstances(SERVICE_URL, JWT, { businessKey: null, definitionId: null });
-    expect(capturedUrl()).toBe(`${BASE}?`);
+    expect(capturedUrl()).toBe(BASE);
   });
 
   it('encodes special characters in param values', async () => {
