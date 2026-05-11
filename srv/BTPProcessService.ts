@@ -91,10 +91,7 @@ class ProcessService extends cds.ApplicationService {
       const params = request.data as GetInstancesParams;
       LOG.info('Getting instances');
 
-      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
-        params.businessKey ?? '',
-        params.status ?? [],
-      );
+      const instances = await this.workflowInstanceClient.getInstances(params);
       return instances;
     });
 

@@ -21,11 +21,16 @@ export {
   GetInstancesParams,
   StartWorkflowResult,
   UpdateStatusResult,
+  INSTANCES_PARAMS_SKIP_KEYS,
+  INSTANCES_PARAM_KEY_MAP,
   createWorkflowInstanceClient,
   startWorkflow,
   getWorkflowsByBusinessKey,
+  getInstances,
   updateWorkflowStatus,
   updateMultipleWorkflowStatus,
+  getAttributes,
+  getOutputs,
 } from './workflow-client';
 
 // Local Workflow Store - for local development

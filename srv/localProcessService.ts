@@ -137,7 +137,7 @@ class ProcessService extends cds.ApplicationService {
           `==============================================================`,
       );
 
-      const instances = localWorkflowStore.getInstancesByBusinessKey(params.businessKey ?? '', params.status);
+      const instances = localWorkflowStore.getInstances(params);
 
       LOG.debug(`Found ${instances.length} workflow instance(s)`);
       return instances;

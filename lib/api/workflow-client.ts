@@ -4,6 +4,17 @@ import { PROCESS_LOGGER_PREFIX } from '../constants';
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 const BASE_PATH = '/public/workflow/rest';
 
+// Keys in GetInstancesParams that need special handling and are not direct API query params
+export const INSTANCES_PARAMS_SKIP_KEYS = new Set<keyof GetInstancesParams>(['status']);
+
+// Remap camelCase param keys to the API's expected query param names
+export const INSTANCES_PARAM_KEY_MAP: Partial<Record<keyof GetInstancesParams, string>> = {
+  orderBy: '$orderby',
+  top: '$top',
+  skip: '$skip',
+  inlinecount: '$inlinecount',
+};
+
 // ============ Types & Enums ============
 
 export enum WorkflowStatus {
@@ -69,6 +80,8 @@ export interface IWorkflowInstanceClient {
     status: WorkflowStatus[],
   ): Promise<WorkflowInstance[]>;
 
+  getInstances(params: GetInstancesParams): Promise<WorkflowInstance[]>;
+
   updateWorkflowStatus(
     instanceId: string,
     status: WorkflowStatus,
@@ -129,6 +142,43 @@ export async function getWorkflowsByBusinessKey(
   status.forEach((s) => {
     queryUrl += `&status=${s}`;
   });
+  LOG.debug('Invoking url: ' + queryUrl);
+
+  const res = await fetch(queryUrl, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    const errorMessage = `Failed to retrieve workflow instances: ${body || res.statusText || 'Unknown error'}`;
+    throw cds.error(res.status, errorMessage);
+  }
+
+  return await res.json();
+}
+
+export async function getInstances(
+  serviceUrl: string,
+  jwt: string,
+  params: GetInstancesParams,
+): Promise<WorkflowInstance[]> {
+  const queryParts: string[] = [];
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value == null || INSTANCES_PARAMS_SKIP_KEYS.has(key as keyof GetInstancesParams)) continue;
+    const apiKey = INSTANCES_PARAM_KEY_MAP[key as keyof GetInstancesParams] ?? key;
+    queryParts.push(`${apiKey}=${encodeURIComponent(String(value))}`);
+  }
+
+  for (const s of params.status ?? []) {
+    queryParts.push(`status=${s}`);
+  }
+
+  const queryUrl = `${serviceUrl}${BASE_PATH}/v1/workflow-instances?${queryParts.join('&')}`;
   LOG.debug('Invoking url: ' + queryUrl);
 
   const res = await fetch(queryUrl, {
@@ -282,6 +332,11 @@ export function createWorkflowInstanceClient(
     getWorkflowsByBusinessKey: async (businessKey, status) => {
       const jwt = await getToken();
       return getWorkflowsByBusinessKey(serviceUrl, jwt, businessKey, status);
+    },
+
+    getInstances: async (params) => {
+      const jwt = await getToken();
+      return getInstances(serviceUrl, jwt, params);
     },
 
     updateWorkflowStatus: async (instanceId, status, cascade) => {
