@@ -4,6 +4,16 @@
 - The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - This project adheres to [Semantic Versioning](https://semver.org/).
 
+## Version 0.3.0 - 2026-05-11
+
+### Added
+
+- `getInstances` function replacing `getInstancesByBusinessKey` — supports filtering by all SBPA workflow instance query parameters: `id`, `businessKey`, `status`, `definitionId`, `definitionVersion`, `startedAt`, `startedFrom`, `startedUpTo`, `completedAt`, `completedFrom`, `completedUpTo`, `startedBy`, `subject`, `containsText`, `rootInstanceId`, `parentInstanceId`, `orderBy`, `top`, `skip`, `inlinecount`
+
+### Changed
+
+- `getInstancesByBusinessKey` is replaced by `getInstances` in both the specific process services and the generic `ProcessService`
+
 ## Version 0.2.1 - 2026-04-20
 
 ### Fixed
