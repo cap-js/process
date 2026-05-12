@@ -1,4 +1,4 @@
-/* checksum : b2be28c9da2617d511526b2f68e5e6b0 */
+/* checksum : 174881d9ba3b813f1b588771022a248c */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
@@ -27,6 +27,11 @@ service ImportProcess_Attributes_And_OutputsService {
   type ImportProcess_Complex_DataType {
     StringList : ImportProcess_Complex_DataType_StringList_Array not null;
     StringType : ImportProcess_Complex_DataType_StringType;
+  };
+
+  type UpdateStatusResult {
+    id : String;
+    success : Boolean;
   };
 
   type ProcessInputs_complexe_Array : many ImportProcess_Complex_DataType;
@@ -83,6 +88,12 @@ service ImportProcess_Attributes_And_OutputsService {
     businessKey : String not null,
     status : many String
   ) returns ProcessInstances;
+
+  function updateInstanceStatus(
+    instanceId : String not null,
+    status : String not null,
+    cascade : Boolean
+  ) returns UpdateStatusResult;
 
   action suspend(
     businessKey : String not null,
