@@ -401,5 +401,17 @@ describe('Programmatic Approach Hybrid Tests', () => {
 
       expect(instances.length).toBe(1);
     });
+
+    it('should return instances when called with no params', async () => {
+      const ID = generateID();
+      await startProcess(ID);
+      await waitForInstances(ID, ['RUNNING']);
+
+      const res = await POST('/odata/v4/programmatic/genericGetInstances', {});
+      const instances = res.data?.value ?? res.data ?? [];
+
+      expect(Array.isArray(instances)).toBe(true);
+      expect(instances.length).toBeGreaterThan(0);
+    });
   });
 });
