@@ -97,7 +97,9 @@ export class LocalWorkflowStore {
 
     for (const [key, value] of Object.entries(params)) {
       if (value == null || specialKeys.has(key)) continue;
-      filteredInstances = filteredInstances.filter((i) => i[key as keyof LocalWorkflowInstance] === value);
+      filteredInstances = filteredInstances.filter(
+        (i) => i[key as keyof LocalWorkflowInstance] === value,
+      );
     }
 
     if (params.status && params.status.length > 0) {
@@ -106,19 +108,27 @@ export class LocalWorkflowStore {
 
     if (params.startedFrom != null) {
       const from = new Date(params.startedFrom);
-      filteredInstances = filteredInstances.filter((i) => i.startedAt != null && new Date(i.startedAt) >= from);
+      filteredInstances = filteredInstances.filter(
+        (i) => i.startedAt != null && new Date(i.startedAt) >= from,
+      );
     }
     if (params.startedUpTo != null) {
       const upTo = new Date(params.startedUpTo);
-      filteredInstances = filteredInstances.filter((i) => i.startedAt != null && new Date(i.startedAt) <= upTo);
+      filteredInstances = filteredInstances.filter(
+        (i) => i.startedAt != null && new Date(i.startedAt) <= upTo,
+      );
     }
     if (params.completedFrom != null) {
       const from = new Date(params.completedFrom);
-      filteredInstances = filteredInstances.filter((i) => i.completedAt != null && new Date(i.completedAt) >= from);
+      filteredInstances = filteredInstances.filter(
+        (i) => i.completedAt != null && new Date(i.completedAt) >= from,
+      );
     }
     if (params.completedUpTo != null) {
       const upTo = new Date(params.completedUpTo);
-      filteredInstances = filteredInstances.filter((i) => i.completedAt != null && new Date(i.completedAt) <= upTo);
+      filteredInstances = filteredInstances.filter(
+        (i) => i.completedAt != null && new Date(i.completedAt) <= upTo,
+      );
     }
 
     if (params.containsText != null) {
