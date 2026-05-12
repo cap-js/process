@@ -130,11 +130,7 @@ class ProgrammaticService extends cds.ApplicationService {
     });
 
     this.on('genericGetInstances', async (req: cds.Request) => {
-      const { businessKey, status } = req.data;
-      const result = await processService.send('getInstances', {
-        businessKey,
-        status,
-      });
+      const result = await processService.send('getInstances', req.data);
       return result;
     });
 
