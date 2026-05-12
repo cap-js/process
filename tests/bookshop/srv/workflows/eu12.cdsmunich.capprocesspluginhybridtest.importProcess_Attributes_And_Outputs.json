@@ -1,9 +1,10 @@
 {
   "uid": "5edc02ff-ce9a-4aaf-94bb-440b0c981a20",
   "name": "ImportProcess_Attributes_And_Outputs",
-  "identifier": "importProcess_Attributes_And_Outputs",
+  "description": "",
   "type": "bpi.process",
-  "projectId": "eu12.cdsmunich.capprocesspluginhybridtest",
+  "createdAt": "2026-03-18T10:23:31.648909Z",
+  "updatedAt": "2026-03-18T12:48:22.484258Z",
   "header": {
     "inputs": {
       "title": "inputs",
@@ -12,28 +13,23 @@
       "definitions": {
         "date": {
           "type": "string",
-          "format": "date",
-          "title": "date"
+          "format": "date"
         },
         "dateTime": {
           "type": "string",
-          "format": "date-time",
-          "title": "dateTime"
+          "format": "date-time"
         },
         "password": {
           "type": "string",
-          "password": true,
-          "title": "password"
+          "password": true
         },
         "time": {
           "type": "string",
-          "format": "time",
-          "title": "time"
+          "format": "time"
         },
         "documentFolder": {
           "type": "string",
-          "format": "document-folder",
-          "title": "documentFolder"
+          "format": "document-folder"
         }
       },
       "properties": {
@@ -54,8 +50,7 @@
             "refName": "ImportProcess_Complex_DataType"
           },
           "title": "Complexe",
-          "description": "",
-          "refName": "ImportProcess_Complex_DataType"
+          "description": ""
         },
         "optionalcomplexe": {
           "$ref": "$.11cbfe86-2e73-4198-868a-d7a2115d82c1",
@@ -77,28 +72,23 @@
       "definitions": {
         "date": {
           "type": "string",
-          "format": "date",
-          "title": "date"
+          "format": "date"
         },
         "dateTime": {
           "type": "string",
-          "format": "date-time",
-          "title": "dateTime"
+          "format": "date-time"
         },
         "password": {
           "type": "string",
-          "password": true,
-          "title": "password"
+          "password": true
         },
         "time": {
           "type": "string",
-          "format": "time",
-          "title": "time"
+          "format": "time"
         },
         "documentFolder": {
           "type": "string",
-          "format": "document-folder",
-          "title": "documentFolder"
+          "format": "document-folder"
         }
       },
       "properties": {
@@ -125,8 +115,7 @@
             "refName": "ImportProcess_Complex_DataType"
           },
           "title": "Complexe",
-          "description": "",
-          "refName": "ImportProcess_Complex_DataType"
+          "description": ""
         }
       },
       "required": [
@@ -135,6 +124,8 @@
       ]
     },
     "processAttributes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "processAttributes",
       "type": "object",
       "properties": {},
       "required": []
@@ -146,12 +137,17 @@
       "type": "both"
     }
   ],
+  "identifier": "importProcess_Attributes_And_Outputs",
+  "valid": true,
+  "projectId": "eu12.cdsmunich.capprocesspluginhybridtest",
   "dataTypes": [
     {
       "uid": "11cbfe86-2e73-4198-868a-d7a2115d82c1",
       "name": "ImportProcess_Complex_DataType",
-      "identifier": "ImportProcess_Complex_DataType",
+      "description": "",
       "type": "datatype",
+      "createdAt": "2026-03-18T10:28:54.794097Z",
+      "updatedAt": "2026-03-18T10:31:37.975015Z",
       "header": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -164,13 +160,11 @@
               "properties": {
                 "SubString1": {
                   "type": "string",
-                  "uid": "567555b3-ffee-41d4-a650-e9006ca9c5f6",
-                  "title": "SubString1"
+                  "uid": "567555b3-ffee-41d4-a650-e9006ca9c5f6"
                 },
                 "Substring2": {
                   "type": "string",
-                  "uid": "794440a0-a06e-4fa6-a703-1f8fe4bc9d94",
-                  "title": "Substring2"
+                  "uid": "794440a0-a06e-4fa6-a703-1f8fe4bc9d94"
                 }
               },
               "required": [
@@ -178,8 +172,7 @@
                 "Substring2"
               ]
             },
-            "type": "array",
-            "title": "StringList"
+            "type": "array"
           },
           "StringType": {
             "type": "object",
@@ -194,27 +187,21 @@
                     "uid": "f3dd8f45-fcd2-4fe2-9d2f-868e51f52b64",
                     "properties": {
                       "SubSubSubDate": {
-                        "type": "string",
-                        "format": "date",
-                        "title": "SubSubSubDate"
+                        "uid": "361a2e90-c32d-421d-8077-6a412436f031",
+                        "$ref": "#/definitions/date"
                       },
                       "SubSubSubPassword": {
-                        "type": "string",
-                        "password": true,
-                        "title": "SubSubSubPassword"
+                        "uid": "9901ea3d-4e0f-4421-981e-22fbc0d35cc6",
+                        "$ref": "#/definitions/password"
                       },
                       "SubSubSubAny": {
-                        "uid": "99fd32c0-7ce9-4c22-bb85-890160827365",
-                        "title": "SubSubSubAny"
+                        "uid": "99fd32c0-7ce9-4c22-bb85-890160827365"
                       }
-                    },
-                    "title": "SubSubStringType"
+                    }
                   }
-                },
-                "title": "SubStringType"
+                }
               }
-            },
-            "title": "StringType"
+            }
           }
         },
         "required": [
@@ -223,18 +210,17 @@
         "definitions": {
           "password": {
             "type": "string",
-            "password": true,
-            "title": "password"
+            "password": true
           },
           "date": {
             "type": "string",
-            "format": "date",
-            "title": "date"
+            "format": "date"
           }
         },
-        "version": 1,
-        "description": ""
-      }
+        "version": 1
+      },
+      "identifier": "importProcess_Complex_DataType",
+      "valid": true
     }
   ]
 }

@@ -1,6 +1,8 @@
 import {
   WorkflowStatus,
   WorkflowInstance,
+  GetInstancesParams,
+  INSTANCES_PARAMS_SKIP_KEYS,
   StartWorkflowResult,
   UpdateStatusResult,
 } from './workflow-client';
@@ -73,6 +75,82 @@ export class LocalWorkflowStore {
     }
 
     return filtered;
+  }
+
+  getInstances(params: GetInstancesParams): LocalWorkflowInstance[] {
+    const specialKeys = new Set([
+      ...INSTANCES_PARAMS_SKIP_KEYS,
+      'startedFrom',
+      'startedUpTo',
+      'completedFrom',
+      'completedUpTo',
+      'containsText',
+      'rootInstanceId',
+      'parentInstanceId',
+      'skip',
+      'top',
+      'orderBy',
+      'inlinecount',
+    ]);
+
+    let filteredInstances = [...this.instances];
+
+    for (const [key, value] of Object.entries(params)) {
+      if (value == null || specialKeys.has(key)) continue;
+      filteredInstances = filteredInstances.filter(
+        (i) => i[key as keyof LocalWorkflowInstance] === value,
+      );
+    }
+
+    if (params.status && params.status.length > 0) {
+      filteredInstances = filteredInstances.filter((i) => params.status!.includes(i.status));
+    }
+
+    if (params.startedFrom != null) {
+      const from = new Date(params.startedFrom);
+      filteredInstances = filteredInstances.filter(
+        (i) => i.startedAt != null && new Date(i.startedAt) >= from,
+      );
+    }
+    if (params.startedUpTo != null) {
+      const upTo = new Date(params.startedUpTo);
+      filteredInstances = filteredInstances.filter(
+        (i) => i.startedAt != null && new Date(i.startedAt) <= upTo,
+      );
+    }
+    if (params.completedFrom != null) {
+      const from = new Date(params.completedFrom);
+      filteredInstances = filteredInstances.filter(
+        (i) => i.completedAt != null && new Date(i.completedAt) >= from,
+      );
+    }
+    if (params.completedUpTo != null) {
+      const upTo = new Date(params.completedUpTo);
+      filteredInstances = filteredInstances.filter(
+        (i) => i.completedAt != null && new Date(i.completedAt) <= upTo,
+      );
+    }
+
+    if (params.containsText != null) {
+      const text = params.containsText.toLowerCase();
+      filteredInstances = filteredInstances.filter(
+        (i) =>
+          i.id.toLowerCase().includes(text) ||
+          i.subject?.toLowerCase().includes(text) ||
+          i.businessKey?.toLowerCase().includes(text),
+      );
+    }
+
+    if (params.rootInstanceId != null)
+      filteredInstances = filteredInstances.filter((i) => i.id === params.rootInstanceId);
+    if (params.parentInstanceId != null)
+      filteredInstances = filteredInstances.filter((i) => i.id === params.parentInstanceId);
+
+    const skip = params.skip ?? 0;
+    const top = params.top ?? filteredInstances.length;
+    filteredInstances = filteredInstances.slice(skip, skip + top);
+
+    return filteredInstances;
   }
 
   getInstance(instanceId: string): LocalWorkflowInstance | undefined {

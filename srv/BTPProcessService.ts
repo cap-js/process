@@ -1,6 +1,11 @@
 import cds from '@sap/cds';
 import { getServiceCredentials, CachingTokenProvider, createXsuaaTokenProvider } from '../lib/auth';
-import { IWorkflowInstanceClient, createWorkflowInstanceClient, WorkflowStatus } from '../lib/api';
+import {
+  IWorkflowInstanceClient,
+  createWorkflowInstanceClient,
+  WorkflowStatus,
+  GetInstancesParams,
+} from '../lib/api';
 import { PROCESS_LOGGER_PREFIX, PROCESS_SERVICE } from '../lib';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
@@ -87,28 +92,11 @@ class ProcessService extends cds.ApplicationService {
       );
     });
 
-    this.on('getInstancesByBusinessKey', async (request: cds.Request) => {
-      const { businessKey } = request.data;
-      let { status } = request.data;
-      LOG.info('Getting instances for', businessKey);
+    this.on('getInstances', async (request: cds.Request) => {
+      const params = request.data as GetInstancesParams;
+      LOG.info('Getting instances');
 
-      if (!businessKey) {
-        return request.reject({ status: 400, message: 'Missing required parameter: businessKey' });
-      }
-
-      if (!status) {
-        status = [
-          WorkflowStatus.RUNNING,
-          WorkflowStatus.SUSPENDED,
-          WorkflowStatus.COMPLETED,
-          WorkflowStatus.ERRONEOUS,
-        ];
-      }
-
-      const instances = await this.workflowInstanceClient.getWorkflowsByBusinessKey(
-        businessKey,
-        status,
-      );
+      const instances = await this.workflowInstanceClient.getInstances(params);
       return instances;
     });
 

@@ -31,7 +31,10 @@ module.exports = class AuthorsService extends cds.ApplicationService {
     this.after('DELETE', Authors, async (author, req) => {
       if (!author.ID) return;
 
-      const instances = await authorProcess.getInstancesByBusinessKey(author.ID, ['RUNNING']);
+      const instances = await authorProcess.getInstances({
+        businessKey: author.ID,
+        status: ['RUNNING'],
+      });
       if (instances.length > 0) {
         await authorProcess.cancel({ businessKey: author.ID, cascade: true });
       }
@@ -48,11 +51,10 @@ module.exports = class AuthorsService extends cds.ApplicationService {
             return;
           }
 
-          const instances = await authorProcess.getInstancesByBusinessKey(author.ID, [
-            'RUNNING',
-            'COMPLETED',
-            'CANCELED',
-          ]);
+          const instances = await authorProcess.getInstances({
+            businessKey: author.ID,
+            status: ['RUNNING', 'COMPLETED', 'CANCELED'],
+          });
 
           if (instances[0]?.id && instances[0]?.status) {
             const { id, status } = instances[0];

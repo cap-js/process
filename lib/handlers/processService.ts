@@ -1,7 +1,7 @@
 import cds from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, PROCESS_SERVICE } from '../constants';
 import { emitProcessEvent, ProcessLifecyclePayload, ProcessStartPayload } from './utils';
-import { WorkflowStatus } from '../api';
+import { WorkflowStatus, GetInstancesParams } from '../api';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 
@@ -22,7 +22,7 @@ export function registerProcessServiceHandlers(service: cds.Service): void {
   registerSuspendHandler(service, definitionId);
   registerResumeHandler(service, definitionId);
   registerCancelHandler(service, definitionId);
-  registerGetInstancesByBusinessKeyHandler(service, definitionId);
+  registerGetInstancesHandler(service, definitionId);
   registerGetAttributesHandler(service, definitionId);
   registerGetOutputsHandler(service, definitionId);
 }
@@ -107,21 +107,16 @@ function registerCancelHandler(service: cds.Service, definitionId: string): void
   });
 }
 
-function registerGetInstancesByBusinessKeyHandler(
-  service: cds.Service,
-  definitionId: string,
-): void {
-  service.on('getInstancesByBusinessKey', async (req) => {
-    LOG.debug(`Getting instances by businessKey for process: ${definitionId}`);
+function registerGetInstancesHandler(service: cds.Service, definitionId: string): void {
+  service.on('getInstances', async (req) => {
+    LOG.debug(`Getting instances for process: ${definitionId}`);
 
-    const { businessKey, status } = req.data;
-    if (!businessKey) {
-      return req.reject({ status: 400, message: 'Missing required parameter: businessKey' });
-    }
-    if (status) {
+    const params = req.data as GetInstancesParams;
+
+    if (params.status) {
       const validStatuses = Object.values(WorkflowStatus);
-      const statuses = Array.isArray(status) ? status : [status];
-      const invalidStatuses = statuses.filter((s) => !validStatuses.includes(s));
+      const statuses = Array.isArray(params.status) ? params.status : [params.status];
+      const invalidStatuses = statuses.filter((s) => !validStatuses.includes(s as WorkflowStatus));
       if (invalidStatuses.length > 0) {
         return req.reject({
           status: 400,
@@ -131,10 +126,7 @@ function registerGetInstancesByBusinessKeyHandler(
     }
 
     const processService = await cds.connect.to(PROCESS_SERVICE);
-    const result = await processService.send('getInstancesByBusinessKey', {
-      businessKey,
-      status,
-    });
+    const result = await processService.send('getInstances', params);
 
     return result;
   });

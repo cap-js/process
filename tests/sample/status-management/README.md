@@ -182,7 +182,10 @@ this.after('CREATE', Authors, async (author, req) => {
 this.after('DELETE', Authors, async (author, req) => {
   if (!author.ID) return;
 
-  const instances = await authorProcess.getInstancesByBusinessKey(author.ID, ['RUNNING']);
+  const instances = await authorProcess.getInstances({
+    businessKey: author.ID,
+    status: ['RUNNING'],
+  });
   if (instances.length > 0) {
     await authorProcess.cancel({ businessKey: author.ID, cascade: true });
   }
@@ -193,7 +196,7 @@ this.after('DELETE', Authors, async (author, req) => {
 
 Both services use the same pattern to display live process status in the UI. Virtual fields (`processStatus`, `isApproved`, `processCriticality` for Books; `verificationStatus`, `isVerified`, `verificationCriticality` for Authors) are declared in the CDS projections and populated in `after('READ')` handlers:
 
-1. **Look up** the process instance via `getInstancesByBusinessKey(businessKey, statusFilters)`
+1. **Look up** the process instance via `getInstances({ businessKey, status: statusFilters })`
 2. **Based on status:**
    - `RUNNING` -- Fetch current step via `getAttributes(instanceId)`
    - `COMPLETED` -- Fetch final result via `getOutputs(instanceId)`

@@ -123,12 +123,15 @@ function addProcessTypes(
     kind: 'type',
     name: instanceName,
     elements: {
+      id: { type: csn.CdsBuiltinType.String },
       definitionId: { type: csn.CdsBuiltinType.String },
       definitionVersion: { type: csn.CdsBuiltinType.String },
-      id: { type: csn.CdsBuiltinType.String },
       status: { type: csn.CdsBuiltinType.String },
-      startedAt: { type: csn.CdsBuiltinType.String },
+      startedAt: { type: csn.CdsBuiltinType.Timestamp },
+      completedAt: { type: csn.CdsBuiltinType.Timestamp },
       startedBy: { type: csn.CdsBuiltinType.String },
+      subject: { type: csn.CdsBuiltinType.String },
+      businessKey: { type: csn.CdsBuiltinType.String },
     },
   };
 
@@ -191,12 +194,30 @@ function addProcessActions(
     returns: { type: outputsType },
   };
 
-  definitions[fqn(serviceName, 'getInstancesByBusinessKey')] = {
+  definitions[fqn(serviceName, 'getInstances')] = {
     kind: 'function',
-    name: fqn(serviceName, 'getInstancesByBusinessKey'),
+    name: fqn(serviceName, 'getInstances'),
     params: {
-      businessKey: { type: csn.CdsBuiltinType.String, notNull: true },
+      id: { type: csn.CdsBuiltinType.String },
+      businessKey: { type: csn.CdsBuiltinType.String },
       status: { items: { type: csn.CdsBuiltinType.String } },
+      definitionId: { type: csn.CdsBuiltinType.String },
+      definitionVersion: { type: csn.CdsBuiltinType.String },
+      startedAt: { type: csn.CdsBuiltinType.Timestamp },
+      startedFrom: { type: csn.CdsBuiltinType.Timestamp },
+      startedUpTo: { type: csn.CdsBuiltinType.Timestamp },
+      completedAt: { type: csn.CdsBuiltinType.Timestamp },
+      completedFrom: { type: csn.CdsBuiltinType.Timestamp },
+      completedUpTo: { type: csn.CdsBuiltinType.Timestamp },
+      startedBy: { type: csn.CdsBuiltinType.String },
+      subject: { type: csn.CdsBuiltinType.String },
+      containsText: { type: csn.CdsBuiltinType.String },
+      rootInstanceId: { type: csn.CdsBuiltinType.String },
+      parentInstanceId: { type: csn.CdsBuiltinType.String },
+      top: { type: csn.CdsBuiltinType.Integer },
+      skip: { type: csn.CdsBuiltinType.Integer },
+      orderBy: { type: csn.CdsBuiltinType.String },
+      inlinecount: { type: csn.CdsBuiltinType.String },
     },
     returns: { type: instancesType },
   };

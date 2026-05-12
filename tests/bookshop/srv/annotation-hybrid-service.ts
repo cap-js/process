@@ -5,9 +5,9 @@ class AnnotationHybridService extends cds.ApplicationService {
   async init() {
     const annotationLifecycleProcess = await cds.connect.to(Annotation_Lifecycle_ProcessService);
 
-    this.on('getInstancesByBusinessKey', async (req: cds.Request) => {
+    this.on('getInstances', async (req: cds.Request) => {
       const { ID, status } = req.data;
-      const instances = await annotationLifecycleProcess.getInstancesByBusinessKey({
+      const instances = await annotationLifecycleProcess.getInstances({
         businessKey: ID,
         status: status,
       });
