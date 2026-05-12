@@ -142,6 +142,31 @@ class ProcessService extends cds.ApplicationService {
       return outputs;
     });
 
+    this.on('updateInstanceStatus', async (request: cds.Request) => {
+      const { instanceId, status, cascade } = request.data;
+
+      if (!instanceId) {
+        return request.reject({ status: 400, message: 'Missing required parameter: instanceId' });
+      }
+      if (!status) {
+        return request.reject({ status: 400, message: 'Missing required parameter: status' });
+      }
+      const validStatuses = Object.values(WorkflowStatus);
+      if (!validStatuses.includes(status as WorkflowStatus)) {
+        return request.reject({
+          status: 400,
+          message: `Invalid status: ${status}. Valid values are: ${validStatuses.join(', ')}`,
+        });
+      }
+
+      LOG.info('Updating instance status', instanceId, '->', status);
+      return this.workflowInstanceClient.updateWorkflowStatus(
+        instanceId,
+        status as WorkflowStatus,
+        cascade ?? false,
+      );
+    });
+
     return super.init();
   }
 

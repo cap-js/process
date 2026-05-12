@@ -25,6 +25,7 @@ export function registerProcessServiceHandlers(service: cds.Service): void {
   registerGetInstancesByBusinessKeyHandler(service, definitionId);
   registerGetAttributesHandler(service, definitionId);
   registerGetOutputsHandler(service, definitionId);
+  registerUpdateInstanceStatusHandler(service, definitionId);
 }
 
 function registerStartHandler(service: cds.Service, definitionId: string): void {
@@ -169,5 +170,29 @@ function registerGetOutputsHandler(service: cds.Service, definitionId: string): 
     const result = await processService.send('getOutputs', { processInstanceId });
 
     return result;
+  });
+}
+
+function registerUpdateInstanceStatusHandler(service: cds.Service, definitionId: string): void {
+  service.on('updateInstanceStatus', async (req) => {
+    LOG.debug(`Updating instance status for process: ${definitionId}`);
+
+    const { instanceId, status, cascade } = req.data;
+    if (!instanceId) {
+      return req.reject({ status: 400, message: 'Missing required parameter: instanceId' });
+    }
+    if (!status) {
+      return req.reject({ status: 400, message: 'Missing required parameter: status' });
+    }
+    const validStatuses = Object.values(WorkflowStatus);
+    if (!validStatuses.includes(status)) {
+      return req.reject({
+        status: 400,
+        message: `Invalid status: ${status}. Valid values are: ${validStatuses.join(', ')}`,
+      });
+    }
+
+    const processService = await cds.connect.to(PROCESS_SERVICE);
+    return processService.send('updateInstanceStatus', { instanceId, status, cascade });
   });
 }

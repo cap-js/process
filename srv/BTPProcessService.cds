@@ -2,6 +2,10 @@
 type AnyType {}
 type AttributesReturn : many AnyType;
 type InstancesReturn : many AnyType;
+type UpdateStatusResult {
+  id      : String(256);
+  success : Boolean;
+}
 
 @protocol: 'none'
 @impl: './BTPProcessService'
@@ -39,4 +43,11 @@ service ProcessService {
     @mandatory businessKey : String(256),
     status : many String(256)
   )returns InstancesReturn;
+
+  function updateInstanceStatus(
+    @mandatory instanceId : String(256),
+    @mandatory status     : String(256),
+    cascade               : Boolean
+  ) returns UpdateStatusResult;
 }
+

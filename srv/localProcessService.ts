@@ -213,6 +213,41 @@ class ProcessService extends cds.ApplicationService {
       return outputs;
     });
 
+    this.on('updateInstanceStatus', async (req: cds.Request) => {
+      const { instanceId, status } = req.data;
+      LOG.info('Updating instance status', instanceId, '->', status);
+
+      LOG.debug(
+        `==============================================================\n` +
+          `Update instance status for ${instanceId} to ${status}\n` +
+          `==============================================================`,
+      );
+
+      if (!instanceId) {
+        return req.reject({ status: 400, message: 'Missing required parameter: instanceId' });
+      }
+      if (!status) {
+        return req.reject({ status: 400, message: 'Missing required parameter: status' });
+      }
+      const validStatuses = Object.values(WorkflowStatus);
+      if (!validStatuses.includes(status as WorkflowStatus)) {
+        return req.reject({
+          status: 400,
+          message: `Invalid status: ${status}. Valid values are: ${validStatuses.join(', ')}`,
+        });
+      }
+
+      const result = localWorkflowStore.updateStatus(instanceId, status as WorkflowStatus);
+
+      if (!result.success) {
+        LOG.warn(`Workflow instance not found: ${instanceId}`);
+        return req.reject({ status: 404, message: 'Workflow instance not found' });
+      }
+
+      LOG.debug(`Updated status for instance: ${instanceId} to ${status}`);
+      return result;
+    });
+
     return super.init();
   }
 }
