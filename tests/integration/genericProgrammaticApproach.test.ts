@@ -221,4 +221,73 @@ describe('Generic ProcessService Integration Tests', () => {
       expect(foundMessages[0].data.context.number).toEqual(42);
     });
   });
+
+  describe('Update Instance Status', () => {
+    async function getInstanceId(businessKey: string): Promise<string> {
+      const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
+        businessKey,
+      });
+      return res.data.value[0].id;
+    }
+
+    async function updateInstanceStatus(instanceId: string, status: string, cascade?: boolean) {
+      return POST('/odata/v4/programmatic/genericUpdateInstanceStatus', {
+        instanceId,
+        status,
+        cascade,
+      });
+    }
+
+    it('should return { id, success: true } when updating a valid instance', async () => {
+      const businessKey = generateID();
+      await genericStart(businessKey);
+      await (cds as any).flush();
+
+      const instanceId = await getInstanceId(businessKey);
+      const response = await updateInstanceStatus(instanceId, 'SUSPENDED');
+
+      expect(response.status).toBe(200);
+      expect(response.data.id).toBe(instanceId);
+      expect(response.data.success).toBe(true);
+    });
+
+    it('should reflect the new status when queried after update', async () => {
+      const businessKey = generateID();
+      await genericStart(businessKey);
+      await (cds as any).flush();
+
+      const instanceId = await getInstanceId(businessKey);
+      await updateInstanceStatus(instanceId, 'SUSPENDED');
+
+      const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
+        businessKey,
+        status: ['SUSPENDED'],
+      });
+      expect(res.data.value.some((i: any) => i.id === instanceId)).toBe(true);
+    });
+
+    it('should return 400 for an invalid status value', async () => {
+      const businessKey = generateID();
+      await genericStart(businessKey);
+      await (cds as any).flush();
+
+      const instanceId = await getInstanceId(businessKey);
+
+      try {
+        await updateInstanceStatus(instanceId, 'INVALID');
+        fail('Expected request to be rejected');
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should return 404 for a non-existent instance ID', async () => {
+      try {
+        await updateInstanceStatus('non-existent-id', 'SUSPENDED');
+        fail('Expected request to be rejected');
+      } catch (error: any) {
+        expect(error.response.status).toBe(404);
+      }
+    });
+  });
 });

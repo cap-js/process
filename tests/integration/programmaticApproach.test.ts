@@ -238,4 +238,31 @@ describe('Programmatic Approach Integration Tests', () => {
       expect(foundMessages[0].data.context.optional_datetime).toEqual(optional_datetime);
     });
   });
+
+  describe('Update Instance Status via imported process service', () => {
+    it('should update instance status and return { id, success: true }', async () => {
+      const ID = generateID();
+      await POST('/odata/v4/programmatic/genericStart', {
+        definitionId: 'eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process',
+        businessKey: ID,
+        context: JSON.stringify({ ID }),
+      });
+      await (cds as any).flush();
+
+      const instancesRes = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
+        businessKey: ID,
+        status: ['RUNNING'],
+      });
+      const instanceId = instancesRes.data.value[0].id;
+
+      const response = await POST('/odata/v4/programmatic/updateInstanceStatusViaProcess', {
+        instanceId,
+        status: 'SUSPENDED',
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.data.id).toBe(instanceId);
+      expect(response.data.success).toBe(true);
+    });
+  });
 });

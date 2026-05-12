@@ -148,6 +148,16 @@ class ProgrammaticService extends cds.ApplicationService {
       return result;
     });
 
+    this.on('genericUpdateInstanceStatus', async (req: cds.Request) => {
+      const { instanceId, status, cascade } = req.data;
+      return processService.send('updateInstanceStatus', { instanceId, status, cascade });
+    });
+
+    this.on('updateInstanceStatusViaProcess', async (req: cds.Request) => {
+      const { instanceId, status } = req.data;
+      return programmaticLifecycleProcess.send('updateInstanceStatus', { instanceId, status });
+    });
+
     await super.init();
   }
 }
