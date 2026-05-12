@@ -29,7 +29,7 @@ export function registerProcessServiceHandlers(service: cds.Service): void {
 
 function registerStartHandler(service: cds.Service, definitionId: string): void {
   service.on('start', async (req) => {
-    LOG.debug(`Starting process: ${definitionId}`);
+    LOG.debug(`Queuing process start: ${definitionId}`);
 
     if (!req.data) {
       return req.reject({ status: 400, message: 'Malformed request: missing request data' });

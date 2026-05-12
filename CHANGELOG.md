@@ -6,9 +6,17 @@
 
 ## Version 0.2.1 - 2026-04-20
 
+### Added
+
+- Logs during process start
+
 ### Fixed
 
 - Resolving of `impl` for `ProcessService`
+
+### Removed
+
+- Build time warning if no business key is found
 
 ## Version 0.2.0 - 2026-04-02
 

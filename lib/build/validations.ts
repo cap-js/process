@@ -28,7 +28,6 @@ import {
   WARNING_INPUT_PATH_NOT_IN_ENTITY,
   ERROR_BUSINESS_KEY_MUST_BE_EXPRESSION,
   WARNING_BUSINESS_KEY_MUST_BE_EXPRESSION,
-  WARNING_BUSINESS_KEY_NOT_FOUND,
 } from './constants';
 import { EntityContext, ParsedInputEntry } from '../shared/input-parser';
 
@@ -93,10 +92,6 @@ export function validateBusinessKeyForProcessStart(
 ) {
   const bKeyExpr = def[businessKeyAnnotation];
   if (!bKeyExpr) {
-    buildPlugin.pushMessage(
-      WARNING_BUSINESS_KEY_NOT_FOUND(entityName, businessKeyAnnotation),
-      WARNING,
-    );
     return;
   }
   if (!bKeyExpr['='] || (!bKeyExpr['xpr'] && !bKeyExpr['ref'])) {

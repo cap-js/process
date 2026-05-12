@@ -46,13 +46,6 @@ export const WARNING_BUSINESS_KEY_MUST_BE_EXPRESSION = (
   return `${entityName}: ${annotationBKey} must be a valid expression. Length check will be skipped.`;
 };
 
-export const WARNING_BUSINESS_KEY_NOT_FOUND = (
-  entityName: string,
-  annotationBKey: string,
-): string => {
-  return `${entityName}: ${annotationBKey} not found for process start. Length check will be skipped.`;
-};
-
 // =============================================================================
 // Start Annotation Validation Messages
 // =============================================================================

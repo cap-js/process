@@ -808,7 +808,7 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
   });
 
   describe('BusinessKey annotation for process start', () => {
-    it('should WARN when businessKey annotation is missing on process start entity', async () => {
+    it('should NOT warn when businessKey annotation is missing on process start entity', async () => {
       const cdsSource = wrapEntity(`
                 ${PROCESS_START}: { id: 'someProcess', on: 'CREATE' }
                 entity NoBusinessKeyEntity { key ID: UUID; }
@@ -816,15 +816,7 @@ describe(`Build Validation: @bpm.process.start annotations`, () => {
 
       const result = await validateModel(cdsSource);
 
-      expect(result.warnings.length).toBeGreaterThan(0);
-      expect(
-        result.warnings.some(
-          (w) =>
-            w.msg.includes(BUSINESS_KEY) &&
-            w.msg.includes('not found for process start') &&
-            w.msg.includes('Length check will be skipped'),
-        ),
-      ).toBe(true);
+      expect(result.warnings.some((w) => w.msg.includes(BUSINESS_KEY))).toBe(false);
       expect(result.buildSucceeded).toBe(true);
     });
 
