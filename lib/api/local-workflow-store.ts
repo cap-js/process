@@ -93,37 +93,37 @@ export class LocalWorkflowStore {
       'inlinecount',
     ]);
 
-    let filtered = [...this.instances];
+    let filteredInstances = [...this.instances];
 
     for (const [key, value] of Object.entries(params)) {
       if (value == null || specialKeys.has(key)) continue;
-      filtered = filtered.filter((i) => i[key as keyof LocalWorkflowInstance] === value);
+      filteredInstances = filteredInstances.filter((i) => i[key as keyof LocalWorkflowInstance] === value);
     }
 
     if (params.status && params.status.length > 0) {
-      filtered = filtered.filter((i) => params.status!.includes(i.status));
+      filteredInstances = filteredInstances.filter((i) => params.status!.includes(i.status));
     }
 
     if (params.startedFrom != null) {
       const from = new Date(params.startedFrom);
-      filtered = filtered.filter((i) => i.startedAt != null && new Date(i.startedAt) >= from);
+      filteredInstances = filteredInstances.filter((i) => i.startedAt != null && new Date(i.startedAt) >= from);
     }
     if (params.startedUpTo != null) {
       const upTo = new Date(params.startedUpTo);
-      filtered = filtered.filter((i) => i.startedAt != null && new Date(i.startedAt) <= upTo);
+      filteredInstances = filteredInstances.filter((i) => i.startedAt != null && new Date(i.startedAt) <= upTo);
     }
     if (params.completedFrom != null) {
       const from = new Date(params.completedFrom);
-      filtered = filtered.filter((i) => i.completedAt != null && new Date(i.completedAt) >= from);
+      filteredInstances = filteredInstances.filter((i) => i.completedAt != null && new Date(i.completedAt) >= from);
     }
     if (params.completedUpTo != null) {
       const upTo = new Date(params.completedUpTo);
-      filtered = filtered.filter((i) => i.completedAt != null && new Date(i.completedAt) <= upTo);
+      filteredInstances = filteredInstances.filter((i) => i.completedAt != null && new Date(i.completedAt) <= upTo);
     }
 
     if (params.containsText != null) {
       const text = params.containsText.toLowerCase();
-      filtered = filtered.filter(
+      filteredInstances = filteredInstances.filter(
         (i) =>
           i.id.toLowerCase().includes(text) ||
           i.subject?.toLowerCase().includes(text) ||
@@ -132,15 +132,15 @@ export class LocalWorkflowStore {
     }
 
     if (params.rootInstanceId != null)
-      filtered = filtered.filter((i) => i.id === params.rootInstanceId);
+      filteredInstances = filteredInstances.filter((i) => i.id === params.rootInstanceId);
     if (params.parentInstanceId != null)
-      filtered = filtered.filter((i) => i.id === params.parentInstanceId);
+      filteredInstances = filteredInstances.filter((i) => i.id === params.parentInstanceId);
 
     const skip = params.skip ?? 0;
-    const top = params.top ?? filtered.length;
-    filtered = filtered.slice(skip, skip + top);
+    const top = params.top ?? filteredInstances.length;
+    filteredInstances = filteredInstances.slice(skip, skip + top);
 
-    return filtered;
+    return filteredInstances;
   }
 
   getInstance(instanceId: string): LocalWorkflowInstance | undefined {
