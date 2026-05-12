@@ -9,6 +9,7 @@
 ### Fixed
 
 - Resolving of `impl` for `ProcessService`
+- Replace `DecimalFloat` with `Double` for imported processes
 
 ## Version 0.2.0 - 2026-04-02
 
