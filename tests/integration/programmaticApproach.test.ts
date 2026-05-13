@@ -275,19 +275,17 @@ describe('Programmatic Approach Integration Tests', () => {
       expect(response.status).toBe(204);
 
       // Flush up to 3 times and poll: imported service outbox → ProcessService outbox → handler
-      let suspended = false;
-      for (let i = 0; i < 3; i++) {
+      async function waitForSuspended(id: string, businessKey: string, maxRetries = 3): Promise<boolean> {
         await (cds as any).flush();
         const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
-          businessKey: ID,
+          businessKey,
           status: ['SUSPENDED'],
         });
-        if (res.data.value.some((j: any) => j.id === instanceId)) {
-          suspended = true;
-          break;
-        }
+        if (res.data.value.some((j: any) => j.id === id)) return true;
+        if (maxRetries <= 0) return false;
+        return waitForSuspended(id, businessKey, maxRetries - 1);
       }
-      expect(suspended).toBe(true);
+      expect(await waitForSuspended(instanceId, ID)).toBe(true);
     });
   });
 });
