@@ -153,7 +153,10 @@ class ProgrammaticService extends cds.ApplicationService {
       const { instanceId, status, cascade } = req.data;
       const validStatuses = Object.values(WorkflowStatus);
       if (!validStatuses.includes(status as WorkflowStatus)) {
-        return req.reject(400, `Invalid status: ${status}. Valid values are: ${validStatuses.join(', ')}`);
+        return req.reject(
+          400,
+          `Invalid status: ${status}. Valid values are: ${validStatuses.join(', ')}`,
+        );
       }
       const queuedProcessService = cds.queued(processService);
       await queuedProcessService.emit('updateInstanceStatus', {

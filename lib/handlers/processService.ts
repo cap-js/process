@@ -1,6 +1,11 @@
 import cds from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, PROCESS_SERVICE } from '../constants';
-import { emitProcessEvent, ProcessLifecyclePayload, ProcessStartPayload, ProcessUpdateStatusPayload } from './utils';
+import {
+  emitProcessEvent,
+  ProcessLifecyclePayload,
+  ProcessStartPayload,
+  ProcessUpdateStatusPayload,
+} from './utils';
 import { WorkflowStatus } from '../api';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);

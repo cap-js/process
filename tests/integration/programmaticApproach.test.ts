@@ -275,7 +275,11 @@ describe('Programmatic Approach Integration Tests', () => {
       expect(response.status).toBe(204);
 
       // Flush up to 3 times and poll: imported service outbox → ProcessService outbox → handler
-      async function waitForSuspended(id: string, businessKey: string, maxRetries = 3): Promise<boolean> {
+      async function waitForSuspended(
+        id: string,
+        businessKey: string,
+        maxRetries = 3,
+      ): Promise<boolean> {
         await (cds as any).flush();
         const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
           businessKey,
