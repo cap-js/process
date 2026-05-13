@@ -213,6 +213,26 @@ class ProcessService extends cds.ApplicationService {
       return outputs;
     });
 
+    this.on('updateInstanceStatus', async (req: cds.Request) => {
+      const { instanceId, status } = req.data;
+      LOG.info('Updating instance status', instanceId, '->', status);
+
+      LOG.debug(
+        `==============================================================\n` +
+          `Update instance status for ${instanceId} to ${status}\n` +
+          `==============================================================`,
+      );
+
+      const result = localWorkflowStore.updateStatus(instanceId, status as WorkflowStatus);
+
+      if (!result.success) {
+        LOG.warn(`Workflow instance not found: ${instanceId}`);
+        return;
+      }
+
+      LOG.debug(`Updated status for instance: ${instanceId} to ${status}`);
+    });
+
     return super.init();
   }
 }

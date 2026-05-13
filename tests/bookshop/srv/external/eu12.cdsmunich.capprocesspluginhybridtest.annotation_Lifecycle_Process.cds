@@ -1,4 +1,4 @@
-/* checksum : 2d9b04f7d100bb10cefeaa255ec0b188 */
+/* checksum : 3f6145d8ec63b84aa16c320a4868fcd9 */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
@@ -47,6 +47,12 @@ service Annotation_Lifecycle_ProcessService {
     businessKey : String not null,
     status : many String
   ) returns ProcessInstances;
+
+  action updateInstanceStatus(
+    instanceId : String not null,
+    status : String not null,
+    cascade : Boolean
+  );
 
   action suspend(
     businessKey : String not null,

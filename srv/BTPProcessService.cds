@@ -27,6 +27,12 @@ service ProcessService {
     cascade                : Boolean
   }
 
+  event updateInstanceStatus {
+    @mandatory instanceId : String(256);
+    @mandatory status     : String(256);
+    cascade               : Boolean
+  }
+
   function getAttributes(
     @mandatory processInstanceId : String(256)
   )returns AttributesReturn;
@@ -40,3 +46,4 @@ service ProcessService {
     status : many String(256)
   )returns InstancesReturn;
 }
+

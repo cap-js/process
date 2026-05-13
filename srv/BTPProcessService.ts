@@ -142,6 +142,16 @@ class ProcessService extends cds.ApplicationService {
       return outputs;
     });
 
+    this.on('updateInstanceStatus', async (request: cds.Request) => {
+      const { instanceId, status, cascade } = request.data;
+      LOG.info('Updating instance status', instanceId, '->', status);
+      await this.workflowInstanceClient.updateWorkflowStatus(
+        instanceId,
+        status as WorkflowStatus,
+        cascade ?? false,
+      );
+    });
+
     return super.init();
   }
 

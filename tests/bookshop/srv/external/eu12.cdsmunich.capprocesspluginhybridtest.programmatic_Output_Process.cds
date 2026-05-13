@@ -1,4 +1,4 @@
-/* checksum : 5d4deaa24aac52f7afcf274a034ff450 */
+/* checksum : 6fb3b83b7c518c1c26dd8b55ce090cc4 */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
@@ -56,6 +56,12 @@ service Programmatic_Output_ProcessService {
     businessKey : String not null,
     status : many String
   ) returns ProcessInstances;
+
+  action updateInstanceStatus(
+    instanceId : String not null,
+    status : String not null,
+    cascade : Boolean
+  );
 
   action suspend(
     businessKey : String not null,

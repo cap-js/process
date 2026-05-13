@@ -1,6 +1,11 @@
 import cds from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, PROCESS_SERVICE } from '../constants';
-import { emitProcessEvent, ProcessLifecyclePayload, ProcessStartPayload } from './utils';
+import {
+  emitProcessEvent,
+  ProcessLifecyclePayload,
+  ProcessStartPayload,
+  ProcessUpdateStatusPayload,
+} from './utils';
 import { WorkflowStatus } from '../api';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
@@ -25,6 +30,7 @@ export function registerProcessServiceHandlers(service: cds.Service): void {
   registerGetInstancesByBusinessKeyHandler(service, definitionId);
   registerGetAttributesHandler(service, definitionId);
   registerGetOutputsHandler(service, definitionId);
+  registerUpdateInstanceStatusHandler(service, definitionId);
 }
 
 function registerStartHandler(service: cds.Service, definitionId: string): void {
@@ -169,5 +175,36 @@ function registerGetOutputsHandler(service: cds.Service, definitionId: string): 
     const result = await processService.send('getOutputs', { processInstanceId });
 
     return result;
+  });
+}
+
+function registerUpdateInstanceStatusHandler(service: cds.Service, definitionId: string): void {
+  service.on('updateInstanceStatus', async (req) => {
+    LOG.debug(`Updating instance status for process: ${definitionId}`);
+
+    const { instanceId, status, cascade } = req.data;
+    if (!instanceId) {
+      return req.reject({ status: 400, message: 'Missing required parameter: instanceId' });
+    }
+    if (!status) {
+      return req.reject({ status: 400, message: 'Missing required parameter: status' });
+    }
+    const validStatuses = Object.values(WorkflowStatus);
+    if (!validStatuses.includes(status)) {
+      return req.reject({
+        status: 400,
+        message: `Invalid status: ${status}. Valid values are: ${validStatuses.join(', ')}`,
+      });
+    }
+
+    const payload: ProcessUpdateStatusPayload = { instanceId, status, cascade: cascade ?? false };
+    await emitProcessEvent(
+      'updateInstanceStatus',
+      req,
+      payload,
+      `Failed to update instance status for instanceId: ${instanceId}`,
+    );
+
+    LOG.debug(`Instance status update queued: instanceId=${instanceId}, status=${status}`);
   });
 }

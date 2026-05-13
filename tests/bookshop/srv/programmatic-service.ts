@@ -1,6 +1,7 @@
 import cds from '@sap/cds';
 import Programmatic_Lifecycle_ProcessService from '#cds-models/eu12/cdsmunich/capprocesspluginhybridtest/Programmatic_Lifecycle_ProcessService';
 import Programmatic_Outputs_ProcessService from '#cds-models/eu12/cdsmunich/capprocesspluginhybridtest/Programmatic_Output_ProcessService';
+import { WorkflowStatus } from '@cap-js/process/lib/api';
 
 class ProgrammaticService extends cds.ApplicationService {
   async init() {
@@ -146,6 +147,33 @@ class ProgrammaticService extends cds.ApplicationService {
       const { processInstanceId } = req.data;
       const result = await processService.send('getOutputs', { processInstanceId });
       return result;
+    });
+
+    this.on('genericUpdateInstanceStatus', async (req: cds.Request) => {
+      const { instanceId, status, cascade } = req.data;
+      const validStatuses = Object.values(WorkflowStatus);
+      if (!validStatuses.includes(status as WorkflowStatus)) {
+        return req.reject(
+          400,
+          `Invalid status: ${status}. Valid values are: ${validStatuses.join(', ')}`,
+        );
+      }
+      const queuedProcessService = cds.queued(processService);
+      await queuedProcessService.emit('updateInstanceStatus', {
+        instanceId,
+        status,
+        cascade: cascade ?? false,
+      });
+    });
+
+    this.on('updateInstanceStatusViaProcess', async (req: cds.Request) => {
+      const { instanceId, status } = req.data;
+      const queuedProgrammaticLifecycle = cds.queued(programmaticLifecycleProcess);
+      await queuedProgrammaticLifecycle.emit('updateInstanceStatus', {
+        instanceId,
+        status,
+        cascade: false,
+      });
     });
 
     await super.init();

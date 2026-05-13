@@ -4,6 +4,12 @@
 - The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - This project adheres to [Semantic Versioning](https://semver.org/).
 
+## Version 0.2.2 - tbd
+
+### Added
+
+- `updateInstanceStatus` function on `ProcessService` and imported process services to update a workflow instance by its ID to a given status (`RUNNING`, `SUSPENDED`, `CANCELED`, `ERRONEOUS`, `COMPLETED`), with optional `cascade` support
+
 ## Version 0.2.1 - 2026-04-20
 
 ### Fixed

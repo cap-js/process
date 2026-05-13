@@ -201,6 +201,16 @@ function addProcessActions(
     returns: { type: instancesType },
   };
 
+  definitions[fqn(serviceName, 'updateInstanceStatus')] = {
+    kind: 'action',
+    name: fqn(serviceName, 'updateInstanceStatus'),
+    params: {
+      instanceId: { type: csn.CdsBuiltinType.String, notNull: true },
+      status: { type: csn.CdsBuiltinType.String, notNull: true },
+      cascade: { type: csn.CdsBuiltinType.Boolean },
+    },
+  };
+
   // Lifecycle actions
   for (const action of ['suspend', 'resume', 'cancel']) {
     definitions[fqn(serviceName, action)] = {

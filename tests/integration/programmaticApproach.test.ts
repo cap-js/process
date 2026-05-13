@@ -238,4 +238,58 @@ describe('Programmatic Approach Integration Tests', () => {
       expect(foundMessages[0].data.context.optional_datetime).toEqual(optional_datetime);
     });
   });
+
+  describe('Update Instance Status via imported process service', () => {
+    async function waitForInstance(
+      businessKey: string,
+      status: string[],
+      maxRetries = 10,
+    ): Promise<string> {
+      await (cds as any).flush();
+      const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
+        businessKey,
+        status,
+      });
+      if (res.data.value?.length > 0) return res.data.value[0].id;
+      if (maxRetries <= 0)
+        throw new Error(`No instance found for businessKey: ${businessKey} with status: ${status}`);
+      await new Promise((r) => setTimeout(r, 1000));
+      return waitForInstance(businessKey, status, maxRetries - 1);
+    }
+
+    it('should emit an updateInstanceStatus event via imported process service', async () => {
+      const ID = generateID();
+      await POST('/odata/v4/programmatic/genericStart', {
+        definitionId: 'eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process',
+        businessKey: ID,
+        context: JSON.stringify({ ID }),
+      });
+
+      const instanceId = await waitForInstance(ID, ['RUNNING']);
+
+      const response = await POST('/odata/v4/programmatic/updateInstanceStatusViaProcess', {
+        instanceId,
+        status: 'SUSPENDED',
+      });
+
+      expect(response.status).toBe(204);
+
+      // Flush up to 3 times and poll: imported service outbox → ProcessService outbox → handler
+      async function waitForSuspended(
+        id: string,
+        businessKey: string,
+        maxRetries = 3,
+      ): Promise<boolean> {
+        await (cds as any).flush();
+        const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
+          businessKey,
+          status: ['SUSPENDED'],
+        });
+        if (res.data.value.some((j: any) => j.id === id)) return true;
+        if (maxRetries <= 0) return false;
+        return waitForSuspended(id, businessKey, maxRetries - 1);
+      }
+      expect(await waitForSuspended(instanceId, ID)).toBe(true);
+    });
+  });
 });
