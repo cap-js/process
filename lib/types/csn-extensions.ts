@@ -58,11 +58,12 @@ export type CsnDefinition =
   | CsnService
   | CsnAction
   | CsnFunction
+  | CsnEvent
   | CsnAnnotation;
 export interface CsnBaseDefinition extends CsnAnnotations {
   name?: string;
   doc?: string;
-  kind: 'entity' | 'type' | 'service' | 'action' | 'function' | 'annotation';
+  kind: 'entity' | 'type' | 'service' | 'action' | 'function' | 'event' | 'annotation';
 }
 //
 // ──────────────────────────────────────────────────────────────
@@ -131,6 +132,10 @@ export interface CsnFunction extends CsnBaseDefinition {
   kind: 'function';
   params?: Record<string, CsnElement>;
   returns?: CsnType | CsnElement;
+}
+export interface CsnEvent extends CsnBaseDefinition {
+  kind: 'event';
+  elements?: Record<string, CsnElement>;
 }
 //
 // ──────────────────────────────────────────────────────────────

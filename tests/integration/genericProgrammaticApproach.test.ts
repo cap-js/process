@@ -242,16 +242,15 @@ describe('Generic ProcessService Integration Tests', () => {
       });
     }
 
-    it('should return { id, success: true } when updating a valid instance', async () => {
+    it('should emit an updateInstanceStatus event to the outbox', async () => {
       const businessKey = generateID();
       await genericStart(businessKey);
 
       const instanceId = await getInstanceId(businessKey);
       const response = await updateInstanceStatus(instanceId, 'SUSPENDED');
 
-      expect(response.status).toBe(200);
-      expect(response.data.id).toBe(instanceId);
-      expect(response.data.success).toBe(true);
+      expect(response.status).toBe(204);
+      expect(foundMessages.some((m: any) => m.event === 'updateInstanceStatus')).toBe(true);
     });
 
     it('should reflect the new status when queried after update', async () => {
@@ -260,6 +259,7 @@ describe('Generic ProcessService Integration Tests', () => {
 
       const instanceId = await getInstanceId(businessKey);
       await updateInstanceStatus(instanceId, 'SUSPENDED');
+      await (cds as any).flush();
 
       const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
         businessKey,
@@ -279,15 +279,6 @@ describe('Generic ProcessService Integration Tests', () => {
         fail('Expected request to be rejected');
       } catch (error: any) {
         expect(error.response.status).toBe(400);
-      }
-    });
-
-    it('should return 404 for a non-existent instance ID', async () => {
-      try {
-        await updateInstanceStatus('non-existent-id', 'SUSPENDED');
-        fail('Expected request to be rejected');
-      } catch (error: any) {
-        expect(error.response.status).toBe(404);
       }
     });
   });

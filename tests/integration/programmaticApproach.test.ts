@@ -257,7 +257,7 @@ describe('Programmatic Approach Integration Tests', () => {
       return waitForInstance(businessKey, status, maxRetries - 1);
     }
 
-    it('should update instance status and return { id, success: true }', async () => {
+    it('should emit an updateInstanceStatus event via imported process service', async () => {
       const ID = generateID();
       await POST('/odata/v4/programmatic/genericStart', {
         definitionId: 'eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Lifecycle_Process',
@@ -272,9 +272,22 @@ describe('Programmatic Approach Integration Tests', () => {
         status: 'SUSPENDED',
       });
 
-      expect(response.status).toBe(200);
-      expect(response.data.id).toBe(instanceId);
-      expect(response.data.success).toBe(true);
+      expect(response.status).toBe(204);
+
+      // Flush up to 3 times and poll: imported service outbox → ProcessService outbox → handler
+      let suspended = false;
+      for (let i = 0; i < 3; i++) {
+        await (cds as any).flush();
+        const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
+          businessKey: ID,
+          status: ['SUSPENDED'],
+        });
+        if (res.data.value.some((j: any) => j.id === instanceId)) {
+          suspended = true;
+          break;
+        }
+      }
+      expect(suspended).toBe(true);
     });
   });
 });

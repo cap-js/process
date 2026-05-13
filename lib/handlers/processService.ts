@@ -1,6 +1,6 @@
 import cds from '@sap/cds';
 import { PROCESS_LOGGER_PREFIX, PROCESS_PREFIX, PROCESS_SERVICE } from '../constants';
-import { emitProcessEvent, ProcessLifecyclePayload, ProcessStartPayload } from './utils';
+import { emitProcessEvent, ProcessLifecyclePayload, ProcessStartPayload, ProcessUpdateStatusPayload } from './utils';
 import { WorkflowStatus } from '../api';
 
 const LOG = cds.log(PROCESS_LOGGER_PREFIX);
@@ -192,7 +192,14 @@ function registerUpdateInstanceStatusHandler(service: cds.Service, definitionId:
       });
     }
 
-    const processService = await cds.connect.to(PROCESS_SERVICE);
-    return processService.send('updateInstanceStatus', { instanceId, status, cascade });
+    const payload: ProcessUpdateStatusPayload = { instanceId, status, cascade: cascade ?? false };
+    await emitProcessEvent(
+      'updateInstanceStatus',
+      req,
+      payload,
+      `Failed to update instance status for instanceId: ${instanceId}`,
+    );
+
+    LOG.debug(`Instance status update queued: instanceId=${instanceId}, status=${status}`);
   });
 }

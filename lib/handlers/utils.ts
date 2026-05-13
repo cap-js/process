@@ -6,7 +6,7 @@ const LOG = cds.log(PROCESS_LOGGER_PREFIX);
 /**
  * Process event types supported by the system
  */
-type ProcessEventType = 'start' | 'cancel' | 'suspend' | 'resume';
+type ProcessEventType = 'start' | 'cancel' | 'suspend' | 'resume' | 'updateInstanceStatus';
 
 /**
  * A row of entity data with string-keyed fields
@@ -28,6 +28,15 @@ export interface ProcessStartPayload {
  */
 export interface ProcessLifecyclePayload {
   businessKey: string;
+  cascade: boolean;
+}
+
+/**
+ * Payload for updateInstanceStatus events
+ */
+export interface ProcessUpdateStatusPayload {
+  instanceId: string;
+  status: string;
   cascade: boolean;
 }
 
@@ -164,7 +173,7 @@ export async function resolveEntityRowOrReject(
 export async function emitProcessEvent(
   event: ProcessEventType,
   req: cds.Request,
-  payload: ProcessStartPayload | ProcessLifecyclePayload,
+  payload: ProcessStartPayload | ProcessLifecyclePayload | ProcessUpdateStatusPayload,
   processEventFailedMsg: string,
   businessKeyValue?: string,
 ): Promise<void> {

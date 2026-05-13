@@ -1,15 +1,10 @@
-/* checksum : ff7f2f85755a461155203b777bf3077a */
+/* checksum : 6fb3b83b7c518c1c26dd8b55ce090cc4 */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
 @protocol : 'none'
 @bpm.process : 'eu12.cdsmunich.capprocesspluginhybridtest.programmatic_Output_Process'
 service Programmatic_Output_ProcessService {
-  type UpdateStatusResult {
-    id : String;
-    success : Boolean;
-  };
-
   type ProcessInputs {
     ID : String not null;
     mandatory_datetime : Timestamp not null;
@@ -62,11 +57,11 @@ service Programmatic_Output_ProcessService {
     status : many String
   ) returns ProcessInstances;
 
-  function updateInstanceStatus(
+  action updateInstanceStatus(
     instanceId : String not null,
     status : String not null,
     cascade : Boolean
-  ) returns UpdateStatusResult;
+  );
 
   action suspend(
     businessKey : String not null,

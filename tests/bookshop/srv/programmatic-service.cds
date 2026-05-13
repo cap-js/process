@@ -51,8 +51,7 @@ service ProgrammaticService {
   action genericGetAttributes(processInstanceId: String) returns many ProcessAttribute;
   action genericGetOutputs(processInstanceId: String) returns ProcessOutputs;
 
-  type UpdateStatusResult { id: String; success: Boolean; };
-  action genericUpdateInstanceStatus(instanceId: String, status: String, cascade: Boolean) returns UpdateStatusResult;
+  action genericUpdateInstanceStatus(instanceId: String, status: String, cascade: Boolean);
 
-  action updateInstanceStatusViaProcess(instanceId: String, status: String) returns UpdateStatusResult;
+  action updateInstanceStatusViaProcess(instanceId: String, status: String);
 }

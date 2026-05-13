@@ -6,5 +6,5 @@ export { createProcessActionHandler } from './processActionHandler';
 export { registerProcessServiceHandlers } from './processService';
 export { buildAnnotationCache } from './annotationCache';
 export { registerAnnotationHandlers } from './annotationHandlers';
-export type { EntityRow, ProcessStartPayload, ProcessLifecyclePayload } from './utils';
+export type { EntityRow, ProcessStartPayload, ProcessLifecyclePayload, ProcessUpdateStatusPayload } from './utils';
 export type { ProcessDeleteRequest } from './onDeleteUtils';

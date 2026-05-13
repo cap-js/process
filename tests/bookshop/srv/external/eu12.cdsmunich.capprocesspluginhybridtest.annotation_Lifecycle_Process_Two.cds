@@ -1,15 +1,10 @@
-/* checksum : d597187f9ac06787e1d29604bbdd3030 */
+/* checksum : 85ab0177d589131840ae18bca7300e41 */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
 @protocol : 'none'
 @bpm.process : 'eu12.cdsmunich.capprocesspluginhybridtest.annotation_Lifecycle_Process_Two'
 service Annotation_Lifecycle_Process_TwoService {
-  type UpdateStatusResult {
-    id : String;
-    success : Boolean;
-  };
-
   type ProcessInputs {
     id : String not null;
   };
@@ -53,11 +48,11 @@ service Annotation_Lifecycle_Process_TwoService {
     status : many String
   ) returns ProcessInstances;
 
-  function updateInstanceStatus(
+  action updateInstanceStatus(
     instanceId : String not null,
     status : String not null,
     cascade : Boolean
-  ) returns UpdateStatusResult;
+  );
 
   action suspend(
     businessKey : String not null,

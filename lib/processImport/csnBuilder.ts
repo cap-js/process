@@ -85,16 +85,6 @@ function addProcessTypes(
   const instanceName = fqn(serviceName, 'ProcessInstance');
   const instancesName = fqn(serviceName, 'ProcessInstances');
 
-  const updateStatusResultName = fqn(serviceName, 'UpdateStatusResult');
-  definitions[updateStatusResultName] = {
-    kind: 'type',
-    name: updateStatusResultName,
-    elements: {
-      id: { type: csn.CdsBuiltinType.String },
-      success: { type: csn.CdsBuiltinType.Boolean },
-    },
-  };
-
   definitions[inputsName] = buildTypeFromSchema(
     inputsName,
     ensureObjectSchema(process.header?.inputs),
@@ -159,7 +149,6 @@ function addProcessActions(
   const outputsType = fqn(serviceName, 'ProcessOutputs');
   const attributesType = fqn(serviceName, 'ProcessAttributes');
   const instancesType = fqn(serviceName, 'ProcessInstances');
-  const updateStatusResultType = fqn(serviceName, 'UpdateStatusResult');
 
   // Start action — three tiers:
   //   1. No input properties:       start() with no params
@@ -213,14 +202,13 @@ function addProcessActions(
   };
 
   definitions[fqn(serviceName, 'updateInstanceStatus')] = {
-    kind: 'function',
+    kind: 'action',
     name: fqn(serviceName, 'updateInstanceStatus'),
     params: {
       instanceId: { type: csn.CdsBuiltinType.String, notNull: true },
       status: { type: csn.CdsBuiltinType.String, notNull: true },
       cascade: { type: csn.CdsBuiltinType.Boolean },
     },
-    returns: { type: updateStatusResultType },
   };
 
   // Lifecycle actions

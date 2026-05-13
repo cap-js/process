@@ -1,15 +1,10 @@
-/* checksum : 8135be4a2f3327de91ef1e82acf027cb */
+/* checksum : 980ec47ccf335af79644904cc3144504 */
 namespace eu12.cdsmunich.capprocesspluginhybridtest;
 
 /** DO NOT EDIT. THIS IS A GENERATED SERVICE THAT WILL BE OVERRIDDEN ON NEXT IMPORT. */
 @protocol : 'none'
 @bpm.process : 'eu12.cdsmunich.capprocesspluginhybridtest.importProcess_Simple_Inputs'
 service ImportProcess_Simple_InputsService {
-  type UpdateStatusResult {
-    id : String;
-    success : Boolean;
-  };
-
   type ProcessInputs {
     string : String not null;
     number : DecimalFloat not null;
@@ -58,11 +53,11 @@ service ImportProcess_Simple_InputsService {
     status : many String
   ) returns ProcessInstances;
 
-  function updateInstanceStatus(
+  action updateInstanceStatus(
     instanceId : String not null,
     status : String not null,
     cascade : Boolean
-  ) returns UpdateStatusResult;
+  );
 
   action suspend(
     businessKey : String not null,
