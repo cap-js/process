@@ -223,11 +223,15 @@ describe('Generic ProcessService Integration Tests', () => {
   });
 
   describe('Update Instance Status', () => {
-    async function getInstanceId(businessKey: string): Promise<string> {
+    async function getInstanceId(businessKey: string, maxRetries = 10): Promise<string> {
+      await (cds as any).flush();
       const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
         businessKey,
       });
-      return res.data.value[0].id;
+      if (res.data.value?.length > 0) return res.data.value[0].id;
+      if (maxRetries <= 0) throw new Error(`No instance found for businessKey: ${businessKey}`);
+      await new Promise((r) => setTimeout(r, 1000));
+      return getInstanceId(businessKey, maxRetries - 1);
     }
 
     async function updateInstanceStatus(instanceId: string, status: string, cascade?: boolean) {
@@ -241,7 +245,6 @@ describe('Generic ProcessService Integration Tests', () => {
     it('should return { id, success: true } when updating a valid instance', async () => {
       const businessKey = generateID();
       await genericStart(businessKey);
-      await (cds as any).flush();
 
       const instanceId = await getInstanceId(businessKey);
       const response = await updateInstanceStatus(instanceId, 'SUSPENDED');
@@ -254,7 +257,6 @@ describe('Generic ProcessService Integration Tests', () => {
     it('should reflect the new status when queried after update', async () => {
       const businessKey = generateID();
       await genericStart(businessKey);
-      await (cds as any).flush();
 
       const instanceId = await getInstanceId(businessKey);
       await updateInstanceStatus(instanceId, 'SUSPENDED');
@@ -269,7 +271,6 @@ describe('Generic ProcessService Integration Tests', () => {
     it('should return 400 for an invalid status value', async () => {
       const businessKey = generateID();
       await genericStart(businessKey);
-      await (cds as any).flush();
 
       const instanceId = await getInstanceId(businessKey);
 

@@ -240,6 +240,23 @@ describe('Programmatic Approach Integration Tests', () => {
   });
 
   describe('Update Instance Status via imported process service', () => {
+    async function waitForInstance(
+      businessKey: string,
+      status: string[],
+      maxRetries = 10,
+    ): Promise<string> {
+      await (cds as any).flush();
+      const res = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
+        businessKey,
+        status,
+      });
+      if (res.data.value?.length > 0) return res.data.value[0].id;
+      if (maxRetries <= 0)
+        throw new Error(`No instance found for businessKey: ${businessKey} with status: ${status}`);
+      await new Promise((r) => setTimeout(r, 1000));
+      return waitForInstance(businessKey, status, maxRetries - 1);
+    }
+
     it('should update instance status and return { id, success: true }', async () => {
       const ID = generateID();
       await POST('/odata/v4/programmatic/genericStart', {
@@ -247,13 +264,8 @@ describe('Programmatic Approach Integration Tests', () => {
         businessKey: ID,
         context: JSON.stringify({ ID }),
       });
-      await (cds as any).flush();
 
-      const instancesRes = await POST('/odata/v4/programmatic/genericGetInstancesByBusinessKey', {
-        businessKey: ID,
-        status: ['RUNNING'],
-      });
-      const instanceId = instancesRes.data.value[0].id;
+      const instanceId = await waitForInstance(ID, ['RUNNING']);
 
       const response = await POST('/odata/v4/programmatic/updateInstanceStatusViaProcess', {
         instanceId,
