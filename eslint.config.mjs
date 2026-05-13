@@ -3,7 +3,14 @@ import tseslint from 'typescript-eslint';
 
 export default [
   {
-    ignores: ['dist/**', 'gen/**', 'node_modules/**', '@cds-models/**', 'tests/sample/**'],
+    ignores: [
+      'dist/**',
+      'gen/**',
+      'node_modules/**',
+      '@cds-models/**',
+      'tests/sample/**',
+      '.claude/**',
+    ],
   },
   ...cds,
   ...tseslint.configs.recommended,
