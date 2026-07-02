@@ -95,7 +95,7 @@
     "@cap-js/cds-test": "^1.0.0",
     "@cap-js/cds-types": "^0.16.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.5.0",
+    "@types/node": "^26.0.1",
     "jest": "^30.3.0",
     "ts-jest": "^29.4.6",
     "tsx": "^4",
