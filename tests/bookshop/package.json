@@ -11,7 +11,7 @@
     "@cap-js/hana": "^2"
   },
   "devDependencies": {
-    "@cap-js/sqlite": "^2",
+    "@cap-js/sqlite": "^3",
     "tsx": "^4",
     "@cap-js/cds-types": "^0.16.0",
     "@types/node": "^25.5.0",
