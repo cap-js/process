@@ -93,7 +93,7 @@
   },
   "devDependencies": {
     "@cap-js/cds-test": "^1.0.0",
-    "@cap-js/cds-types": "^0.16.0",
+    "@cap-js/cds-types": "^0.18.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.5.0",
     "jest": "^30.3.0",
